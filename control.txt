@@ -1,0 +1,47 @@
+Dolphin movement:
+Keyboard:
+	W		- Move the dolphin forward
+	A		- Turn the dolphin to left
+	S		- Move the dolphin backward
+	D		- Turn the dolphin to right
+Gamepad:
+	X		- Turn left and turn right
+	Y		- Move forward and backward
+
+Orbit controller:
+*Mouse (Recommend):
+	Hold down right button and drag to move the orbit camera
+	Mouse Wheel to zoom in and zoom out
+Keyboard:
+	I		- Move camera up
+	J		- Move camera to the left
+	K		- Move camera down
+	L		- Move camera to the right
+	Q		- Zoom out
+	E		- Zoom in
+Gamepad:
+	RX		- Move camera up and down
+	RY		- Move camera to the left and right
+			- Zoom in and zoom out
+
+Zooming and panning the overhead viewport
+Keyboard:
+	Up Arrow	- Move the overhead viewport up
+	Down Arrow	- Move the overhead viewport down
+	Right Arrow	- Move the overhead viewport to right
+	Left Arrow	- Move the overhead viewport to left
+	<		- Zoom out overhead viewport
+	>		- Zoom in overhead viewport
+Gamepad: (Not yet)
+	Up Arrow	- Move the overhead viewport up
+	Down Arrow	- Move the overhead viewport down
+	Right Arrow	- Move the overhead viewport to right
+	Left Arrow	- Move the overhead viewport to left
+				- Zoom in and zoom out
+
+Other control
+Keyboard:
+	X		- Toggle ON/OFF of the three XYZ line
+	C		- Toggle ON/OFF of cheat mode (display lines draw from the dolphin to prizes.)
+	=		- Enter/Exit fullscreen.
+	Esc		- Exit the game.
