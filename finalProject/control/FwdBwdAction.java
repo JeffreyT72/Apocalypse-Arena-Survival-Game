@@ -22,7 +22,7 @@ public class FwdBwdAction extends AbstractInputAction {
             if (MyGame.getBooster()) {
                 game.getAvatar().fwdAction(0.06f);
             } else {
-                game.getAvatar().fwdAction(0.02f);
+                game.getAvatar().fwdAction(.003f * time);
             }
         } else {
             if (MyGame.getBooster()) {

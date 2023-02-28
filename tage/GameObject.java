@@ -479,4 +479,10 @@ public class GameObject
 		newRotation.mul(rotAroundAvatarUp);
 		setLocalRotation(newRotation);
 	}
+
+	public void yaw(float angle) {
+		Matrix4f oldRotation = new Matrix4f(this.getWorldRotation());
+		oldRotation.rotateY(angle);
+		this.setLocalRotation(oldRotation);
+	}
 }
