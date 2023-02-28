@@ -444,7 +444,7 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaY = prevMouseY - curMouseY;
 
 			//if (isRightClick) {
-				orbitController.yaw(mouseDeltaX);
+				avatar.yaw(mouseDeltaX/50);
 				orbitController.pitch(mouseDeltaY);
 			//}
 
@@ -487,6 +487,8 @@ public class MyGame extends VariableFrameRateGame {
 		updateTime();
 
 		updateGameLogic();
+		// update inputs
+		im.update((float) elapsTime);
 
 		myRobAS.updateAnimation();
 		// update camera
@@ -494,15 +496,14 @@ public class MyGame extends VariableFrameRateGame {
 
 		// avatar facing the direction of camera forward vector
 		// ** bugs **
-		Camera cam;
-		Vector3f camFace;
-		cam = (engine.getRenderSystem().getViewport(mainVpName).getCamera());
-		camFace = cam.getN();
-		Vector3f newCam = new Vector3f(camFace.x(), 0.0f, camFace.z());
-		avatar.lookAt(newCam);
+		// Camera cam;
+		// Vector3f camFace;
+		// cam = (engine.getRenderSystem().getViewport(mainVpName).getCamera());
+		// camFace = cam.getN();
+		// Vector3f newCam = new Vector3f(camFace.x(), 0.0f, camFace.z());
+		// avatar.lookAt(newCam);
 
-		// update inputs
-		im.update((float) elapsTime);
+		
 
 		updateHUD();
 	}
