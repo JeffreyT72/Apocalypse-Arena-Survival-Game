@@ -16,9 +16,9 @@ public class TurnRightAction extends AbstractInputAction {
         if (keyValue > -.2 && keyValue < .2) return;  // deadzone
 
         if (MyGame.getBooster()) {
-            game.getAvatar().rightAction(.013f);
+            game.getAvatar().rightAction(game.getSprintSpeed() * time);
         } else {
-            game.getAvatar().rightAction(.003f * time);
+            game.getAvatar().rightAction(game.getBaseSpeed() * time);
         }
     }
 }

@@ -92,6 +92,11 @@ public class CameraOrbit3D {
         float y = cameraRadius * (float)(Math.sin(phi)); 
         float z = cameraRadius * (float)(Math.cos(phi) * Math.cos(theta));
 
+        if (cameraElevation < 2) {
+            cameraElevation = 2;
+            return;
+        }
+        
         camera.setLocation(new 
             Vector3f(x,y,z).add(avatar.getWorldLocation())); 
         camera.lookAt(avatar); 

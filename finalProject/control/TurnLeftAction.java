@@ -7,7 +7,9 @@ import net.java.games.input.*;
 
 public class TurnLeftAction extends AbstractInputAction {
     private MyGame game;
-    public TurnLeftAction(MyGame g) { game = g; }
+    public TurnLeftAction(MyGame g) { 
+        game = g; 
+    }
 
     @Override
     public void performAction(float time, Event e)
@@ -16,9 +18,9 @@ public class TurnLeftAction extends AbstractInputAction {
         if (keyValue > -.2 && keyValue < .2) return;  // deadzone
 
         if (MyGame.getBooster()) {
-            game.getAvatar().leftAction(.013f);
+            game.getAvatar().leftAction(game.getSprintSpeed() * time);
         } else {
-            game.getAvatar().leftAction(.003f * time);
+            game.getAvatar().leftAction(game.getBaseSpeed() * time);
         }
     }
 }
