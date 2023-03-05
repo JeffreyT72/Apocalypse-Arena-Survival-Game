@@ -19,9 +19,9 @@ public class BwdAction extends AbstractInputAction {
         if (keyValue > -.2 && keyValue < .2) return;  // deadzone
 
         if (MyGame.getBooster()) {
-            game.getAvatar().bwdAction(0.06f);
+            game.getAvatar().bwdAction(game.getSprintSpeed() * time);
         } else {
-            game.getAvatar().bwdAction(.003f * time);
+            game.getAvatar().bwdAction(game.getBaseSpeed() * time);
         }
     }
 }

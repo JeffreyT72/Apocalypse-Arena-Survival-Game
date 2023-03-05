@@ -19,9 +19,9 @@ public class FwdAction extends AbstractInputAction {
         if (keyValue > -.2 && keyValue < .2) return;  // deadzone
 
         if (MyGame.getBooster()) {
-            game.getAvatar().fwdAction(0.06f);
+            game.getAvatar().fwdAction(game.getSprintSpeed() * time);
         } else {
-            game.getAvatar().fwdAction(.003f * time);
+            game.getAvatar().fwdAction(game.getBaseSpeed() * time);
         }
     }
 }

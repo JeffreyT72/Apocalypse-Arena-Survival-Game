@@ -16,6 +16,7 @@ public class ToggleCheat extends AbstractInputAction {
     @Override
     public void performAction(float time, Event e)
     {
+        /*
         if (MyGame.getCheat() == false) {
             enableRender();
             MyGame.setCheat(true);
@@ -23,8 +24,9 @@ public class ToggleCheat extends AbstractInputAction {
             disableRender();
             MyGame.setCheat(false);
         }
+        */
     }
-
+    /*
     private void enableRender() {
         game.getp1Line().getRenderStates().enableRendering();
         game.getp2Line().getRenderStates().enableRendering();
@@ -36,4 +38,5 @@ public class ToggleCheat extends AbstractInputAction {
         game.getp2Line().getRenderStates().disableRendering();
         game.getp3Line().getRenderStates().disableRendering();
     }
+    */
 }
