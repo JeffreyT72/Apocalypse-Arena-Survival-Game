@@ -25,7 +25,7 @@ public class CameraOrbit3D {
         avatar = av; 
         cameraAzimuth = 180.0f; // start BEHIND and ABOVE the target 
         cameraElevation = 20.0f; // elevation is in degrees 
-        cameraRadius = 4.0f; // distance from camera to avatar 
+        cameraRadius = 8.0f; // distance from camera to avatar 
         setupInputs(gpName); 
         updateCameraPosition(); 
     }
@@ -71,14 +71,7 @@ public class CameraOrbit3D {
     // the target in spherical coordinates, then convert to world Cartesian  
     // coordinates and set the camera position from that. 
     public void updateCameraPosition() { 
-        // zoom restricted from cameraRadius 2-8
-        if (cameraRadius < 2 ) {
-            cameraRadius = 2;
-            return;
-        } else if (cameraRadius > 8) {
-            cameraRadius = 8;
-            return;
-        }
+        zoomRestrict();
 
         // if camera rotate with avatar rotation, 
         Vector3f avatarRot = avatar.getWorldForwardVector(); 
@@ -88,20 +81,33 @@ public class CameraOrbit3D {
         //double theta = Math.toRadians(cameraAzimuth);
 
         double phi = Math.toRadians(cameraElevation); 
+        groundRestrict();
         float x = cameraRadius * (float)(Math.cos(phi)* Math.sin(theta)); 
         float y = cameraRadius * (float)(Math.sin(phi)); 
         float z = cameraRadius * (float)(Math.cos(phi) * Math.cos(theta));
-
-        if (cameraElevation < 2) {
-            cameraElevation = 2;
-            return;
-        }
         
         camera.setLocation(new 
             Vector3f(x,y,z).add(avatar.getWorldLocation())); 
         camera.lookAt(avatar); 
     }
 
+    // zoom restricted from cameraRadius 2-8
+    private void zoomRestrict() {
+        if (cameraRadius < 2 ) {
+            cameraRadius = 2;
+            return;
+        } else if (cameraRadius > 14) {
+            cameraRadius = 14;
+            return;
+        }
+    }
+
+    private void groundRestrict() {
+        if (cameraElevation < 2) {
+            cameraElevation = 2;
+            return;
+        }
+    }
     // Gamepad
     private class OrbitAzimuthAction extends AbstractInputAction { 
         public void performAction(float time, Event event) { 
