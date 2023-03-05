@@ -52,15 +52,19 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject p1Line, p2Line, p3Line;
 	private GameObject carryp1, carryp2, carryp3;
 	private GameObject soup, myRobot;
+	private GameObject mage;
 
 	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS;
 	private ObjShape p1LineS, p2LineS, p3LineS;
 	private ObjShape soupS;
 	private AnimatedShape myRobAS;
+	private ObjShape mageS;
+	private AnimatedShape mageAS;
 
 	private TextureImage doltx, prizeT, rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT, myRoboT;
+	private TextureImage mageT;
 
 	private Light light1;
 
@@ -104,9 +108,15 @@ public class MyGame extends VariableFrameRateGame {
 		p3LineS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 1f));
 
 		soupS = new ImportedModel("soup.obj");
+		//mageS = new ImportedModel("mage.obj");
 		
 		myRobAS = new AnimatedShape("myRobot.rkm", "myRobot.rks");
 		myRobAS.loadAnimation("WAVE", "myRobot_wave.rka");
+
+		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
+		mageAS.loadAnimation("MOVE", "mage_move.rka");
+		mageAS.loadAnimation("ATTACK", "mage_attack.rka");
+		mageAS.loadAnimation("MOVEATTACK", "mage_moveattack.rka");
 	}
 
 	@Override
@@ -117,6 +127,7 @@ public class MyGame extends VariableFrameRateGame {
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
 		myRoboT = new TextureImage("myRobot.jpg");
+		mageT = new TextureImage("mage.png");
 	}
 
 	@Override
@@ -169,6 +180,12 @@ public class MyGame extends VariableFrameRateGame {
 		soup.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		soup.setLocalScale(initialScale);
+
+		mage = new GameObject(GameObject.root(), mageAS, mageT);
+		initialTranslation = (new Matrix4f()).translation(0f, 1f, 0f);
+		mage.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		mage.setLocalScale(initialScale);
 
 		//build myRobot
 		myRobot = new GameObject(GameObject.root(), myRobAS, myRoboT);
@@ -290,7 +307,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadSkyBoxes() { 
-		int lake = engine.getSceneGraph().loadCubeMap("lakeIslands");
+		int lake = engine.getSceneGraph().loadCubeMap("dark");
 		(engine.getSceneGraph()).setActiveSkyBoxTexture(lake);
 		engine.getSceneGraph().setSkyBoxEnabled(true);
 	}
@@ -385,6 +402,10 @@ public class MyGame extends VariableFrameRateGame {
 		myRobAS.stopAnimation();
 		myRobAS.playAnimation("WAVE", 0.5f,
 			AnimatedShape.EndType.LOOP, 0);
+
+		mageAS.stopAnimation();
+		myRobAS.playAnimation("MOVE", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
 	}
 
 	private void initMouseMode() {
@@ -444,7 +465,7 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaY = prevMouseY - curMouseY;
 
 			//if (isRightClick) {
-				orbitController.yaw(mouseDeltaX);
+				avatar.yaw(mouseDeltaX/50);
 				orbitController.pitch(mouseDeltaY);
 			//}
 
@@ -487,22 +508,25 @@ public class MyGame extends VariableFrameRateGame {
 		updateTime();
 
 		updateGameLogic();
+		// update inputs
+		im.update((float) elapsTime);
 
 		myRobAS.updateAnimation();
+		mageAS.updateAnimation();
+
 		// update camera
 		orbitController.updateCameraPosition();
 
 		// avatar facing the direction of camera forward vector
 		// ** bugs **
-		Camera cam;
-		Vector3f camFace;
-		cam = (engine.getRenderSystem().getViewport(mainVpName).getCamera());
-		camFace = cam.getN();
-		Vector3f newCam = new Vector3f(camFace.x(), 0.0f, camFace.z());
-		avatar.lookAt(newCam);
+		// Camera cam;
+		// Vector3f camFace;
+		// cam = (engine.getRenderSystem().getViewport(mainVpName).getCamera());
+		// camFace = cam.getN();
+		// Vector3f newCam = new Vector3f(camFace.x(), 0.0f, camFace.z());
+		// avatar.lookAt(newCam);
 
-		// update inputs
-		im.update((float) elapsTime);
+		
 
 		updateHUD();
 	}
@@ -885,6 +909,25 @@ public class MyGame extends VariableFrameRateGame {
 	// Keyboard can use Esc and = key
 	@Override
 	public void keyPressed(KeyEvent e) {
+		switch (e.getKeyCode())
+		{ case KeyEvent.VK_G:
+		{ mageAS.stopAnimation();
+			mageAS.playAnimation("MOVE", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
+		break; }
+		case KeyEvent.VK_H:
+		{ mageAS.stopAnimation();
+			mageAS.playAnimation("ATTACK", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
+		break;
+		}
+		case KeyEvent.VK_B:
+		{ mageAS.stopAnimation();
+			mageAS.playAnimation("MOVEATTACK", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
+		break;
+		}
+		}
 		super.keyPressed(e);
 	}
 }

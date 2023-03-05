@@ -18,7 +18,7 @@ public class TurnLeftAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().leftAction(.013f);
         } else {
-            game.getAvatar().leftAction(.006f);
+            game.getAvatar().leftAction(.003f * time);
         }
     }
 }

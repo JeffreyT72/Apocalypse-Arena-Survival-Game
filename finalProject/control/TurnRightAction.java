@@ -18,7 +18,7 @@ public class TurnRightAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().rightAction(.013f);
         } else {
-            game.getAvatar().rightAction(.006f);
+            game.getAvatar().rightAction(.003f * time);
         }
     }
 }

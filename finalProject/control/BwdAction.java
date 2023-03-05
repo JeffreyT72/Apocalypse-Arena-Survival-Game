@@ -21,7 +21,7 @@ public class BwdAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().bwdAction(0.06f);
         } else {
-            game.getAvatar().bwdAction(0.02f);
+            game.getAvatar().bwdAction(.003f * time);
         }
     }
 }

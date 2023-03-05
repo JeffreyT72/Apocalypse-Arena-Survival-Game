@@ -81,18 +81,22 @@ public class CameraOrbit3D {
         }
 
         // if camera rotate with avatar rotation, 
-        // Vector3f avatarRot = avatar.getWorldForwardVector(); 
-        // double avatarAngle = Math.toDegrees((double) 
-        // avatarRot.angleSigned(new Vector3f(0,0,-1), new Vector3f(0,1,0))); 
-        // float totalAz = cameraAzimuth - (float)avatarAngle;
-        // double theta = Math.toRadians(totalAz);
-        double theta = Math.toRadians(cameraAzimuth);
+        Vector3f avatarRot = avatar.getWorldForwardVector(); 
+        double avatarAngle = Math.toDegrees((double) avatarRot.angleSigned(new Vector3f(0,0,-1), new Vector3f(0,1,0))); 
+        float totalAz = cameraAzimuth - (float)avatarAngle - 180;
+        double theta = Math.toRadians(totalAz);
+        //double theta = Math.toRadians(cameraAzimuth);
 
         double phi = Math.toRadians(cameraElevation); 
         float x = cameraRadius * (float)(Math.cos(phi)* Math.sin(theta)); 
         float y = cameraRadius * (float)(Math.sin(phi)); 
         float z = cameraRadius * (float)(Math.cos(phi) * Math.cos(theta));
 
+        if (cameraElevation < 2) {
+            cameraElevation = 2;
+            return;
+        }
+        
         camera.setLocation(new 
             Vector3f(x,y,z).add(avatar.getWorldLocation())); 
         camera.lookAt(avatar); 
