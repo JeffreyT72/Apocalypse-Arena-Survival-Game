@@ -48,8 +48,8 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Camera and Viewport variables
 	private CameraOrbit3D orbitController;
-	private String mainVpName = "MAIN";
-	private String subVpName = "TOPLEFT";
+	final private String mainVpName = "MAIN";
+	final private String subVpName = "TOPLEFT";
 
 	// Time variables
 	private double lastFrameTime, currFrameTime, elapsTime, displayTime;
@@ -89,7 +89,7 @@ public class MyGame extends VariableFrameRateGame {
 	private static boolean cheat;
 	private static boolean booster;
 	private boolean isCarryPShown, isBooster, isConsumed;
-	private boolean p1collect, p2collect, p3collect;
+	//private boolean p1collect, p2collect, p3collect;
 	private boolean winFlag;
 	private int scoreCounter;
 
@@ -138,7 +138,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadTextures() {
 		doltx = new TextureImage("Dolphin_HighPolyUV.png");
-		prizeT = new TextureImage("ballTextures.png");
+		//prizeT = new TextureImage("ballTextures.png");
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
@@ -153,23 +153,15 @@ public class MyGame extends VariableFrameRateGame {
 		GameObject plane = new GameObject(GameObject.root(), planeS, planeT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
 		plane.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(15f);
+		initialScale = (new Matrix4f()).scaling(50f);
 		plane.setLocalScale(initialScale);
-
-		// build dolphin avatar
-		/*
-		avatar = new GameObject(GameObject.root(), dolS, doltx);
-		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
-		avatar.setLocalTranslation(initialTranslation);
-		*/
 
 		// build manual object - rocket
 		rocket = new GameObject(GameObject.root(), rocketS, rocketT);
-		initialTranslation = (new Matrix4f()).translation(randNum(), 1, randNum());
+		initialTranslation = (new Matrix4f()).translation(31, 3, 31);
 		rocket.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
-		rocket.setLocalRotation((new Matrix4f()).rotate((float)Math.toRadians(90), 1, 1, 0));
 
 		// build 3 prizes in random places
 		//buildPrizes();
@@ -204,6 +196,8 @@ public class MyGame extends VariableFrameRateGame {
 		mage = new GameObject(GameObject.root(), mageAS, mageT);
 		initialTranslation = (new Matrix4f()).translation(0f, 1f, 0f);
 		mage.setLocalTranslation(initialTranslation);
+		mage.getRenderStates().setModelOrientationCorrection(
+			(new Matrix4f()).rotationY((float)java.lang.Math.toRadians(-90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		mage.setLocalScale(initialScale);
 
@@ -309,7 +303,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void createViewports() {
 		(engine.getRenderSystem()).addViewport(mainVpName, 0, 0, 1f, 1f);
-		(engine.getRenderSystem()).addViewport(subVpName, 0, 0.75f, .25f, .25f);
+		(engine.getRenderSystem()).addViewport(subVpName, 0.75f, 0f, .25f, .25f);
 
 		Viewport mainVp = (engine.getRenderSystem()).getViewport(mainVpName);
 		Viewport topleftVp = (engine.getRenderSystem()).getViewport(subVpName);
@@ -319,7 +313,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		topleftVp.setHasBorder(true);
 		topleftVp.setBorderWidth(4);
-		topleftVp.setBorderColor(0.0f, 1.0f, 0.0f);
+		topleftVp.setBorderColor(0.431f, 0.149f, 0.054f);
 
 		mainCamera.setLocation(new Vector3f(-2, 0, 2));
 		mainCamera.setU(new Vector3f(1, 0, 0));
@@ -334,7 +328,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadSkyBoxes() { 
-		int lake = engine.getSceneGraph().loadCubeMap("dark");
+		int lake = engine.getSceneGraph().loadCubeMap("darkSky");
 		(engine.getSceneGraph()).setActiveSkyBoxTexture(lake);
 		engine.getSceneGraph().setSkyBoxEnabled(true);
 	}
@@ -383,20 +377,11 @@ public class MyGame extends VariableFrameRateGame {
 		float min = 0.003f;
 		float max = 0.008f;
 		rc = new RotationController(engine, new Vector3f(0, 1, 0), rand.nextFloat() * (max - min) + min);
-		// rc.addTarget(prize1);
-		// rc.addTarget(prize2);
-		// rc.addTarget(prize3);
-		//rc.addTarget(carryp1);
-		//rc.addTarget(carryp2);
-		//rc.addTarget(carryp3);
 		rc.addTarget(soup);
 		(engine.getSceneGraph()).addNodeController(rc);
 		rc.disable();
 
 		mc = new BounceController(engine);
-		// mc.addTarget(prize1);
-		// mc.addTarget(prize2);
-		// mc.addTarget(prize3);
 		mc.addTarget(rocket);
 		mc.addTarget(soup);
 		(engine.getSceneGraph()).addNodeController(mc);
@@ -408,9 +393,9 @@ public class MyGame extends VariableFrameRateGame {
 		cheat = false;
 		showXYZ = true;
 		booster = false;
-		p1collect = false;
-		p2collect = false;
-		p3collect = false;
+		// p1collect = false;
+		// p2collect = false;
+		// p3collect = false;
 		winFlag = false;
 		isCarryPShown = false;
 		isConsumed = false;
@@ -426,18 +411,11 @@ public class MyGame extends VariableFrameRateGame {
 		// p2Line.getRenderStates().disableRendering();
 		// p3Line.getRenderStates().disableRendering();
 
-		// prize1.getRenderStates().setRenderHiddenFaces(true);
-		// prize2.getRenderStates().setRenderHiddenFaces(true);
-		// prize3.getRenderStates().setRenderHiddenFaces(true);
-		// rocket.getRenderStates().setRenderHiddenFaces(true);
+		rocket.getRenderStates().setRenderHiddenFaces(true);
 
-		myRobAS.stopAnimation();
-		myRobAS.playAnimation("WAVE", 0.5f,
-			AnimatedShape.EndType.LOOP, 0);
-
-		mageAS.stopAnimation();
-		myRobAS.playAnimation("MOVE", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
+		// myRobAS.stopAnimation();
+		// myRobAS.playAnimation("WAVE", 0.5f,
+		// 	AnimatedShape.EndType.LOOP, 0);
 	}
 
 	private void initMouseMode() {
@@ -549,17 +527,6 @@ public class MyGame extends VariableFrameRateGame {
 		// update camera
 		orbitController.updateCameraPosition();
 
-		// avatar facing the direction of camera forward vector
-		// ** bugs **
-		// Camera cam;
-		// Vector3f camFace;
-		// cam = (engine.getRenderSystem().getViewport(mainVpName).getCamera());
-		// camFace = cam.getN();
-		// Vector3f newCam = new Vector3f(camFace.x(), 0.0f, camFace.z());
-		// avatar.lookAt(newCam);
-
-		
-
 		updateHUD();
 	}
 
@@ -630,7 +597,6 @@ public class MyGame extends VariableFrameRateGame {
 			isCarryPShown = false;
 		}
 	}
-	
 
 	private void updateCheatLine() {
 		float p1avDis, p2avDis, p3avDis;
@@ -765,8 +731,8 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f hud3Color = new Vector3f(0, 1, 0);
 		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, 15, 15);
 		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, 500, 15);
-		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, 0,
-				(int) (rs.getHeight() * smallVp.getRelativeBottom() - 55));
+		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, (int) (rs.getWidth() * smallVp.getRelativeLeft()),
+				(int) (rs.getHeight() * smallVp.getRelativeHeight() + 20));
 
 		// Display text 3 seconds on screen
 		// if (lostDolFlag || tooCloseFlag) {
@@ -792,17 +758,17 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Lose condition
 		if (elapsTimeSec >= 60) {
-			(engine.getHUDmanager()).setHUD1(lose, hud3Color,
-					(engine.getRenderSystem().getWidth()) / 2,
-					(engine.getRenderSystem().getHeight()) / 2);
+			// (engine.getHUDmanager()).setHUD1(lose, hud3Color,
+			// 		(engine.getRenderSystem().getWidth()) / 2,
+			// 		(engine.getRenderSystem().getHeight()) / 2);
 			return;
 		}
 
 		// Win condition
 		if (winFlag) {
-			(engine.getHUDmanager()).setHUD1(win, hud3Color,
-					(engine.getRenderSystem().getWidth()) / 2,
-					(engine.getRenderSystem().getHeight()) / 2);
+			// (engine.getHUDmanager()).setHUD1(win, hud3Color,
+			// 		(engine.getRenderSystem().getWidth()) / 2,
+			// 		(engine.getRenderSystem().getHeight()) / 2);
 		}
 	}
 
@@ -819,10 +785,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		SpeedUpAction speedUpAction = new SpeedUpAction(this);
 
-		// RotateUpAction rotateUpAction = new RotateUpAction(this);
-		// RotateDownAction rotateDownAction = new RotateDownAction(this);
-		// RotateUpDownAction rotateUpDownAction = new RotateUpDownAction(this);
-
 		// Second Camera Control
 		SecCamPanUpAction secCamPanUpAction = new SecCamPanUpAction(this);
 		SecCamPanDownAction secCamPanDownAction = new SecCamPanDownAction(this);
@@ -834,7 +796,7 @@ public class MyGame extends VariableFrameRateGame {
 		ToggleXYZ toggleXYZ = new ToggleXYZ(this);
 		ToggleCheat toggleCheat = new ToggleCheat(this);
 
-		// controller
+		// Gamepad
 		im.associateActionWithAllGamepads(
 				net.java.games.input.Component.Identifier.Axis.Y, fwdbwdAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -845,7 +807,7 @@ public class MyGame extends VariableFrameRateGame {
 				net.java.games.input.Component.Identifier.Button._1, toggleCheat,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
-		// keyboard
+		// Keyboard
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.W, fwdAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -884,9 +846,9 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.X, toggleXYZ,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.C, toggleCheat,
-				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.C, toggleCheat,
+		// 		InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 	}
 
 	public GameObject getAvatar() {
@@ -925,13 +887,13 @@ public class MyGame extends VariableFrameRateGame {
 		MyGame.showXYZ = showXYZ;
 	}
 
-	public static boolean getCheat() {
-		return cheat;
-	}
+	// public static boolean getCheat() {
+	// 	return cheat;
+	// }
 
-	public static void setCheat(boolean cheat) {
-		MyGame.cheat = cheat;
-	}
+	// public static void setCheat(boolean cheat) {
+	// 	MyGame.cheat = cheat;
+	// }
 
 	public static boolean getBooster() {
 		return booster;
