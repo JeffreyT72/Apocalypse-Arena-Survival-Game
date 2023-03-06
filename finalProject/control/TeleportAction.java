@@ -5,9 +5,9 @@ import finalProject.MyGame;
 // uses JInput library
 import net.java.games.input.*;
 
-public class BwdAction extends AbstractInputAction {
+public class TeleportAction extends AbstractInputAction {
     private MyGame game;
-    public BwdAction(MyGame g)
+    public TeleportAction(MyGame g)
     {
         game = g;
     }
@@ -18,10 +18,6 @@ public class BwdAction extends AbstractInputAction {
         float keyValue = e.getValue();
         if (keyValue > -.2 && keyValue < .2) return;  // deadzone
 
-        if (MyGame.getBooster()) {
-            game.getAvatar().bwdAction(game.getScriptController().getSprintSpeed() * time);
-        } else {
-            game.getAvatar().bwdAction(game.getScriptController().getBaseSpeed() * time);
-        }
+        game.getAvatar().fwdAction(game.getScriptController().getTeleportDistance() * time);
     }
 }

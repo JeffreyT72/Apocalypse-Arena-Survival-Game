@@ -57,14 +57,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	private Random rand = new Random();
 	private GameObject avatar, x, y, z, rocket;
-	//private GameObject prize1, prize2, prize3;
-	//private GameObject p1Line, p2Line, p3Line;
-	//private GameObject carryp1, carryp2, carryp3;
 	private GameObject soup, myRobot;
 	private GameObject mage;
 
 	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS;
-	//private ObjShape p1LineS, p2LineS, p3LineS;
 	private ObjShape soupS;
 	private AnimatedShape myRobAS;
 	private ObjShape mageS;
@@ -89,13 +85,15 @@ public class MyGame extends VariableFrameRateGame {
 	private static boolean cheat;
 	private static boolean booster;
 	private boolean isCarryPShown, isBooster, isConsumed;
-	//private boolean p1collect, p2collect, p3collect;
 	private boolean winFlag;
 	private int scoreCounter;
 
 	//Game Parameters
-	private float baseSpeed;
-	private float sprintSpeed;
+	// private float baseSpeed;
+	// private float sprintSpeed;
+	// private float teleportDistance;
+
+	private ScriptController scriptController;
 
 	public MyGame() {
 		super();
@@ -118,10 +116,6 @@ public class MyGame extends VariableFrameRateGame {
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 3f));
-
-		// p1LineS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 1f));
-		// p2LineS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 1f));
-		// p3LineS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 1f));
 
 		soupS = new ImportedModel("soup.obj");
 		//mageS = new ImportedModel("mage.obj");
@@ -163,11 +157,6 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
 
-		// build 3 prizes in random places
-		//buildPrizes();
-		// build 3 carry prizes behind the avatar
-		//buildCarryPrizes();
-
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
@@ -175,16 +164,6 @@ public class MyGame extends VariableFrameRateGame {
 		(x.getRenderStates()).setColor(new Vector3f(1f, 0f, 0f));
 		(y.getRenderStates()).setColor(new Vector3f(0f, 1f, 0f));
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
-
-		// cheat lines
-		/*
-		p1Line = new GameObject(GameObject.root(), p1LineS);
-		p2Line = new GameObject(GameObject.root(), p2LineS);
-		p3Line = new GameObject(GameObject.root(), p3LineS);
-		(p1Line.getRenderStates()).setColor(new Vector3f(1f, 1f, 0f));
-		(p2Line.getRenderStates()).setColor(new Vector3f(1f, 1f, 0f));
-		(p3Line.getRenderStates()).setColor(new Vector3f(1f, 1f, 0f));
-		*/
 
 		// build soup
 		soup = new GameObject(GameObject.root(), soupS, soupT);
@@ -203,93 +182,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		//Sets the current playable character to mage
 		avatar = mage;
-
-		//build myRobot
-		/*
-		myRobot = new GameObject(GameObject.root(), myRobAS, myRoboT);
-		initialTranslation = (new Matrix4f()).translation(0, 0.07f, 0.28f);
-		myRobot.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(0.1f);
-		myRobot.setLocalScale(initialScale);
-		myRobot.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float)java.lang.Math.toRadians(90.0f)));
-
-		myRobot.setParent(avatar);
-		myRobot.propagateTranslation(true);
-		myRobot.propagateRotation(true);
-		myRobot.applyParentRotationToPosition(true);
-		*/
-	}
-	/*
-	private void buildCarryPrizes() {
-		carryp1 = new GameObject(GameObject.root(), prizeS, prizeT);
-		carryp1.setLocalTranslation((new Matrix4f()).translation(0f, 0f, -1f));
-		carryp1.setLocalScale((new Matrix4f()).scaling(0.1f));
-		carryp1.setParent(avatar);
-		carryp1.propagateTranslation(true);
-		carryp1.propagateRotation(true);
-		carryp1.applyParentRotationToPosition(true);
-		carryp1.getRenderStates().disableRendering();
-
-		carryp2 = new GameObject(GameObject.root(), prizeS, prizeT);
-		carryp2.setLocalTranslation((new Matrix4f()).translation(0f, 0f, -1.5f));
-		carryp2.setLocalScale((new Matrix4f()).scaling(0.1f));
-		carryp2.setParent(avatar);
-		carryp2.propagateTranslation(true);
-		carryp2.propagateRotation(true);
-		carryp2.applyParentRotationToPosition(true);
-		carryp2.getRenderStates().disableRendering();
-
-		carryp3 = new GameObject(GameObject.root(), prizeS, prizeT);
-		carryp3.setLocalTranslation((new Matrix4f()).translation(0f, 0f, -2f));
-		carryp3.setLocalScale((new Matrix4f()).scaling(0.1f));
-		carryp3.setParent(avatar);
-		carryp3.propagateTranslation(true);
-		carryp3.propagateRotation(true);
-		carryp3.applyParentRotationToPosition(true);
-		carryp3.getRenderStates().disableRendering();
-	}
-	*/
-	/*
-	private void buildPrizes() {
-		prize1 = new GameObject(GameObject.root(), prizeS, prizeT);
-		prize1.setLocalTranslation(randLoc());
-		prize1.setLocalScale(randSize());
-		prize1.setLocalRotation(randRotate());
-
-		prize2 = new GameObject(GameObject.root(), prizeS, prizeT);
-		prize2.setLocalTranslation(randLoc());
-		prize2.setLocalScale(randSize());
-		prize2.setLocalRotation(randRotate());
-
-		prize3 = new GameObject(GameObject.root(), prizeS, prizeT);
-		prize3.setLocalTranslation(randLoc());
-		prize3.setLocalScale(randSize());
-		prize3.setLocalRotation(randRotate());
-	}
-	*/
-
-	private Matrix4f randLoc() {
-		return (new Matrix4f()).translation(randNum(), 0, randNum());
-	}
-
-	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
-	private int randNum() {
-		int max = 7;
-		int min = -7;
-		int num = (rand.nextInt(max - min) + min);
-		if (num <= 2 && num >= -2)
-			randNum();
-		return num;
-	}
-
-	// return a matrix that the scaling at least 1
-	private Matrix4f randSize() {
-		return (new Matrix4f()).scaling(1 + rand.nextInt(1));
-	}
-
-	private Matrix4f randRotate() {
-		return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
 	}
 
 	@Override
@@ -303,7 +195,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void createViewports() {
 		(engine.getRenderSystem()).addViewport(mainVpName, 0, 0, 1f, 1f);
-		(engine.getRenderSystem()).addViewport(subVpName, 0.75f, 0f, .25f, .25f);
+		(engine.getRenderSystem()).addViewport(subVpName, 0.75f, 0.75f, .25f, .25f);
 
 		Viewport mainVp = (engine.getRenderSystem()).getViewport(mainVpName);
 		Viewport topleftVp = (engine.getRenderSystem()).getViewport(subVpName);
@@ -340,7 +232,8 @@ public class MyGame extends VariableFrameRateGame {
 		initTime();
 
 		initNodeControl();
-		// initialize game variables
+		// initialize game variables + scripting setup
+		scriptController = new ScriptController();
 		initGameVar();
 		// initialize objects
 		initObj();
@@ -352,10 +245,24 @@ public class MyGame extends VariableFrameRateGame {
 		// keyboard and gamepad input manager setup
 		inputSetup();
 
-		//Parameter Setup
-		scriptingSetup();
-		baseSpeed = ((Double)(jsEngine.get("baseSpeed"))).floatValue();
-		sprintSpeed = ((Double)(jsEngine.get("sprintSpeed"))).floatValue();
+		
+	}
+
+	@Override
+	public void update() {
+		updateTime();
+
+		updateGameLogic();
+		// update inputs
+		im.update((float) elapsTime);
+
+		myRobAS.updateAnimation();
+		mageAS.updateAnimation();
+
+		// update camera
+		orbitController.updateCameraPosition();
+
+		updateHUD();
 	}
 
 	private void initCamera() {
@@ -388,34 +295,28 @@ public class MyGame extends VariableFrameRateGame {
 		mc.enable();
 	}
 
+	//This is an older method, it is replaced by the ScriptController class
 	private void initGameVar() {
+		// baseSpeed = ((Double)(jsEngine.get("baseSpeed"))).floatValue();
+		// sprintSpeed = ((Double)(jsEngine.get("sprintSpeed"))).floatValue();
+		// teleportDistance = ((Double)(jsEngine.get("teleportDistance"))).floatValue();
 		scoreCounter = 0;
 		cheat = false;
 		showXYZ = true;
 		booster = false;
-		// p1collect = false;
-		// p2collect = false;
-		// p3collect = false;
 		winFlag = false;
 		isCarryPShown = false;
 		isConsumed = false;
 		isBooster = false;
 	}
 
+	
+
 	private void initObj() {
 		x.getRenderStates().enableRendering();
 		y.getRenderStates().enableRendering();
 		z.getRenderStates().enableRendering();
-
-		// p1Line.getRenderStates().disableRendering();
-		// p2Line.getRenderStates().disableRendering();
-		// p3Line.getRenderStates().disableRendering();
-
 		rocket.getRenderStates().setRenderHiddenFaces(true);
-
-		// myRobAS.stopAnimation();
-		// myRobAS.playAnimation("WAVE", 0.5f,
-		// 	AnimatedShape.EndType.LOOP, 0);
 	}
 
 	private void initMouseMode() {
@@ -496,38 +397,9 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	// @Override
-	// public void mousePressed(MouseEvent e) {
-	// 	if (e.getButton() == MouseEvent.BUTTON3)
-	// 		isRightClick = true;
-	// }
-
-	// @Override
-	// public void mouseReleased(MouseEvent e) {
-	// 	if (e.getButton() == MouseEvent.BUTTON3)
-	// 		isRightClick = false;
-	// }
-
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		orbitController.zoom(e.getWheelRotation());
-	}
-
-	@Override
-	public void update() {
-		updateTime();
-
-		updateGameLogic();
-		// update inputs
-		im.update((float) elapsTime);
-
-		myRobAS.updateAnimation();
-		mageAS.updateAnimation();
-
-		// update camera
-		orbitController.updateCameraPosition();
-
-		updateHUD();
 	}
 
 	private void updateTime() {
@@ -538,14 +410,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void updateGameLogic() {
-		//checkCollectPrize();
-		//checkCarryPrize();
 		checkTouchSoup();
-		//checkTouchRocket();
-
-		// update when cheat is on, reduce computation
-		// if (cheat)
-		// 	updateCheatLine();
 	}
 
 	private void checkTouchSoup() {
@@ -584,126 +449,6 @@ public class MyGame extends VariableFrameRateGame {
 			soup.getRenderStates().enableRendering();
 		}
 	}
-
-	/*
-	private void checkCarryPrize() {
-		if (isCarryPShown) {
-			if (carryp1.getRenderStates().renderingEnabled() == false)
-				carryp1.getRenderStates().enableRendering();
-			else if (carryp2.getRenderStates().renderingEnabled() == false)
-				carryp2.getRenderStates().enableRendering();
-			else if (carryp3.getRenderStates().renderingEnabled() == false)
-				carryp3.getRenderStates().enableRendering();
-			isCarryPShown = false;
-		}
-	}
-
-	private void updateCheatLine() {
-		float p1avDis, p2avDis, p3avDis;
-
-		p1avDis = (p1Line.getWorldLocation()).distance(avatar.getWorldLocation());
-		p1Line.setLocalLocation(prize1.getWorldLocation());
-		p1Line.setLocalScale((new Matrix4f()).scaling(p1avDis));
-		p1Line.lookAt(avatar);
-
-		p2avDis = (p2Line.getWorldLocation()).distance(avatar.getWorldLocation());
-		p2Line.setLocalLocation(prize2.getWorldLocation());
-		p2Line.setLocalScale((new Matrix4f()).scaling(p2avDis));
-		p2Line.lookAt(avatar);
-
-		p3avDis = (p3Line.getWorldLocation()).distance(avatar.getWorldLocation());
-		p3Line.setLocalLocation(prize3.getWorldLocation());
-		p3Line.setLocalScale((new Matrix4f()).scaling(p3avDis));
-		p3Line.lookAt(avatar);
-	}
-
-	private void checkCollectPrize() {
-		// avatar location
-		Vector3f avloc;
-		avloc = avatar.getWorldLocation();
-		// Prize 1 var
-		Vector3f p1loc;
-		Matrix4f p1scale;
-		float p1size;
-		float p1camDis;
-		// Prize 2 var
-		Vector3f p2loc;
-		Matrix4f p2scale;
-		float p2size;
-		float p2camDis;
-		// Prize 3 var
-		Vector3f p3loc;
-		Matrix4f p3scale;
-		float p3size;
-		float p3camDis;
-
-		// Prize 1
-		p1loc = prize1.getWorldLocation();
-		p1scale = prize1.getLocalScale();
-		p1size = p1scale.m00();
-		p1camDis = p1loc.distance(avloc);
-
-		if (p1camDis - p1size <= 0 && !p1collect) {
-			if (p1collect)
-				return;
-			scoreCounter++;
-			p1collect = true;
-			isCarryPShown = true;
-			(engine.getSceneGraph()).removeGameObject(prize1);
-			(engine.getSceneGraph()).removeGameObject(p1Line);
-		}
-
-		// Prize 2
-		p2loc = prize2.getWorldLocation();
-		p2scale = prize2.getLocalScale();
-		p2size = p2scale.m00();
-		p2camDis = p2loc.distance(avloc);
-
-		if (p2camDis - p2size <= 0) {
-			if (p2collect)
-				return;
-			scoreCounter++;
-			p2collect = true;
-			isCarryPShown = true;
-			(engine.getSceneGraph()).removeGameObject(prize2);
-			(engine.getSceneGraph()).removeGameObject(p2Line);
-		}
-
-		// Prize 3
-		p3loc = prize3.getWorldLocation();
-		p3scale = prize3.getLocalScale();
-		p3size = p3scale.m00();
-		p3camDis = p3loc.distance(avloc);
-
-		if (p3camDis - p3size <= 0) {
-			if (p3collect)
-				return;
-			scoreCounter++;
-			p3collect = true;
-			isCarryPShown = true;
-			(engine.getSceneGraph()).removeGameObject(prize3);
-			(engine.getSceneGraph()).removeGameObject(p3Line);
-		}
-	}
-
-	private void checkTouchRocket() {
-		Vector3f avloc, rocketloc;
-		float avrocDis;
-		float avsize;
-		float rocsize;
-
-		avloc = avatar.getWorldLocation();
-		avsize = (avatar.getWorldScale()).m00();
-
-		rocketloc = rocket.getWorldLocation();
-		rocsize = (rocket.getWorldScale()).m00();
-		avrocDis = avloc.distance(rocketloc);
-
-		if (avrocDis - avsize - rocsize <= 0 && scoreCounter >= 3) {
-			winFlag = true;
-		}
-	}
-	*/
 
 	private void updateHUD() {
 		DecimalFormat df = new DecimalFormat();
@@ -778,6 +523,7 @@ public class MyGame extends VariableFrameRateGame {
 		FwdAction fwdAction = new FwdAction(this);
 		BwdAction bwdAction = new BwdAction(this);
 		FwdBwdAction fwdbwdAction = new FwdBwdAction(this);
+		TeleportAction teleportAction = new TeleportAction(this);
 
 		TurnRightAction turnRightAction = new TurnRightAction(this);
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this);
@@ -820,6 +566,9 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.D, turnRightAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.LSHIFT, teleportAction,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// im.associateActionWithAllKeyboards(
 		// 		net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
 		// 		InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
@@ -866,19 +615,6 @@ public class MyGame extends VariableFrameRateGame {
 	public GameObject getZLine() {
 		return z;
 	}
-	/*
-	public GameObject getp1Line() {
-		return p1Line;
-	}
-
-	public GameObject getp2Line() {
-		return p2Line;
-	}
-
-	public GameObject getp3Line() {
-		return p3Line;
-	}
-	*/
 	public static boolean getXYZ() {
 		return showXYZ;
 	}
@@ -886,14 +622,6 @@ public class MyGame extends VariableFrameRateGame {
 	public static void setXYZ(boolean showXYZ) {
 		MyGame.showXYZ = showXYZ;
 	}
-
-	// public static boolean getCheat() {
-	// 	return cheat;
-	// }
-
-	// public static void setCheat(boolean cheat) {
-	// 	MyGame.cheat = cheat;
-	// }
 
 	public static boolean getBooster() {
 		return booster;
@@ -928,37 +656,40 @@ public class MyGame extends VariableFrameRateGame {
 		super.keyPressed(e);
 	}
 
-	private void scriptingSetup(){
-		ScriptEngineManager factory = new ScriptEngineManager();
-		jsEngine = factory.getEngineByName("js");
+	// private void scriptingSetup(){
+	// 	ScriptEngineManager factory = new ScriptEngineManager();
+	// 	jsEngine = factory.getEngineByName("js");
 
-		scriptFile1 = new File("assets/scripts/InitParams.js");
-		this.runScript(scriptFile1);
+	// 	scriptFile1 = new File("assets/scripts/InitParams.js");
+	// 	this.runScript(scriptFile1);
+	// }
+
+	
+
+	public ScriptController getScriptController(){
+		return this.scriptController;
 	}
 
-	private void runScript(File scriptFile) 
-	{ 
-		try 
-		{ 
-			FileReader fileReader = new FileReader(scriptFile); 
-			jsEngine.eval(fileReader); 
-			fileReader.close(); 
-		} 
-		catch (FileNotFoundException e1) 
-		{ System.out.println(scriptFile + " not found " + e1); } 
-		catch (IOException e2) 
-		{ System.out.println("IO problem with " + scriptFile + e2); } 
-		catch (ScriptException e3)  
-		{ System.out.println("ScriptException in " + scriptFile + e3); } 
-		catch (NullPointerException e4) 
-		{ System.out.println ("Null ptr exception reading " + scriptFile + e4); 
-		} 
-	} 
-
-	public float getBaseSpeed(){
-		return this.baseSpeed;
+	private Matrix4f randLoc() {
+		return (new Matrix4f()).translation(randNum(), 0, randNum());
 	}
-	public float getSprintSpeed(){
-		return this.sprintSpeed;
+
+	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
+	private int randNum() {
+		int max = 7;
+		int min = -7;
+		int num = (rand.nextInt(max - min) + min);
+		if (num <= 2 && num >= -2)
+			randNum();
+		return num;
+	}
+
+	// return a matrix that the scaling at least 1
+	private Matrix4f randSize() {
+		return (new Matrix4f()).scaling(1 + rand.nextInt(1));
+	}
+
+	private Matrix4f randRotate() {
+		return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
 	}
 }

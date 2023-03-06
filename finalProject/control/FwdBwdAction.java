@@ -26,9 +26,9 @@ public class FwdBwdAction extends AbstractInputAction {
             }
         } else {
             if (MyGame.getBooster()) {
-                game.getAvatar().bwdAction(game.getSprintSpeed() * time);
+                game.getAvatar().bwdAction(game.getScriptController().getSprintSpeed() * time);
             } else {
-                game.getAvatar().bwdAction(game.getBaseSpeed() * time);
+                game.getAvatar().bwdAction(game.getScriptController().getBaseSpeed() * time);
             }
         }
     }
