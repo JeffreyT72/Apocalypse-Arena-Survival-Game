@@ -20,10 +20,10 @@ public class SecCamPanZoomInAction extends AbstractInputAction {
     @Override
     public void performAction(float time, Event e) {
         camLoc = c.getLocation();
-        camLoc.add(0f, -.01f, 0f);
+        camLoc.add(0f, -.05f, 0f);
         // prevent too close/go below 0
-        if (camLoc.y < 0.5f) { 
-            camLoc.y = 0.5f;
+        if (camLoc.y < 5f) { 
+            camLoc.y = 5f;
             return;
         }
         c.setLocation(camLoc);
