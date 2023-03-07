@@ -1,5 +1,6 @@
 package finalProject;
 
+import finalProject.*;
 import finalProject.camera.*;
 import finalProject.control.*;
 import finalProject.manualObj.*;
@@ -10,24 +11,26 @@ import tage.input.*;
 import tage.nodeControllers.BounceController;
 import tage.nodeControllers.RotationController;
 
+import org.joml.*;
+
+import java.io.*; 
+import java.util.*; 
+import java.util.Random;
 import java.lang.Math;
 import java.text.DecimalFormat;
-import java.util.Random;
 import java.awt.event.*;
 import java.awt.Robot;
 import java.awt.AWTException;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
-import org.joml.*;
 import java.awt.Color;
 
 import javax.script.ScriptEngine; 
 import javax.script.ScriptEngineFactory; 
 import javax.script.ScriptEngineManager; 
 import javax.script.ScriptException; 
-import java.io.*; 
-import java.util.*; 
+
 import javax.script.Invocable; 
 
 public class MyGame extends VariableFrameRateGame {
@@ -54,22 +57,25 @@ public class MyGame extends VariableFrameRateGame {
 	// Time variables
 	private double lastFrameTime, currFrameTime, elapsTime, displayTime;
 	private double tenSec;
+	private boolean skyboxCycleTime = true;
 
 	private Random rand = new Random();
 	private GameObject avatar, x, y, z, rocket;
-	private GameObject soup, myRobot;
+	private GameObject soup;
 	private GameObject mage;
 
 	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS;
 	private ObjShape soupS;
 	private AnimatedShape myRobAS;
-	private ObjShape mageS;
+	//private ObjShape mageS;
 	private AnimatedShape mageAS;
 
 	private TextureImage doltx, prizeT, rocketT;
 	private TextureImage planeT;
-	private TextureImage soupT, myRoboT;
+	private TextureImage soupT;
 	private TextureImage mageT;
+
+	private int darkSky, daySky;
 
 	private Light light1;
 
@@ -87,11 +93,6 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean isCarryPShown, isBooster, isConsumed;
 	private boolean winFlag;
 	private int scoreCounter;
-
-	//Game Parameters
-	// private float baseSpeed;
-	// private float sprintSpeed;
-	// private float teleportDistance;
 
 	private ScriptController scriptController;
 
@@ -136,7 +137,7 @@ public class MyGame extends VariableFrameRateGame {
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
-		myRoboT = new TextureImage("myRobot.jpg");
+		//myRoboT = new TextureImage("myRobot.jpg");
 		mageT = new TextureImage("mage.png");
 	}
 
@@ -212,7 +213,7 @@ public class MyGame extends VariableFrameRateGame {
 		mainCamera.setV(new Vector3f(0, 1, 0));
 		mainCamera.setN(new Vector3f(0, 0, -1));
 
-		topleftCamera.setLocation(new Vector3f(0, 2, 0));
+		topleftCamera.setLocation(new Vector3f(0, 10, 0));
 		topleftCamera.setU(new Vector3f(1, 0, 0));
 		topleftCamera.setV(new Vector3f(0, 0, -1));
 		topleftCamera.setN(new Vector3f(0, -1, 0));
@@ -220,8 +221,9 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadSkyBoxes() { 
-		int lake = engine.getSceneGraph().loadCubeMap("darkSky");
-		(engine.getSceneGraph()).setActiveSkyBoxTexture(lake);
+		darkSky = engine.getSceneGraph().loadCubeMap("darkSky");
+		daySky = engine.getSceneGraph().loadCubeMap("fluffyClouds");
+		(engine.getSceneGraph()).setActiveSkyBoxTexture(daySky);
 		engine.getSceneGraph().setSkyBoxEnabled(true);
 	}
 
@@ -261,8 +263,15 @@ public class MyGame extends VariableFrameRateGame {
 
 		// update camera
 		orbitController.updateCameraPosition();
+		updateMapCamPosition();
 
 		updateHUD();
+	}
+
+	private void updateMapCamPosition() {
+		Camera c = (engine.getRenderSystem())
+		.getViewport(subVpName).getCamera();
+		c.setLocation(new Vector3f(avatar.getWorldLocation().x(), c.getLocation().y(), avatar.getWorldLocation().z()));
 	}
 
 	private void initCamera() {
@@ -286,7 +295,7 @@ public class MyGame extends VariableFrameRateGame {
 		rc = new RotationController(engine, new Vector3f(0, 1, 0), rand.nextFloat() * (max - min) + min);
 		rc.addTarget(soup);
 		(engine.getSceneGraph()).addNodeController(rc);
-		rc.disable();
+		rc.enable();
 
 		mc = new BounceController(engine);
 		mc.addTarget(rocket);
@@ -297,9 +306,6 @@ public class MyGame extends VariableFrameRateGame {
 
 	//This is an older method, it is replaced by the ScriptController class
 	private void initGameVar() {
-		// baseSpeed = ((Double)(jsEngine.get("baseSpeed"))).floatValue();
-		// sprintSpeed = ((Double)(jsEngine.get("sprintSpeed"))).floatValue();
-		// teleportDistance = ((Double)(jsEngine.get("teleportDistance"))).floatValue();
 		scoreCounter = 0;
 		cheat = false;
 		showXYZ = true;
@@ -309,8 +315,6 @@ public class MyGame extends VariableFrameRateGame {
 		isConsumed = false;
 		isBooster = false;
 	}
-
-	
 
 	private void initObj() {
 		x.getRenderStates().enableRendering();
@@ -410,7 +414,24 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void updateGameLogic() {
+		updateSkyboxes();
 		checkTouchSoup();
+	}
+
+	private void updateSkyboxes() {
+		if (skyboxCycleTime) {
+			(engine.getSceneGraph()).setActiveSkyBoxTexture(daySky);
+			engine.getSceneGraph().setSkyBoxEnabled(true);
+		} else {
+			(engine.getSceneGraph()).setActiveSkyBoxTexture(darkSky);
+			engine.getSceneGraph().setSkyBoxEnabled(true);
+		}
+		// Update the flag every 30 seconds
+		if (displayTime % 60 < 30) {
+			skyboxCycleTime = true;
+		} else {
+			skyboxCycleTime = false;
+		}
 	}
 
 	private void checkTouchSoup() {
@@ -429,7 +450,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		if (avrocDis - avsize - soupsize <= 0 && !isConsumed) {
 			isBooster = true;
-			rc.enable(); //If this is enabled, it crashed the game for some reason if the avatar collides with it.
+			//rc.enable(); //If this is enabled, it crashed the game for some reason if the avatar collides with it.
 			soup.getRenderStates().disableRendering();
 			soup.setLocalTranslation((new Matrix4f()).translation(randNum(), 1f, randNum()));
 			isConsumed = true;
@@ -445,7 +466,7 @@ public class MyGame extends VariableFrameRateGame {
 		} else {
 			booster = false;
 			isConsumed = false;
-			rc.disable();
+			//rc.disable();
 			soup.getRenderStates().enableRendering();
 		}
 	}
@@ -454,6 +475,7 @@ public class MyGame extends VariableFrameRateGame {
 		DecimalFormat df = new DecimalFormat();
 		df.setMaximumFractionDigits(3);
 		RenderSystem rs = engine.getRenderSystem();
+		Viewport mainVp = rs.getViewport(mainVpName);
 		Viewport smallVp = rs.getViewport(subVpName);
 
 		Vector3f avLoc = getAvatar().getWorldLocation();
@@ -463,21 +485,27 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build and set HUD
 		int elapsTimeSec = Math.round((float) displayTime);
-		String elapsTimeStr = Integer.toString(60 - elapsTimeSec);
+		String elapsTimeStr = Integer.toString(elapsTimeSec);
 		String counterStr = Integer.toString(scoreCounter);
-		String dispStr1 = "Fuel left = " + elapsTimeStr;
-		String dispStr2 = "Score = " + counterStr;
+		String dispStr1 = "Time: " + elapsTimeStr;
+		String dispStr2 = "Score: " + counterStr;
 		String dispStr3 = "Avatar's world location X: " + df.format(avLocX) + " Y: " + df.format(avLocY) + " Z: "
 				+ df.format(avLocZ);
-		String win = "You Win!";
-		String lose = "You Lose!";
+		// String win = "You Win!";
+		// String lose = "You Lose!";
 		Vector3f hud1Color = new Vector3f(1, 0, 0);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
 		Vector3f hud3Color = new Vector3f(0, 1, 0);
-		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, 15, 15);
-		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, 500, 15);
+		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
+		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
+		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, timeStrX, timeStrY);
+
+		int scoreStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
+		int scoreStrY = (int) (rs.getHeight() * mainVp.getRelativeBottom() + 80);
+		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, scoreStrX, scoreStrY);
+
 		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, (int) (rs.getWidth() * smallVp.getRelativeLeft()),
-				(int) (rs.getHeight() * smallVp.getRelativeHeight() + 20));
+				(int) (rs.getHeight() * smallVp.getRelativeBottom() - 50));
 
 		// Display text 3 seconds on screen
 		// if (lostDolFlag || tooCloseFlag) {
@@ -540,7 +568,6 @@ public class MyGame extends VariableFrameRateGame {
 		SecCamPanZoomOutAction secCamPanZoomOutAction = new SecCamPanZoomOutAction(this);
 
 		ToggleXYZ toggleXYZ = new ToggleXYZ(this);
-		ToggleCheat toggleCheat = new ToggleCheat(this);
 
 		// Gamepad
 		im.associateActionWithAllGamepads(
@@ -549,9 +576,6 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllGamepads(
 				net.java.games.input.Component.Identifier.Axis.X, turnAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(
-				net.java.games.input.Component.Identifier.Button._1, toggleCheat,
-				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
 		// Keyboard
 		im.associateActionWithAllKeyboards(
@@ -595,9 +619,6 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.X, toggleXYZ,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		// im.associateActionWithAllKeyboards(
-		// 		net.java.games.input.Component.Identifier.Key.C, toggleCheat,
-		// 		InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 	}
 
 	public GameObject getAvatar() {
@@ -656,23 +677,13 @@ public class MyGame extends VariableFrameRateGame {
 		super.keyPressed(e);
 	}
 
-	// private void scriptingSetup(){
-	// 	ScriptEngineManager factory = new ScriptEngineManager();
-	// 	jsEngine = factory.getEngineByName("js");
-
-	// 	scriptFile1 = new File("assets/scripts/InitParams.js");
-	// 	this.runScript(scriptFile1);
-	// }
-
-	
-
 	public ScriptController getScriptController(){
 		return this.scriptController;
 	}
 
-	private Matrix4f randLoc() {
-		return (new Matrix4f()).translation(randNum(), 0, randNum());
-	}
+	// private Matrix4f randLoc() {
+	// 	return (new Matrix4f()).translation(randNum(), 0, randNum());
+	// }
 
 	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
 	private int randNum() {
@@ -684,12 +695,12 @@ public class MyGame extends VariableFrameRateGame {
 		return num;
 	}
 
-	// return a matrix that the scaling at least 1
-	private Matrix4f randSize() {
-		return (new Matrix4f()).scaling(1 + rand.nextInt(1));
-	}
+	// // return a matrix that the scaling at least 1
+	// private Matrix4f randSize() {
+	// 	return (new Matrix4f()).scaling(1 + rand.nextInt(1));
+	// }
 
-	private Matrix4f randRotate() {
-		return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
-	}
+	// private Matrix4f randRotate() {
+	// 	return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
+	// }
 }
