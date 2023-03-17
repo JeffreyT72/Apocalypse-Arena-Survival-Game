@@ -25,6 +25,7 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Color;
+import java.util.HashMap;
 
 import javax.script.ScriptEngine; 
 import javax.script.ScriptEngineFactory; 
@@ -86,13 +87,14 @@ public class MyGame extends VariableFrameRateGame {
 	private File scriptFile1;
 	private ScriptEngine jsEngine;
 	
-	// public static boolean ride;
+	// ---------- Game Variables ----------
 	private static boolean showXYZ;
 	private static boolean cheat;
 	private static boolean booster;
 	private boolean isCarryPShown, isBooster, isConsumed;
 	private boolean winFlag;
 	private int scoreCounter;
+	private HashMap<String, Integer> playerStats;
 
 	private ScriptController scriptController;
 
@@ -197,16 +199,23 @@ public class MyGame extends VariableFrameRateGame {
 	public void createViewports() {
 		(engine.getRenderSystem()).addViewport(mainVpName, 0, 0, 1f, 1f);
 		(engine.getRenderSystem()).addViewport(subVpName, 0.75f, 0.75f, .25f, .25f);
+		(engine.getRenderSystem()).addViewport("PLAYERVP", 0f, 0.75f, .25f, .25f);
 
 		Viewport mainVp = (engine.getRenderSystem()).getViewport(mainVpName);
 		Viewport topleftVp = (engine.getRenderSystem()).getViewport(subVpName);
+		Viewport playerVp = (engine.getRenderSystem()).getViewport("PLAYERVP");
 
 		Camera mainCamera = mainVp.getCamera();
 		Camera topleftCamera = topleftVp.getCamera();
 
+
 		topleftVp.setHasBorder(true);
 		topleftVp.setBorderWidth(4);
 		topleftVp.setBorderColor(0.431f, 0.149f, 0.054f);
+
+		playerVp.setHasBorder(true);
+		playerVp.setBorderWidth(4);
+		playerVp.setBorderColor(0.431f, 0.149f, 0.054f);
 
 		mainCamera.setLocation(new Vector3f(-2, 0, 2));
 		mainCamera.setU(new Vector3f(1, 0, 0));
@@ -264,6 +273,7 @@ public class MyGame extends VariableFrameRateGame {
 		// update camera
 		orbitController.updateCameraPosition();
 		updateMapCamPosition();
+		updatePlayerCamPosition();
 
 		updateHUD();
 	}
@@ -272,6 +282,12 @@ public class MyGame extends VariableFrameRateGame {
 		Camera c = (engine.getRenderSystem())
 		.getViewport(subVpName).getCamera();
 		c.setLocation(new Vector3f(avatar.getWorldLocation().x(), c.getLocation().y(), avatar.getWorldLocation().z()));
+	}
+
+	private void updatePlayerCamPosition() {
+		Camera c = (engine.getRenderSystem()).getViewport("PLAYERVP").getCamera();
+		c.setLocation(new Vector3f(avatar.getWorldLocation().x()+1, avatar.getWorldLocation().y()+1, avatar.getWorldLocation().z()+1));
+		c.lookAt(avatar);
 	}
 
 	private void initCamera() {
@@ -304,8 +320,13 @@ public class MyGame extends VariableFrameRateGame {
 		mc.enable();
 	}
 
-	//This is an older method, it is replaced by the ScriptController class
 	private void initGameVar() {
+		playerStats = new HashMap<String, Integer>();
+		playerStats.put("health", scriptController.getStartingHealth());
+		playerStats.put("level", scriptController.getStartingLevel());
+		playerStats.put("experience", scriptController.getStartingExperience());
+		playerStats.put("atk", scriptController.getAtk());
+		//Older Variables. May or may not be needed
 		scoreCounter = 0;
 		cheat = false;
 		showXYZ = true;
@@ -476,6 +497,7 @@ public class MyGame extends VariableFrameRateGame {
 		df.setMaximumFractionDigits(3);
 		RenderSystem rs = engine.getRenderSystem();
 		Viewport mainVp = rs.getViewport(mainVpName);
+		Viewport playerVP = rs.getViewport("PLAYERVP");
 		Viewport smallVp = rs.getViewport(subVpName);
 
 		Vector3f avLoc = getAvatar().getWorldLocation();
@@ -489,13 +511,16 @@ public class MyGame extends VariableFrameRateGame {
 		String counterStr = Integer.toString(scoreCounter);
 		String dispStr1 = "Time: " + elapsTimeStr;
 		String dispStr2 = "Score: " + counterStr;
-		String dispStr3 = "Avatar's world location X: " + df.format(avLocX) + " Y: " + df.format(avLocY) + " Z: "
-				+ df.format(avLocZ);
+		String dispStr3 = "HP: " + playerStats.get("health");
+		String dispStr4 = "Level: " + playerStats.get("level");
+		String dispStr5 = "XP: " + playerStats.get("experience");
 		// String win = "You Win!";
 		// String lose = "You Lose!";
-		Vector3f hud1Color = new Vector3f(1, 0, 0);
+		Vector3f hud1Color = new Vector3f(1, 0, 1);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
-		Vector3f hud3Color = new Vector3f(0, 1, 0);
+		Vector3f hud3Color = new Vector3f(1, 0, 0);
+		Vector3f hud4Color = new Vector3f(1, 0, 0);
+		Vector3f hud5Color = new Vector3f(1, 0, 0);
 		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
 		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
 		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, timeStrX, timeStrY);
@@ -504,45 +529,19 @@ public class MyGame extends VariableFrameRateGame {
 		int scoreStrY = (int) (rs.getHeight() * mainVp.getRelativeBottom() + 80);
 		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, scoreStrX, scoreStrY);
 
-		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, (int) (rs.getWidth() * smallVp.getRelativeLeft()),
-				(int) (rs.getHeight() * smallVp.getRelativeBottom() - 50));
+		int StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
+		int StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 180);
+		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, StrX, StrY);
 
-		// Display text 3 seconds on screen
-		// if (lostDolFlag || tooCloseFlag) {
-		// threeSec = elapsTimeSec + 3;
-		// }
-		// if (elapsTimeSec <= threeSec) {
-		// if (lostDolFlag) {
-		// (engine.getHUDmanager()).setHUD3(lostDolStr, hud3Color,
-		// (engine.getRenderSystem().getWidth()) / 2,
-		// (engine.getRenderSystem().getHeight()) / 2);
-		// lostDolFlag = false;
-		// } else if (tooCloseFlag) {
-		// (engine.getHUDmanager()).setHUD3(tooCloseStr, hud3Color,
-		// (engine.getRenderSystem().getWidth()) / 2,
-		// (engine.getRenderSystem().getHeight()) / 2);
-		// tooCloseFlag = false;
-		// }
-		// } else {
-		// (engine.getHUDmanager()).setHUD3("", hud3Color,
-		// (engine.getRenderSystem().getWidth()) / 2,
-		// (engine.getRenderSystem().getHeight()) / 2);
-		// }
+		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
+		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 140);
+		(engine.getHUDmanager()).setHUD4(dispStr4, hud4Color, StrX, StrY);
 
-		// Lose condition
-		if (elapsTimeSec >= 60) {
-			// (engine.getHUDmanager()).setHUD1(lose, hud3Color,
-			// 		(engine.getRenderSystem().getWidth()) / 2,
-			// 		(engine.getRenderSystem().getHeight()) / 2);
-			return;
-		}
+		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
+		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 100);
+		(engine.getHUDmanager()).setHUD5(dispStr5, hud5Color, StrX, StrY);
 
-		// Win condition
-		if (winFlag) {
-			// (engine.getHUDmanager()).setHUD1(win, hud3Color,
-			// 		(engine.getRenderSystem().getWidth()) / 2,
-			// 		(engine.getRenderSystem().getHeight()) / 2);
-		}
+		
 	}
 
 	private void inputSetup() {

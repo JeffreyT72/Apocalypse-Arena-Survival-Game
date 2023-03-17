@@ -16,6 +16,10 @@ public class ScriptController {
 	private float baseSpeed;
 	private float sprintSpeed;
 	private float teleportDistance;
+	private int startingHealth;
+	private int startingLevel;
+	private int startingExperience;
+	private int atk;
 
     public ScriptController(){
         ScriptEngineManager factory = new ScriptEngineManager();
@@ -30,6 +34,10 @@ public class ScriptController {
         baseSpeed = ((Double)(jsEngine.get("baseSpeed"))).floatValue();
 		sprintSpeed = ((Double)(jsEngine.get("sprintSpeed"))).floatValue();
 		teleportDistance = ((Double)(jsEngine.get("teleportDistance"))).floatValue();
+		startingHealth = ((int)(jsEngine.get("startingHealth")));
+		startingLevel = ((int)(jsEngine.get("startingLevel")));
+		startingExperience = ((int)(jsEngine.get("startingExperience")));
+		atk = ((int)(jsEngine.get("atk")));
     }
 
     private void runScript(File scriptFile) 
@@ -60,5 +68,17 @@ public class ScriptController {
 	}
     public float getTeleportDistance(){
 		return this.teleportDistance;
+	}
+	public int getStartingHealth(){
+		return this.startingHealth;
+	}
+	public int getStartingLevel(){
+		return this.startingLevel;
+	}
+	public int getStartingExperience(){
+		return this.startingExperience;
+	}
+	public int getAtk(){
+		return this.atk;
 	}
 }
