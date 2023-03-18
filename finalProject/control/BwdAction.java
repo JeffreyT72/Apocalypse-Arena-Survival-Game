@@ -23,5 +23,6 @@ public class BwdAction extends AbstractInputAction {
         } else {
             game.getAvatar().bwdAction(game.getScriptController().getBaseSpeed() * time);
         }
+        game.callSendMoveMessage();
     }
 }

@@ -8,15 +8,20 @@ import finalProject.manualObj.*;
 import tage.*;
 import tage.shapes.*;
 import tage.input.*;
+import tage.input.action.AbstractInputAction;
+import tage.networking.IGameConnection.ProtocolType;
 import tage.nodeControllers.BounceController;
 import tage.nodeControllers.RotationController;
 
 import org.joml.*;
 
-import java.io.*; 
-import java.util.*; 
+import java.io.*;
+import java.util.*;
 import java.util.Random;
 import java.lang.Math;
+import java.util.UUID;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.awt.event.*;
 import java.awt.Robot;
@@ -26,20 +31,11 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Color;
 
-import javax.script.ScriptEngine; 
-import javax.script.ScriptEngineFactory; 
-import javax.script.ScriptEngineManager; 
-import javax.script.ScriptException; 
-
-import javax.script.Invocable; 
+import javax.script.ScriptEngine;
 
 public class MyGame extends VariableFrameRateGame {
 	// Engine
 	private static Engine engine;
-
-	public static Engine getEngine() {
-		return engine;
-	}
 
 	// Input variables
 	private InputManager im;
@@ -51,29 +47,45 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Camera and Viewport variables
 	private CameraOrbit3D orbitController;
-	final private String mainVpName = "MAIN";
-	final private String subVpName = "TOPLEFT";
+	final private String MAINVP = "MAIN";
+	final private String TOPLEFTVP = "TOPLEFT";
+	final private String AVATARVP = "AVATARVP";
 
 	// Time variables
 	private double lastFrameTime, currFrameTime, elapsTime, displayTime;
 	private double tenSec;
 	private boolean skyboxCycleTime = true;
 
+	// Networking
+	private GhostManager gm;
+	private String serverAddress;
+	private int serverPort;
+	private ProtocolType serverProtocol;
+	private ProtocolClient protClient;
+	private boolean isClientConnected = false;
+	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
+
 	private Random rand = new Random();
 	private GameObject avatar, x, y, z, rocket;
 	private GameObject soup;
 	private GameObject mage;
+	// Skills
+	private GameObject mage_skill1;
 
-	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS;
+	private ObjShape linxS, linyS, linzS, rocketS;
 	private ObjShape soupS;
-	private AnimatedShape myRobAS;
-	//private ObjShape mageS;
 	private AnimatedShape mageAS;
+	private ObjShape ghostS;
+	// Skills
+	private ObjShape skill1S;
 
 	private TextureImage doltx, prizeT, rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT;
+	private TextureImage ghostT;
 	private TextureImage mageT;
+	// Skills
+	private TextureImage skill1T;
 
 	private int darkSky, daySky;
 
@@ -85,23 +97,29 @@ public class MyGame extends VariableFrameRateGame {
 
 	private File scriptFile1;
 	private ScriptEngine jsEngine;
-	
+
 	// public static boolean ride;
 	private static boolean showXYZ;
-	private static boolean cheat;
 	private static boolean booster;
-	private boolean isCarryPShown, isBooster, isConsumed;
+	private boolean isBooster, isConsumed;
 	private boolean winFlag;
 	private int scoreCounter;
 
 	private ScriptController scriptController;
 
-	public MyGame() {
+	public MyGame(String serverAddress, int serverPort, String protocol) {
 		super();
+		gm = new GhostManager(this);
+		this.serverAddress = serverAddress;
+		this.serverPort = serverPort;
+		if (protocol.toUpperCase().compareTo("TCP") == 0)
+			this.serverProtocol = ProtocolType.TCP;
+		else
+			this.serverProtocol = ProtocolType.UDP;
 	}
 
 	public static void main(String[] args) {
-		MyGame game = new MyGame();
+		MyGame game = new MyGame(args[0], Integer.parseInt(args[1]), args[2]);
 		engine = new Engine(game);
 		game.initializeSystem();
 		game.game_loop();
@@ -109,8 +127,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadShapes() {
-		dolS = new ImportedModel("dolphinHighPoly.obj");
-		prizeS = new Sphere();
+		// dolS = new ImportedModel("dolphinHighPoly.obj");
 		rocketS = new Rocket();
 		planeS = new Plane();
 
@@ -119,26 +136,32 @@ public class MyGame extends VariableFrameRateGame {
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 3f));
 
 		soupS = new ImportedModel("soup.obj");
-		//mageS = new ImportedModel("mage.obj");
-		
-		myRobAS = new AnimatedShape("myRobot.rkm", "myRobot.rks");
-		myRobAS.loadAnimation("WAVE", "myRobot_wave.rka");
+		// mageS = new ImportedModel("mage.obj");
+		// myRobAS = new AnimatedShape("myRobot.rkm", "myRobot.rks");
+		// myRobAS.loadAnimation("WAVE", "myRobot_wave.rka");
 
 		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
 		mageAS.loadAnimation("MOVE", "mage_move.rka");
 		mageAS.loadAnimation("ATTACK", "mage_attack.rka");
 		mageAS.loadAnimation("MOVEATTACK", "mage_moveattack.rka");
+
+		ghostS = new AnimatedShape("mage.rkm", "mage.rks");
+
+		// Skills
+		skill1S = new Sphere();
 	}
 
 	@Override
 	public void loadTextures() {
 		doltx = new TextureImage("Dolphin_HighPolyUV.png");
-		//prizeT = new TextureImage("ballTextures.png");
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
-		//myRoboT = new TextureImage("myRobot.jpg");
+		ghostT = new TextureImage("mage.png");
 		mageT = new TextureImage("mage.png");
+
+		// Skills
+		skill1T = new TextureImage("mage_skill1.png");
 	}
 
 	@Override
@@ -153,7 +176,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build manual object - rocket
 		rocket = new GameObject(GameObject.root(), rocketS, rocketT);
-		initialTranslation = (new Matrix4f()).translation(31, 3, 31);
+		initialTranslation = (new Matrix4f()).translation(50, 3, 50);
 		rocket.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
@@ -168,21 +191,28 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build soup
 		soup = new GameObject(GameObject.root(), soupS, soupT);
-		initialTranslation = (new Matrix4f()).translation(randNum(), 1f, randNum());
+		initialTranslation = (new Matrix4f()).translation(randNum(), 0.8f, randNum());
 		soup.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		soup.setLocalScale(initialScale);
 
 		mage = new GameObject(GameObject.root(), mageAS, mageT);
-		initialTranslation = (new Matrix4f()).translation(0f, 1f, 0f);
+		initialTranslation = (new Matrix4f()).translation(0f, 0.6f, 0f);
 		mage.setLocalTranslation(initialTranslation);
 		mage.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float)java.lang.Math.toRadians(-90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		mage.setLocalScale(initialScale);
 
-		//Sets the current playable character to mage
+		// Sets the current playable character to mage
 		avatar = mage;
+
+		// Skill objects
+		mage_skill1 = new GameObject(GameObject.root(), skill1S, skill1T);
+		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
+		mage_skill1.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		mage_skill1.setLocalScale(initialScale);
 	}
 
 	@Override
@@ -195,18 +225,25 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void createViewports() {
-		(engine.getRenderSystem()).addViewport(mainVpName, 0, 0, 1f, 1f);
-		(engine.getRenderSystem()).addViewport(subVpName, 0.75f, 0.75f, .25f, .25f);
+		(engine.getRenderSystem()).addViewport(MAINVP, 0, 0, 1f, 1f);
+		(engine.getRenderSystem()).addViewport(TOPLEFTVP, 0.75f, 0.75f, .25f, .25f);
+		(engine.getRenderSystem()).addViewport(AVATARVP, 0, 0.8f, .1f, .2f);
 
-		Viewport mainVp = (engine.getRenderSystem()).getViewport(mainVpName);
-		Viewport topleftVp = (engine.getRenderSystem()).getViewport(subVpName);
+		Viewport mainVp = (engine.getRenderSystem()).getViewport(MAINVP);
+		Viewport topRightVp = (engine.getRenderSystem()).getViewport(TOPLEFTVP);
+		Viewport avatarVp = (engine.getRenderSystem()).getViewport(AVATARVP);
 
 		Camera mainCamera = mainVp.getCamera();
-		Camera topleftCamera = topleftVp.getCamera();
+		Camera topleftCamera = topRightVp.getCamera();
+		Camera avatarCamera = avatarVp.getCamera();
 
-		topleftVp.setHasBorder(true);
-		topleftVp.setBorderWidth(4);
-		topleftVp.setBorderColor(0.431f, 0.149f, 0.054f);
+		topRightVp.setHasBorder(true);
+		topRightVp.setBorderWidth(4);
+		topRightVp.setBorderColor(0.431f, 0.149f, 0.054f);
+
+		avatarVp.setHasBorder(true);
+		avatarVp.setBorderWidth(4);
+		avatarVp.setBorderColor(0f, 0f, 1f);
 
 		mainCamera.setLocation(new Vector3f(-2, 0, 2));
 		mainCamera.setU(new Vector3f(1, 0, 0));
@@ -217,10 +254,18 @@ public class MyGame extends VariableFrameRateGame {
 		topleftCamera.setU(new Vector3f(1, 0, 0));
 		topleftCamera.setV(new Vector3f(0, 0, -1));
 		topleftCamera.setN(new Vector3f(0, -1, 0));
+
+		avatarCamera.setLocation(new Vector3f(  getAvatar().getWorldLocation().x, 
+												getAvatar().getWorldLocation().y + 0.4f, 
+												getAvatar().getWorldLocation().z + 1f));
+		//avatarCamera.lookAt(avatar);
+		avatarCamera.setU(new Vector3f(1, 0, 0));
+		avatarCamera.setV(new Vector3f(0,1, 0));
+		avatarCamera.setN(new Vector3f(0, 0, -1));
 	}
 
 	@Override
-	public void loadSkyBoxes() { 
+	public void loadSkyBoxes() {
 		darkSky = engine.getSceneGraph().loadCubeMap("darkSky");
 		daySky = engine.getSceneGraph().loadCubeMap("fluffyClouds");
 		(engine.getSceneGraph()).setActiveSkyBoxTexture(daySky);
@@ -247,7 +292,35 @@ public class MyGame extends VariableFrameRateGame {
 		// keyboard and gamepad input manager setup
 		inputSetup();
 
-		
+		setupNetworking();
+	}
+
+	private void setupNetworking() {
+		isClientConnected = false;
+		try {
+			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (protClient == null) {
+			System.out.println("missing protocol host");
+		} else { // ask client protocol to send initial join message
+					// to server, with a unique identifier for this client
+			System.out.println("sending join message to protocol host");
+			protClient.sendJoinMessage();
+		}
+	}
+
+	private class SendCloseConnectionPacketAction extends AbstractInputAction {
+		@Override
+		public void performAction(float time, net.java.games.input.Event evt) {
+			if (protClient != null && isClientConnected == true) {
+				protClient.sendByeMessage();
+			}
+		}
 	}
 
 	@Override
@@ -258,7 +331,7 @@ public class MyGame extends VariableFrameRateGame {
 		// update inputs
 		im.update((float) elapsTime);
 
-		myRobAS.updateAnimation();
+		// myRobAS.updateAnimation();
 		mageAS.updateAnimation();
 
 		// update camera
@@ -266,19 +339,31 @@ public class MyGame extends VariableFrameRateGame {
 		updateMapCamPosition();
 
 		updateHUD();
+
+		processNetworking((float) elapsTime);
+	}
+
+	protected void processNetworking(float elapsTime) {
+		// Process packets received by the client from the server
+		if (protClient != null)
+			protClient.processPackets();
 	}
 
 	private void updateMapCamPosition() {
 		Camera c = (engine.getRenderSystem())
-		.getViewport(subVpName).getCamera();
+				.getViewport(TOPLEFTVP).getCamera();
 		c.setLocation(new Vector3f(avatar.getWorldLocation().x(), c.getLocation().y(), avatar.getWorldLocation().z()));
+
+		Camera a = (engine.getRenderSystem())
+				.getViewport(AVATARVP).getCamera();
+		a.positionCameraWObj(avatar, 0.4f, 1f, 0f);
 	}
 
 	private void initCamera() {
 		im = engine.getInputManager();
 		String gpName = im.getFirstGamepadName();
 		Camera c = (engine.getRenderSystem())
-				.getViewport(mainVpName).getCamera();
+				.getViewport(MAINVP).getCamera();
 		orbitController = new CameraOrbit3D(
 				c, avatar, gpName, engine);
 	}
@@ -298,20 +383,17 @@ public class MyGame extends VariableFrameRateGame {
 		rc.enable();
 
 		mc = new BounceController(engine);
-		mc.addTarget(rocket);
 		mc.addTarget(soup);
 		(engine.getSceneGraph()).addNodeController(mc);
 		mc.enable();
 	}
 
-	//This is an older method, it is replaced by the ScriptController class
+	// This is an older method, it is replaced by the ScriptController class
 	private void initGameVar() {
 		scoreCounter = 0;
-		cheat = false;
 		showXYZ = true;
 		booster = false;
 		winFlag = false;
-		isCarryPShown = false;
 		isConsumed = false;
 		isBooster = false;
 	}
@@ -325,7 +407,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	private void initMouseMode() {
 		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport(mainVpName);
+		Viewport vw = rs.getViewport(MAINVP);
 		float left = vw.getActualLeft();
 		float bottom = vw.getActualBottom();
 		float width = vw.getActualWidth();
@@ -355,7 +437,7 @@ public class MyGame extends VariableFrameRateGame {
 		// use the robot to move the mouse to the center point.
 		// Note that this generates one MouseEvent.
 		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport(mainVpName);
+		Viewport vw = rs.getViewport(MAINVP);
 		float left = vw.getActualLeft();
 		float bottom = vw.getActualBottom();
 		float width = vw.getActualWidth();
@@ -379,17 +461,17 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaX = prevMouseX - curMouseX;
 			float mouseDeltaY = prevMouseY - curMouseY;
 
-			//if (isRightClick) {
-				avatar.yaw(mouseDeltaX/50);
-				orbitController.pitch(mouseDeltaY);
-			//}
-
+			// if (isRightClick) {
+			avatar.yaw(mouseDeltaX / 50);
+			orbitController.pitch(mouseDeltaY);
+			// }
+			callSendMoveMessage();
 			prevMouseX = curMouseX;
 			prevMouseY = curMouseY;
 			// tell robot to put the cursor to the center (since user just moved it)
 			recenterMouse();
 			RenderSystem rs = engine.getRenderSystem();
-			Viewport vw = rs.getViewport(mainVpName);
+			Viewport vw = rs.getViewport(MAINVP);
 			float left = vw.getActualLeft();
 			float bottom = vw.getActualBottom();
 			float width = vw.getActualWidth();
@@ -439,7 +521,7 @@ public class MyGame extends VariableFrameRateGame {
 		float avrocDis;
 		float avsize;
 		float soupsize;
-		int elapsTimeSec = Math.round((float)displayTime);
+		int elapsTimeSec = Math.round((float) displayTime);
 
 		avloc = avatar.getWorldLocation();
 		avsize = (avatar.getWorldScale()).m00();
@@ -450,14 +532,15 @@ public class MyGame extends VariableFrameRateGame {
 
 		if (avrocDis - avsize - soupsize <= 0 && !isConsumed) {
 			isBooster = true;
-			//rc.enable(); //If this is enabled, it crashed the game for some reason if the avatar collides with it.
+			// rc.enable(); //If this is enabled, it crashed the game for some reason if the
+			// avatar collides with it.
 			soup.getRenderStates().disableRendering();
 			soup.setLocalTranslation((new Matrix4f()).translation(randNum(), 1f, randNum()));
 			isConsumed = true;
 		}
 
 		if (isBooster) {
-			tenSec = elapsTimeSec+10;
+			tenSec = elapsTimeSec + 10;
 		}
 
 		if (elapsTimeSec <= tenSec) {
@@ -466,7 +549,7 @@ public class MyGame extends VariableFrameRateGame {
 		} else {
 			booster = false;
 			isConsumed = false;
-			//rc.disable();
+			// rc.disable();
 			soup.getRenderStates().enableRendering();
 		}
 	}
@@ -475,8 +558,8 @@ public class MyGame extends VariableFrameRateGame {
 		DecimalFormat df = new DecimalFormat();
 		df.setMaximumFractionDigits(3);
 		RenderSystem rs = engine.getRenderSystem();
-		Viewport mainVp = rs.getViewport(mainVpName);
-		Viewport smallVp = rs.getViewport(subVpName);
+		Viewport mainVp = rs.getViewport(MAINVP);
+		Viewport smallVp = rs.getViewport(TOPLEFTVP);
 
 		Vector3f avLoc = getAvatar().getWorldLocation();
 		float avLocX = avLoc.x();
@@ -496,11 +579,11 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f hud1Color = new Vector3f(1, 0, 0);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
 		Vector3f hud3Color = new Vector3f(0, 1, 0);
-		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
+		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
 		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
 		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, timeStrX, timeStrY);
 
-		int scoreStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
+		int scoreStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
 		int scoreStrY = (int) (rs.getHeight() * mainVp.getRelativeBottom() + 80);
 		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, scoreStrX, scoreStrY);
 
@@ -532,23 +615,23 @@ public class MyGame extends VariableFrameRateGame {
 		// Lose condition
 		if (elapsTimeSec >= 60) {
 			// (engine.getHUDmanager()).setHUD1(lose, hud3Color,
-			// 		(engine.getRenderSystem().getWidth()) / 2,
-			// 		(engine.getRenderSystem().getHeight()) / 2);
+			// (engine.getRenderSystem().getWidth()) / 2,
+			// (engine.getRenderSystem().getHeight()) / 2);
 			return;
 		}
 
 		// Win condition
 		if (winFlag) {
 			// (engine.getHUDmanager()).setHUD1(win, hud3Color,
-			// 		(engine.getRenderSystem().getWidth()) / 2,
-			// 		(engine.getRenderSystem().getHeight()) / 2);
+			// (engine.getRenderSystem().getWidth()) / 2,
+			// (engine.getRenderSystem().getHeight()) / 2);
 		}
 	}
 
 	private void inputSetup() {
 		// ----------------- INPUTS SECTION -----------------------------
 		im = engine.getInputManager();
-		FwdAction fwdAction = new FwdAction(this);
+		FwdAction fwdAction = new FwdAction(this, protClient);
 		BwdAction bwdAction = new BwdAction(this);
 		FwdBwdAction fwdbwdAction = new FwdBwdAction(this);
 		TeleportAction teleportAction = new TeleportAction(this);
@@ -594,8 +677,8 @@ public class MyGame extends VariableFrameRateGame {
 				net.java.games.input.Component.Identifier.Key.LSHIFT, teleportAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// im.associateActionWithAllKeyboards(
-		// 		net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
-		// 		InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
+		// net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
+		// InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.UP, secCamPanUpAction,
@@ -636,8 +719,33 @@ public class MyGame extends VariableFrameRateGame {
 	public GameObject getZLine() {
 		return z;
 	}
+
 	public static boolean getXYZ() {
 		return showXYZ;
+	}
+
+	public ObjShape getGhostShape() {
+		return ghostS;
+	}
+
+	public TextureImage getGhostTexture() {
+		return ghostT;
+	}
+
+	public GhostManager getGhostManager() {
+		return gm;
+	}
+
+	public Vector3f getPlayerPosition() {
+		return avatar.getWorldLocation();
+	}
+
+	public static Engine getEngine() {
+		return engine;
+	}
+
+	public void setIsConnected(boolean value) {
+		this.isClientConnected = value;
 	}
 
 	public static void setXYZ(boolean showXYZ) {
@@ -655,34 +763,35 @@ public class MyGame extends VariableFrameRateGame {
 	// Keyboard can use Esc and = key
 	@Override
 	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode())
-		{ case KeyEvent.VK_G:
-		{ mageAS.stopAnimation();
-			mageAS.playAnimation("MOVE", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
-		break; }
-		case KeyEvent.VK_H:
-		{ mageAS.stopAnimation();
-			mageAS.playAnimation("ATTACK", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
-		break;
-		}
-		case KeyEvent.VK_B:
-		{ mageAS.stopAnimation();
-			mageAS.playAnimation("MOVEATTACK", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
-		break;
-		}
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_G: {
+				mageAS.stopAnimation();
+				mageAS.playAnimation("MOVE", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
+				break;
+			}
+			case KeyEvent.VK_H: {
+				mageAS.stopAnimation();
+				mageAS.playAnimation("ATTACK", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
+				break;
+			}
+			case KeyEvent.VK_B: {
+				mageAS.stopAnimation();
+				mageAS.playAnimation("MOVEATTACK", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
+				break;
+			}
 		}
 		super.keyPressed(e);
 	}
 
-	public ScriptController getScriptController(){
+	public ScriptController getScriptController() {
 		return this.scriptController;
 	}
 
 	// private Matrix4f randLoc() {
-	// 	return (new Matrix4f()).translation(randNum(), 0, randNum());
+	// return (new Matrix4f()).translation(randNum(), 0, randNum());
 	// }
 
 	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
@@ -695,12 +804,17 @@ public class MyGame extends VariableFrameRateGame {
 		return num;
 	}
 
+	public void callSendMoveMessage() {
+		(getAvatar().getWorldRotation()).getEulerAnglesZYX(orientationEuler);
+		protClient.sendMoveMessage(getAvatar().getWorldLocation(), orientationEuler);
+	}
+
 	// // return a matrix that the scaling at least 1
 	// private Matrix4f randSize() {
-	// 	return (new Matrix4f()).scaling(1 + rand.nextInt(1));
+	// return (new Matrix4f()).scaling(1 + rand.nextInt(1));
 	// }
 
 	// private Matrix4f randRotate() {
-	// 	return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
+	// return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
 	// }
 }

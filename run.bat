@@ -1,1 +1,1 @@
-java -Dsun.java2d.d3d=false -Dsun.java2d.uiScale=1 finalProject.MyGame
+java -Dsun.java2d.d3d=false -Dsun.java2d.uiScale=1 finalProject.MyGame 10.0.0.17 6010 UDP
