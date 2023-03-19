@@ -1,4 +1,4 @@
-package finalProject.camera;
+package tage;
 import java.lang.Math;
 import java.awt.event.*;
 

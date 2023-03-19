@@ -11,7 +11,7 @@ public class FwdBwdAction extends AbstractInputAction {
     {
         game = g;
     }
-
+    
     @Override
     public void performAction(float time, Event e)
     {
