@@ -66,17 +66,20 @@ public class MyGame extends VariableFrameRateGame {
 	private Vector3f lastFramePosition, currentFramePosition;
 
 	private Random rand = new Random();
-	private GameObject avatar, x, y, z, rocket;
+	private GameObject avatar, x, y, z, rocket, fireball;
 	private GameObject soup;
 	private GameObject mage;
 
-	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS;
+	private boolean fireballCurrentlyMoving = false;
+	private Vector3f initialFireballPosition;
+
+	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS, fireballS;
 	private ObjShape soupS;
 	private AnimatedShape myRobAS;
 	//private ObjShape mageS;
 	private AnimatedShape mageAS;
 
-	private TextureImage doltx, prizeT, rocketT;
+	private TextureImage doltx, fireballT, rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT;
 	private TextureImage mageT;
@@ -120,6 +123,7 @@ public class MyGame extends VariableFrameRateGame {
 		prizeS = new Sphere();
 		rocketS = new Rocket();
 		planeS = new Plane();
+		fireballS = new Sphere();
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -140,7 +144,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadTextures() {
 		doltx = new TextureImage("Dolphin_HighPolyUV.png");
-		//prizeT = new TextureImage("ballTextures.png");
+		//fireballT = new TextureImage("ballTextures.png");
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
@@ -164,6 +168,13 @@ public class MyGame extends VariableFrameRateGame {
 		rocket.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
+
+		fireball = new GameObject(GameObject.root(), fireballS);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		fireball.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		fireball.setLocalScale(initialScale);
+		fireball.getRenderStates().disableRendering();
 
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -431,6 +442,31 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	@Override
+	public void mouseClicked(MouseEvent e){
+		if(!fireballCurrentlyMoving){
+			fireball.setLocalLocation(avatar.getWorldLocation());
+			fireball.setLocalRotation(avatar.getWorldRotation());
+			fireball.getRenderStates().enableRendering();
+			initialFireballPosition = fireball.getWorldLocation();
+			fireballCurrentlyMoving = true;
+		}
+	}
+
+	private void handleFireballMovement(){
+		if (fireballCurrentlyMoving && 
+		(fireball.getWorldLocation().distance(initialFireballPosition) < scriptController.getFireballTravelDistance())){			
+			fireball.fwdAction(.01f * (float)elapsTime);
+		}
+		else if(fireballCurrentlyMoving &&
+		(fireball.getWorldLocation().distance(initialFireballPosition) >= scriptController.getFireballTravelDistance())){
+			fireball.getRenderStates().disableRendering();
+			//Moves the fireball below the world so it still doesnt interact with objects even though rendering was disabled
+			fireball.setLocalLocation(new Vector3f(0, -10, 0));
+			fireballCurrentlyMoving = false;
+		}
+	}
+
+	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		orbitController.zoom(e.getWheelRotation());
 	}
@@ -445,6 +481,7 @@ public class MyGame extends VariableFrameRateGame {
 	private void updateGameLogic() {
 		updateSkyboxes();
 		checkTouchSoup();
+		handleFireballMovement();
 	}
 
 	private void updateSkyboxes() {
