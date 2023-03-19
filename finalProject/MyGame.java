@@ -30,6 +30,7 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Color;
+import java.util.HashMap;
 
 import javax.script.ScriptEngine;
 
@@ -49,7 +50,7 @@ public class MyGame extends VariableFrameRateGame {
 	private CameraOrbit3D orbitController;
 	final private String MAINVP = "MAIN";
 	final private String TOPLEFTVP = "TOPLEFT";
-	final private String AVATARVP = "AVATARVP";
+	final private String AVATARVP = "PLAYERVP";
 
 	// Time variables
 	private double lastFrameTime, currFrameTime, elapsTime, displayTime;
@@ -64,6 +65,10 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
+	//Used for playing animation while moving
+	private boolean currentlyMoving = false;
+	private boolean currentlyPlayingAnimation = false;
+	private Vector3f lastFramePosition, currentFramePosition;
 
 	private Random rand = new Random();
 	private GameObject avatar, x, y, z, rocket;
@@ -97,13 +102,14 @@ public class MyGame extends VariableFrameRateGame {
 
 	private File scriptFile1;
 	private ScriptEngine jsEngine;
-
-	// public static boolean ride;
+	
+	// ---------- Game Variables ----------
 	private static boolean showXYZ;
 	private static boolean booster;
 	private boolean isBooster, isConsumed;
 	private boolean winFlag;
 	private int scoreCounter;
+	private HashMap<String, Integer> playerStats;
 
 	private ScriptController scriptController;
 
@@ -227,33 +233,34 @@ public class MyGame extends VariableFrameRateGame {
 	public void createViewports() {
 		(engine.getRenderSystem()).addViewport(MAINVP, 0, 0, 1f, 1f);
 		(engine.getRenderSystem()).addViewport(TOPLEFTVP, 0.75f, 0.75f, .25f, .25f);
-		(engine.getRenderSystem()).addViewport(AVATARVP, 0, 0.8f, .1f, .2f);
+		(engine.getRenderSystem()).addViewport("PLAYERVP", 0f, 0.75f, .25f, .25f);
 
 		Viewport mainVp = (engine.getRenderSystem()).getViewport(MAINVP);
 		Viewport topRightVp = (engine.getRenderSystem()).getViewport(TOPLEFTVP);
-		Viewport avatarVp = (engine.getRenderSystem()).getViewport(AVATARVP);
+		Viewport playerVp = (engine.getRenderSystem()).getViewport(AVATARVP);
 
 		Camera mainCamera = mainVp.getCamera();
-		Camera topleftCamera = topRightVp.getCamera();
-		Camera avatarCamera = avatarVp.getCamera();
+		Camera topRightCamera = topRightVp.getCamera();
+		Camera avatarCamera = playerVp.getCamera();
+
 
 		topRightVp.setHasBorder(true);
 		topRightVp.setBorderWidth(4);
 		topRightVp.setBorderColor(0.431f, 0.149f, 0.054f);
 
-		avatarVp.setHasBorder(true);
-		avatarVp.setBorderWidth(4);
-		avatarVp.setBorderColor(0f, 0f, 1f);
+		playerVp.setHasBorder(true);
+		playerVp.setBorderWidth(4);
+		playerVp.setBorderColor(0.431f, 0.149f, 0.054f);
 
 		mainCamera.setLocation(new Vector3f(-2, 0, 2));
 		mainCamera.setU(new Vector3f(1, 0, 0));
 		mainCamera.setV(new Vector3f(0, 1, 0));
 		mainCamera.setN(new Vector3f(0, 0, -1));
 
-		topleftCamera.setLocation(new Vector3f(0, 10, 0));
-		topleftCamera.setU(new Vector3f(1, 0, 0));
-		topleftCamera.setV(new Vector3f(0, 0, -1));
-		topleftCamera.setN(new Vector3f(0, -1, 0));
+		topRightCamera.setLocation(new Vector3f(0, 10, 0));
+		topRightCamera.setU(new Vector3f(1, 0, 0));
+		topRightCamera.setV(new Vector3f(0, 0, -1));
+		topRightCamera.setN(new Vector3f(0, -1, 0));
 
 		avatarCamera.setLocation(new Vector3f(  getAvatar().getWorldLocation().x, 
 												getAvatar().getWorldLocation().y + 0.4f, 
@@ -292,6 +299,10 @@ public class MyGame extends VariableFrameRateGame {
 		// keyboard and gamepad input manager setup
 		inputSetup();
 
+		//Used for playing animations while avatar is moving
+		lastFramePosition = avatar.getWorldLocation();
+		currentFramePosition = lastFramePosition;
+		
 		setupNetworking();
 	}
 
@@ -315,6 +326,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private class SendCloseConnectionPacketAction extends AbstractInputAction {
+		
 		@Override
 		public void performAction(float time, net.java.games.input.Event evt) {
 			if (protClient != null && isClientConnected == true) {
@@ -331,12 +343,13 @@ public class MyGame extends VariableFrameRateGame {
 		// update inputs
 		im.update((float) elapsTime);
 
-		// myRobAS.updateAnimation();
+		playWalkAnimation();
 		mageAS.updateAnimation();
 
 		// update camera
 		orbitController.updateCameraPosition();
 		updateMapCamPosition();
+		updatePlayerCamPosition();
 
 		updateHUD();
 
@@ -357,6 +370,12 @@ public class MyGame extends VariableFrameRateGame {
 		Camera a = (engine.getRenderSystem())
 				.getViewport(AVATARVP).getCamera();
 		a.positionCameraWObj(avatar, 0.4f, 1f, 0f);
+	}
+
+	private void updatePlayerCamPosition() {
+		Camera c = (engine.getRenderSystem()).getViewport("PLAYERVP").getCamera();
+		c.setLocation(new Vector3f(avatar.getWorldLocation().x()+1, avatar.getWorldLocation().y()+1, avatar.getWorldLocation().z()+1));
+		c.lookAt(avatar);
 	}
 
 	private void initCamera() {
@@ -388,8 +407,13 @@ public class MyGame extends VariableFrameRateGame {
 		mc.enable();
 	}
 
-	// This is an older method, it is replaced by the ScriptController class
 	private void initGameVar() {
+		playerStats = new HashMap<String, Integer>();
+		playerStats.put("health", scriptController.getStartingHealth());
+		playerStats.put("level", scriptController.getStartingLevel());
+		playerStats.put("experience", scriptController.getStartingExperience());
+		playerStats.put("atk", scriptController.getAtk());
+		//Older Variables. May or may not be needed
 		scoreCounter = 0;
 		showXYZ = true;
 		booster = false;
@@ -559,6 +583,7 @@ public class MyGame extends VariableFrameRateGame {
 		df.setMaximumFractionDigits(3);
 		RenderSystem rs = engine.getRenderSystem();
 		Viewport mainVp = rs.getViewport(MAINVP);
+		Viewport playerVP = rs.getViewport(AVATARVP);
 		Viewport smallVp = rs.getViewport(TOPLEFTVP);
 
 		Vector3f avLoc = getAvatar().getWorldLocation();
@@ -572,14 +597,17 @@ public class MyGame extends VariableFrameRateGame {
 		String counterStr = Integer.toString(scoreCounter);
 		String dispStr1 = "Time: " + elapsTimeStr;
 		String dispStr2 = "Score: " + counterStr;
-		String dispStr3 = "Avatar's world location X: " + df.format(avLocX) + " Y: " + df.format(avLocY) + " Z: "
-				+ df.format(avLocZ);
+		String dispStr3 = "HP: " + playerStats.get("health");
+		String dispStr4 = "Level: " + playerStats.get("level");
+		String dispStr5 = "XP: " + playerStats.get("experience");
 		// String win = "You Win!";
 		// String lose = "You Lose!";
-		Vector3f hud1Color = new Vector3f(1, 0, 0);
+		Vector3f hud1Color = new Vector3f(1, 0, 1);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
-		Vector3f hud3Color = new Vector3f(0, 1, 0);
-		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
+		Vector3f hud3Color = new Vector3f(1, 0, 0);
+		Vector3f hud4Color = new Vector3f(1, 0, 0);
+		Vector3f hud5Color = new Vector3f(1, 0, 0);
+		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
 		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
 		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, timeStrX, timeStrY);
 
@@ -587,45 +615,17 @@ public class MyGame extends VariableFrameRateGame {
 		int scoreStrY = (int) (rs.getHeight() * mainVp.getRelativeBottom() + 80);
 		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, scoreStrX, scoreStrY);
 
-		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, (int) (rs.getWidth() * smallVp.getRelativeLeft()),
-				(int) (rs.getHeight() * smallVp.getRelativeBottom() - 50));
+		int StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
+		int StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 180);
+		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, StrX, StrY);
 
-		// Display text 3 seconds on screen
-		// if (lostDolFlag || tooCloseFlag) {
-		// threeSec = elapsTimeSec + 3;
-		// }
-		// if (elapsTimeSec <= threeSec) {
-		// if (lostDolFlag) {
-		// (engine.getHUDmanager()).setHUD3(lostDolStr, hud3Color,
-		// (engine.getRenderSystem().getWidth()) / 2,
-		// (engine.getRenderSystem().getHeight()) / 2);
-		// lostDolFlag = false;
-		// } else if (tooCloseFlag) {
-		// (engine.getHUDmanager()).setHUD3(tooCloseStr, hud3Color,
-		// (engine.getRenderSystem().getWidth()) / 2,
-		// (engine.getRenderSystem().getHeight()) / 2);
-		// tooCloseFlag = false;
-		// }
-		// } else {
-		// (engine.getHUDmanager()).setHUD3("", hud3Color,
-		// (engine.getRenderSystem().getWidth()) / 2,
-		// (engine.getRenderSystem().getHeight()) / 2);
-		// }
+		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
+		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 140);
+		(engine.getHUDmanager()).setHUD4(dispStr4, hud4Color, StrX, StrY);
 
-		// Lose condition
-		if (elapsTimeSec >= 60) {
-			// (engine.getHUDmanager()).setHUD1(lose, hud3Color,
-			// (engine.getRenderSystem().getWidth()) / 2,
-			// (engine.getRenderSystem().getHeight()) / 2);
-			return;
-		}
-
-		// Win condition
-		if (winFlag) {
-			// (engine.getHUDmanager()).setHUD1(win, hud3Color,
-			// (engine.getRenderSystem().getWidth()) / 2,
-			// (engine.getRenderSystem().getHeight()) / 2);
-		}
+		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
+		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 100);
+		(engine.getHUDmanager()).setHUD5(dispStr5, hud5Color, StrX, StrY);
 	}
 
 	private void inputSetup() {
@@ -763,30 +763,52 @@ public class MyGame extends VariableFrameRateGame {
 	// Keyboard can use Esc and = key
 	@Override
 	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-			case KeyEvent.VK_G: {
-				mageAS.stopAnimation();
-				mageAS.playAnimation("MOVE", 0.5f,
-						AnimatedShape.EndType.LOOP, 0);
-				break;
-			}
-			case KeyEvent.VK_H: {
-				mageAS.stopAnimation();
-				mageAS.playAnimation("ATTACK", 0.5f,
-						AnimatedShape.EndType.LOOP, 0);
-				break;
-			}
-			case KeyEvent.VK_B: {
-				mageAS.stopAnimation();
-				mageAS.playAnimation("MOVEATTACK", 0.5f,
-						AnimatedShape.EndType.LOOP, 0);
-				break;
-			}
+		switch (e.getKeyCode())
+		{ case KeyEvent.VK_W:
+		{ mageAS.stopAnimation();
+			mageAS.playAnimation("MOVE", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
+		break; }
+		case KeyEvent.VK_H:
+		{ mageAS.stopAnimation();
+			mageAS.playAnimation("ATTACK", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
+		break;
+		}
+		case KeyEvent.VK_B:
+		{ mageAS.stopAnimation();
+			mageAS.playAnimation("MOVEATTACK", 0.5f,
+		AnimatedShape.EndType.LOOP, 0);
+		break;
+		}
 		}
 		super.keyPressed(e);
 	}
 
-	public ScriptController getScriptController() {
+	//If the avatar is currently moving, it plays the movement animations
+	private void playWalkAnimation(){
+		lastFramePosition = currentFramePosition;
+		currentFramePosition = avatar.getWorldLocation();
+
+		if((lastFramePosition.x() == currentFramePosition.x()) && (lastFramePosition.z() == currentFramePosition.z())){
+			currentlyMoving = false;
+		}
+		else{
+			currentlyMoving = true;
+		}
+
+		if (currentlyMoving && !currentlyPlayingAnimation){
+			currentlyPlayingAnimation = true;
+			mageAS.playAnimation("MOVE", 1f, AnimatedShape.EndType.LOOP, 0);		
+		}
+		else if (!currentlyMoving){
+			mageAS.stopAnimation();
+			currentlyPlayingAnimation = false;
+		}
+		
+	}
+
+	public ScriptController getScriptController(){
 		return this.scriptController;
 	}
 
