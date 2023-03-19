@@ -20,6 +20,7 @@ public class ScriptController {
 	private int startingLevel;
 	private int startingExperience;
 	private int atk;
+	private float fireballTravelDistance;
 
 	public ScriptController() {
 		ScriptEngineManager factory = new ScriptEngineManager();
@@ -38,6 +39,7 @@ public class ScriptController {
 		startingLevel = ((int)(jsEngine.get("startingLevel")));
 		startingExperience = ((int)(jsEngine.get("startingExperience")));
 		atk = ((int)(jsEngine.get("atk")));
+		fireballTravelDistance = ((Double)(jsEngine.get("fireballTravelDistance"))).floatValue();
     }
 
 	private void runScript(File scriptFile) {
@@ -79,5 +81,8 @@ public class ScriptController {
 	}
 	public int getAtk(){
 		return this.atk;
+	}
+	public float getFireballTravelDistance(){
+		return this.fireballTravelDistance;
 	}
 }

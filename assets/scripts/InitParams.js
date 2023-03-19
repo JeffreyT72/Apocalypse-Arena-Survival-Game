@@ -5,3 +5,4 @@ var startingHealth = 100;
 var startingLevel = 1;
 var startingExperience = 0;
 var atk = 10;
+var fireballTravelDistance = 15.0;

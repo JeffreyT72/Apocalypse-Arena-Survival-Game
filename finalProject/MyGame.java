@@ -71,20 +71,23 @@ public class MyGame extends VariableFrameRateGame {
 	private Vector3f lastFramePosition, currentFramePosition;
 
 	private Random rand = new Random();
-	private GameObject avatar, x, y, z, rocket;
+	private GameObject avatar, x, y, z, rocket, fireball;
 	private GameObject soup;
 	private GameObject mage;
 	// Skills
 	private GameObject mage_skill1;
 
-	private ObjShape linxS, linyS, linzS, rocketS;
+	private boolean fireballCurrentlyMoving = false;
+	private Vector3f initialFireballPosition;
+
+	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS, fireballS;
 	private ObjShape soupS;
 	private AnimatedShape mageAS;
 	private ObjShape ghostS;
 	// Skills
 	private ObjShape skill1S;
 
-	private TextureImage doltx, prizeT, rocketT;
+	private TextureImage doltx, fireballT, rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT;
 	private TextureImage ghostT;
@@ -136,6 +139,7 @@ public class MyGame extends VariableFrameRateGame {
 		// dolS = new ImportedModel("dolphinHighPoly.obj");
 		rocketS = new Rocket();
 		planeS = new Plane();
+		fireballS = new Sphere();
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -167,7 +171,7 @@ public class MyGame extends VariableFrameRateGame {
 		mageT = new TextureImage("mage.png");
 
 		// Skills
-		skill1T = new TextureImage("mage_skill1.png");
+		fireballT = new TextureImage("mage_skill1.png");
 	}
 
 	@Override
@@ -186,6 +190,13 @@ public class MyGame extends VariableFrameRateGame {
 		rocket.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
+
+		fireball = new GameObject(GameObject.root(), fireballS, fireballT);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		fireball.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		fireball.setLocalScale(initialScale);
+		fireball.getRenderStates().disableRendering();
 
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -212,13 +223,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Sets the current playable character to mage
 		avatar = mage;
-
-		// Skill objects
-		mage_skill1 = new GameObject(GameObject.root(), skill1S, skill1T);
-		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
-		mage_skill1.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(0.2f);
-		mage_skill1.setLocalScale(initialScale);
 	}
 
 	@Override
@@ -243,7 +247,6 @@ public class MyGame extends VariableFrameRateGame {
 		Camera topRightCamera = topRightVp.getCamera();
 		Camera avatarCamera = playerVp.getCamera();
 
-
 		topRightVp.setHasBorder(true);
 		topRightVp.setBorderWidth(4);
 		topRightVp.setBorderColor(0.431f, 0.149f, 0.054f);
@@ -265,7 +268,6 @@ public class MyGame extends VariableFrameRateGame {
 		avatarCamera.setLocation(new Vector3f(  getAvatar().getWorldLocation().x, 
 												getAvatar().getWorldLocation().y + 0.4f, 
 												getAvatar().getWorldLocation().z + 1f));
-		//avatarCamera.lookAt(avatar);
 		avatarCamera.setU(new Vector3f(1, 0, 0));
 		avatarCamera.setV(new Vector3f(0,1, 0));
 		avatarCamera.setN(new Vector3f(0, 0, -1));
@@ -326,7 +328,6 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private class SendCloseConnectionPacketAction extends AbstractInputAction {
-		
 		@Override
 		public void performAction(float time, net.java.games.input.Event evt) {
 			if (protClient != null && isClientConnected == true) {
@@ -508,6 +509,31 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	@Override
+	public void mouseClicked(MouseEvent e){
+		if(!fireballCurrentlyMoving){
+			fireball.setLocalLocation(avatar.getWorldLocation());
+			fireball.setLocalRotation(avatar.getWorldRotation());
+			fireball.getRenderStates().enableRendering();
+			initialFireballPosition = fireball.getWorldLocation();
+			fireballCurrentlyMoving = true;
+		}
+	}
+
+	private void handleFireballMovement(){
+		if (fireballCurrentlyMoving && 
+		(fireball.getWorldLocation().distance(initialFireballPosition) < scriptController.getFireballTravelDistance())){			
+			fireball.fwdAction(.01f * (float)elapsTime);
+		}
+		else if(fireballCurrentlyMoving &&
+		(fireball.getWorldLocation().distance(initialFireballPosition) >= scriptController.getFireballTravelDistance())){
+			fireball.getRenderStates().disableRendering();
+			//Moves the fireball below the world so it still doesnt interact with objects even though rendering was disabled
+			fireball.setLocalLocation(new Vector3f(0, -10, 0));
+			fireballCurrentlyMoving = false;
+		}
+	}
+
+	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		orbitController.zoom(e.getWheelRotation());
 	}
@@ -522,6 +548,7 @@ public class MyGame extends VariableFrameRateGame {
 	private void updateGameLogic() {
 		updateSkyboxes();
 		checkTouchSoup();
+		handleFireballMovement();
 	}
 
 	private void updateSkyboxes() {
