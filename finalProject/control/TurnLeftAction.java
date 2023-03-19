@@ -22,5 +22,6 @@ public class TurnLeftAction extends AbstractInputAction {
         } else {
             game.getAvatar().leftAction(game.getScriptController().getBaseSpeed() * time);
         }
+        game.callSendMoveMessage();
     }
 }

@@ -20,5 +20,6 @@ public class TurnRightAction extends AbstractInputAction {
         } else {
             game.getAvatar().rightAction(game.getScriptController().getBaseSpeed() * time);
         }
+        game.callSendMoveMessage();
     }
 }
