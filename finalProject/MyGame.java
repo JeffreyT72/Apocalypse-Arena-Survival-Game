@@ -60,6 +60,11 @@ public class MyGame extends VariableFrameRateGame {
 	private double tenSec;
 	private boolean skyboxCycleTime = true;
 
+	//Used for playing animation while moving
+	private boolean currentlyMoving = false;
+	private boolean currentlyPlayingAnimation = false;
+	private Vector3f lastFramePosition, currentFramePosition;
+
 	private Random rand = new Random();
 	private GameObject avatar, x, y, z, rocket;
 	private GameObject soup;
@@ -256,7 +261,9 @@ public class MyGame extends VariableFrameRateGame {
 		// keyboard and gamepad input manager setup
 		inputSetup();
 
-		
+		//Used for playing animations while avatar is moving
+		lastFramePosition = avatar.getWorldLocation();
+		currentFramePosition = lastFramePosition;
 	}
 
 	@Override
@@ -267,6 +274,7 @@ public class MyGame extends VariableFrameRateGame {
 		// update inputs
 		im.update((float) elapsTime);
 
+		playWalkAnimation();
 		myRobAS.updateAnimation();
 		mageAS.updateAnimation();
 
@@ -655,7 +663,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode())
-		{ case KeyEvent.VK_G:
+		{ case KeyEvent.VK_W:
 		{ mageAS.stopAnimation();
 			mageAS.playAnimation("MOVE", 0.5f,
 		AnimatedShape.EndType.LOOP, 0);
@@ -674,6 +682,29 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		}
 		super.keyPressed(e);
+	}
+
+	//If the avatar is currently moving, it plays the movement animations
+	private void playWalkAnimation(){
+		lastFramePosition = currentFramePosition;
+		currentFramePosition = avatar.getWorldLocation();
+
+		if((lastFramePosition.x() == currentFramePosition.x()) && (lastFramePosition.z() == currentFramePosition.z())){
+			currentlyMoving = false;
+		}
+		else{
+			currentlyMoving = true;
+		}
+
+		if (currentlyMoving && !currentlyPlayingAnimation){
+			currentlyPlayingAnimation = true;
+			mageAS.playAnimation("MOVE", 1f, AnimatedShape.EndType.LOOP, 0);		
+		}
+		else if (!currentlyMoving){
+			mageAS.stopAnimation();
+			currentlyPlayingAnimation = false;
+		}
+		
 	}
 
 	public ScriptController getScriptController(){
