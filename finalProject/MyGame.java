@@ -79,19 +79,22 @@ public class MyGame extends VariableFrameRateGame {
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
 
 	// Skills
-	private GameObject mage_skill1;
+	private GameObject mage_skill1, avatarOrbiter1, avatarOrbiter2, avatarOrbiter3;
 
 	private boolean fireballCurrentlyMoving = false;
 	private Vector3f initialFireballPosition;
+	private float amtt = 0f;
+	private float amtt2 = 180f;
+	private float amtt3 = 360f;
 
 	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS, fireballS, xpOrbS;
-	private ObjShape soupS;
+	private ObjShape soupS, avatarOrbiterS;
 	private AnimatedShape mageAS;
 	private ObjShape ghostS;
 	// Skills
 	private ObjShape skill1S;
 
-	private TextureImage doltx, fireballT, rocketT;
+	private TextureImage doltx, fireballT, rocketT, avatarOrbiterT;
 	private TextureImage planeT;
 	private TextureImage soupT;
 	private TextureImage ghostT;
@@ -146,6 +149,7 @@ public class MyGame extends VariableFrameRateGame {
 		planeS = new Plane();
 		fireballS = new Sphere();
 		xpOrbS = new Sphere();
+		avatarOrbiterS = new Torus();
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -176,9 +180,11 @@ public class MyGame extends VariableFrameRateGame {
 		ghostT = new TextureImage("mage.png");
 		mageT = new TextureImage("mage.png");
 		xpOrbT = new TextureImage("soup.jpg");
+		 
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
+		avatarOrbiterT = new TextureImage("soup.jpg");
 	}
 
 	@Override
@@ -205,6 +211,7 @@ public class MyGame extends VariableFrameRateGame {
 		fireball.setLocalScale(initialScale);
 		fireball.getRenderStates().disableRendering();
 
+
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
@@ -230,6 +237,33 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Sets the current playable character to mage
 		avatar = mage;
+
+		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		avatarOrbiter1.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scale(1f, 0f, 1f);
+		avatarOrbiter1.setLocalScale(initialScale);
+		avatarOrbiter1.setParent(avatar);
+		avatarOrbiter1.propagateTranslation(true);
+		avatarOrbiter1.propagateRotation(false);
+
+		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		avatarOrbiter2.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scale(1f, 0f, 1f);
+		avatarOrbiter2.setLocalScale(initialScale);
+		avatarOrbiter2.setParent(avatar);
+		avatarOrbiter2.propagateTranslation(true);
+		avatarOrbiter2.propagateRotation(false);
+
+		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		avatarOrbiter3.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scale(1f, 0f, 1f);
+		avatarOrbiter3.setLocalScale(initialScale);
+		avatarOrbiter3.setParent(avatar);
+		avatarOrbiter3.propagateTranslation(true);
+		avatarOrbiter3.propagateRotation(false);
 	}
 
 	@Override
@@ -406,6 +440,9 @@ public class MyGame extends VariableFrameRateGame {
 		float max = 0.008f;
 		rc = new RotationController(engine, new Vector3f(0, 1, 0), rand.nextFloat() * (max - min) + min);
 		rc.addTarget(soup);
+		rc.addTarget(avatarOrbiter1);
+		rc.addTarget(avatarOrbiter2);
+		rc.addTarget(avatarOrbiter3);
 		(engine.getSceneGraph()).addNodeController(rc);
 		rc.enable();
 
@@ -571,6 +608,7 @@ public class MyGame extends VariableFrameRateGame {
 		checkTouchSoup();
 		handleFireballMovement();
 		checkTouchXPOrb();
+		rotateOrbiters();
 	}
 
 	private void updateSkyboxes() {
@@ -928,5 +966,22 @@ public class MyGame extends VariableFrameRateGame {
 		int currXP = playerStats.get("experience");
 		int newXP = currXP + amount;
 		playerStats.replace("experience", newXP);
+	}
+
+	private void rotateOrbiters(){
+		amtt += 0.01f;
+		Matrix4f currentTranslation = avatarOrbiter1.getLocalTranslation();
+		currentTranslation.translation((float)Math.sin(amtt)*2f, 1f, (float)Math.cos(amtt)*2f);
+		avatarOrbiter1.setLocalTranslation(currentTranslation);
+
+		amtt2 += 0.01f;
+		currentTranslation = avatarOrbiter2.getLocalTranslation();
+		currentTranslation.translation((float)Math.sin(amtt2)*2f, 1f, (float)Math.cos(amtt2)*2f);
+		avatarOrbiter2.setLocalTranslation(currentTranslation);
+
+		amtt3 += 0.01f;
+		currentTranslation = avatarOrbiter3.getLocalTranslation();
+		currentTranslation.translation((float)Math.sin(amtt3)*2f, 1f, (float)Math.cos(amtt3)*2f);
+		avatarOrbiter3.setLocalTranslation(currentTranslation);
 	}
 }
