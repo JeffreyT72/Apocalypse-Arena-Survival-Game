@@ -31,6 +31,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.script.ScriptEngine;
 
@@ -67,7 +69,7 @@ public class MyGame extends VariableFrameRateGame {
 	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
 	//Used for playing animation while moving
 	private boolean currentlyMoving = false;
-	private boolean currentlyPlayingAnimation = false;
+	private boolean currentlyPlayingWalkAnimation = false;
 	private Vector3f lastFramePosition, currentFramePosition;
 
 	private Random rand = new Random();
@@ -521,6 +523,20 @@ public class MyGame extends VariableFrameRateGame {
 			fireball.getRenderStates().enableRendering();
 			initialFireballPosition = fireball.getWorldLocation();
 			fireballCurrentlyMoving = true;
+			if(currentlyMoving){
+				mageAS.playAnimation("MOVEATTACK", 2f,AnimatedShape.EndType.LOOP, 1);
+				Timer timer = new Timer();
+            	timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						currentlyPlayingWalkAnimation = false;
+					}
+				}, 2000); // Delay in milliseconds
+			}
+			else{
+				mageAS.playAnimation("ATTACK", 2f,AnimatedShape.EndType.LOOP, 1);
+			}
+			
 		}
 	}
 
@@ -797,11 +813,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode())
-		{ case KeyEvent.VK_W:
-		{ mageAS.stopAnimation();
-			mageAS.playAnimation("MOVE", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
-		break; }
+		{ 
 		case KeyEvent.VK_H:
 		{ mageAS.stopAnimation();
 			mageAS.playAnimation("ATTACK", 0.5f,
@@ -836,13 +848,13 @@ public class MyGame extends VariableFrameRateGame {
 			currentlyMoving = true;
 		}
 
-		if (currentlyMoving && !currentlyPlayingAnimation){
-			currentlyPlayingAnimation = true;
-			mageAS.playAnimation("MOVE", 1f, AnimatedShape.EndType.LOOP, 0);		
+		if (currentlyMoving && !currentlyPlayingWalkAnimation){
+			currentlyPlayingWalkAnimation = true;
+			mageAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);		
 		}
-		else if (!currentlyMoving){
+		else if (!currentlyMoving && currentlyPlayingWalkAnimation){
 			mageAS.stopAnimation();
-			currentlyPlayingAnimation = false;
+			currentlyPlayingWalkAnimation = false;
 		}
 		
 	}
