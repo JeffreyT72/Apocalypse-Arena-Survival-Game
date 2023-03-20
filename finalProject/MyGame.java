@@ -74,13 +74,15 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject avatar, x, y, z, rocket, fireball;
 	private GameObject soup;
 	private GameObject mage;
+	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
+
 	// Skills
 	private GameObject mage_skill1;
 
 	private boolean fireballCurrentlyMoving = false;
 	private Vector3f initialFireballPosition;
 
-	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS, fireballS;
+	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS, fireballS, xpOrbS;
 	private ObjShape soupS;
 	private AnimatedShape mageAS;
 	private ObjShape ghostS;
@@ -92,6 +94,7 @@ public class MyGame extends VariableFrameRateGame {
 	private TextureImage soupT;
 	private TextureImage ghostT;
 	private TextureImage mageT;
+	private TextureImage xpOrbT;
 	// Skills
 	private TextureImage skill1T;
 
@@ -140,6 +143,7 @@ public class MyGame extends VariableFrameRateGame {
 		rocketS = new Rocket();
 		planeS = new Plane();
 		fireballS = new Sphere();
+		xpOrbS = new Sphere();
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -169,6 +173,7 @@ public class MyGame extends VariableFrameRateGame {
 		soupT = new TextureImage("soup.jpg");
 		ghostT = new TextureImage("mage.png");
 		mageT = new TextureImage("mage.png");
+		xpOrbT = new TextureImage("soup.jpg");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -549,6 +554,7 @@ public class MyGame extends VariableFrameRateGame {
 		updateSkyboxes();
 		checkTouchSoup();
 		handleFireballMovement();
+		checkTouchXPOrb();
 	}
 
 	private void updateSkyboxes() {
@@ -808,6 +814,12 @@ public class MyGame extends VariableFrameRateGame {
 		AnimatedShape.EndType.LOOP, 0);
 		break;
 		}
+		case KeyEvent.VK_C:
+		{ 
+			//Temporary key pressed action. Used to test xp orb creation
+			dropXP(randNum(),1f,randNum());
+			break;
+		}
 		}
 		super.keyPressed(e);
 	}
@@ -866,4 +878,43 @@ public class MyGame extends VariableFrameRateGame {
 	// private Matrix4f randRotate() {
 	// return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
 	// }
+
+	private void dropXP(float x, float y, float z){
+		GameObject xpOrb = new GameObject(GameObject.root(), xpOrbS, xpOrbT);
+		Matrix4f initialTranslation = (new Matrix4f()).translation(x, y, z);
+		xpOrb.setLocalTranslation(initialTranslation);
+		Matrix4f initialScale = (new Matrix4f()).scaling(0.1f);
+		xpOrb.setLocalScale(initialScale);
+		mc.addTarget(xpOrb);
+		xpOrbs.add(xpOrb);
+		
+	}
+	private void checkTouchXPOrb(){
+		Vector3f avloc, orbLoc;
+		float avrocDis;
+		float avsize;
+		float orbsize;
+		for (int i=0; i< xpOrbs.size(); i++){
+			
+			avloc = avatar.getWorldLocation();
+			avsize = (avatar.getWorldScale()).m00();
+
+			orbLoc = (xpOrbs.get(i)).getWorldLocation();
+			orbsize = (xpOrbs.get(i)).getWorldScale().m00();
+			avrocDis = avloc.distance(orbLoc);
+
+			if (avrocDis - avsize - orbsize <= .5) {
+				(engine.getSceneGraph()).removeGameObject(xpOrbs.get(i));
+				(xpOrbs.get(i)).setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				xpOrbs.remove(i);
+				increaseXP(scriptController.getXpGainedPerOrb());
+			}
+		}
+	}
+
+	private void increaseXP(int amount){
+		int currXP = playerStats.get("experience");
+		int newXP = currXP + amount;
+		playerStats.replace("experience", newXP);
+	}
 }
