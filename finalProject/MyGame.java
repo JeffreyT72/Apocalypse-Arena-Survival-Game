@@ -67,7 +67,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
-	//Used for playing animation while moving
+	// Used for playing animation while moving
 	private boolean currentlyMoving = false;
 	private boolean currentlyPlayingWalkAnimation = false;
 	private Vector3f lastFramePosition, currentFramePosition;
@@ -113,7 +113,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	private File scriptFile1;
 	private ScriptEngine jsEngine;
-	
+
 	// ---------- Game Variables ----------
 	private static boolean showXYZ;
 	private static boolean booster;
@@ -147,7 +147,7 @@ public class MyGame extends VariableFrameRateGame {
 		// dolS = new ImportedModel("dolphinHighPoly.obj");
 		rocketS = new Rocket();
 		planeS = new Plane();
-		fireballS = new Sphere();
+		fireballS = new ImportedModel("fireball.obj");
 		xpOrbS = new Sphere();
 		avatarOrbiterS = new Torus();
 
@@ -168,7 +168,7 @@ public class MyGame extends VariableFrameRateGame {
 		ghostS = new AnimatedShape("mage.rkm", "mage.rks");
 
 		// Skills
-		skill1S = new Sphere();
+		skill1S = new ImportedModel("circle.obj");
 	}
 
 	@Override
@@ -177,10 +177,9 @@ public class MyGame extends VariableFrameRateGame {
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
-		ghostT = new TextureImage("mage.png");
-		mageT = new TextureImage("mage.png");
+		ghostT = new TextureImage("mage1.png");
+		mageT = new TextureImage("mage1.png");
 		xpOrbT = new TextureImage("soup.jpg");
-		 
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -205,12 +204,13 @@ public class MyGame extends VariableFrameRateGame {
 		rocket.setLocalScale(initialScale);
 
 		fireball = new GameObject(GameObject.root(), fireballS, fireballT);
-		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 0f);
 		fireball.setLocalTranslation(initialTranslation);
+		fireball.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-180.0f)));
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		fireball.setLocalScale(initialScale);
 		fireball.getRenderStates().disableRendering();
-
 
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -239,27 +239,27 @@ public class MyGame extends VariableFrameRateGame {
 		avatar = mage;
 
 		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
-		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter1.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scale(1f, 0f, 1f);
+		initialScale = (new Matrix4f()).scale(2f, 0.3f, 2);
 		avatarOrbiter1.setLocalScale(initialScale);
 		avatarOrbiter1.setParent(avatar);
 		avatarOrbiter1.propagateTranslation(true);
 		avatarOrbiter1.propagateRotation(false);
 
 		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
-		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter2.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scale(1f, 0f, 1f);
+		initialScale = (new Matrix4f()).scale(2f, 0.3f, 2f);
 		avatarOrbiter2.setLocalScale(initialScale);
 		avatarOrbiter2.setParent(avatar);
 		avatarOrbiter2.propagateTranslation(true);
 		avatarOrbiter2.propagateRotation(false);
 
 		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
-		initialTranslation = (new Matrix4f()).translation(0, 1, 0);
+		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter3.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scale(1f, 0f, 1f);
+		initialScale = (new Matrix4f()).scale(2f, 0.3f, 2f);
 		avatarOrbiter3.setLocalScale(initialScale);
 		avatarOrbiter3.setParent(avatar);
 		avatarOrbiter3.propagateTranslation(true);
@@ -277,8 +277,8 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void createViewports() {
 		(engine.getRenderSystem()).addViewport(MAINVP, 0, 0, 1f, 1f);
-		(engine.getRenderSystem()).addViewport(TOPLEFTVP, 0.75f, 0.75f, .25f, .25f);
-		(engine.getRenderSystem()).addViewport("PLAYERVP", 0f, 0.75f, .25f, .25f);
+		(engine.getRenderSystem()).addViewport(TOPLEFTVP, 0.8f, 0.8f, .2f, .2f);
+		(engine.getRenderSystem()).addViewport("PLAYERVP", 0f, 0.8f, .1f, .2f);
 
 		Viewport mainVp = (engine.getRenderSystem()).getViewport(MAINVP);
 		Viewport topRightVp = (engine.getRenderSystem()).getViewport(TOPLEFTVP);
@@ -306,11 +306,11 @@ public class MyGame extends VariableFrameRateGame {
 		topRightCamera.setV(new Vector3f(0, 0, -1));
 		topRightCamera.setN(new Vector3f(0, -1, 0));
 
-		avatarCamera.setLocation(new Vector3f(  getAvatar().getWorldLocation().x, 
-												getAvatar().getWorldLocation().y + 0.4f, 
-												getAvatar().getWorldLocation().z + 1f));
+		avatarCamera.setLocation(new Vector3f(getAvatar().getWorldLocation().x,
+				getAvatar().getWorldLocation().y + 0.4f,
+				getAvatar().getWorldLocation().z + 1f));
 		avatarCamera.setU(new Vector3f(1, 0, 0));
-		avatarCamera.setV(new Vector3f(0,1, 0));
+		avatarCamera.setV(new Vector3f(0, 1, 0));
 		avatarCamera.setN(new Vector3f(0, 0, -1));
 	}
 
@@ -342,10 +342,10 @@ public class MyGame extends VariableFrameRateGame {
 		// keyboard and gamepad input manager setup
 		inputSetup();
 
-		//Used for playing animations while avatar is moving
+		// Used for playing animations while avatar is moving
 		lastFramePosition = avatar.getWorldLocation();
 		currentFramePosition = lastFramePosition;
-		
+
 		setupNetworking();
 	}
 
@@ -416,7 +416,8 @@ public class MyGame extends VariableFrameRateGame {
 
 	private void updatePlayerCamPosition() {
 		Camera c = (engine.getRenderSystem()).getViewport("PLAYERVP").getCamera();
-		c.setLocation(new Vector3f(avatar.getWorldLocation().x()+1, avatar.getWorldLocation().y()+1, avatar.getWorldLocation().z()+1));
+		c.setLocation(new Vector3f(avatar.getWorldLocation().x() + 1, avatar.getWorldLocation().y() + 1,
+				avatar.getWorldLocation().z() + 1));
 		c.lookAt(avatar);
 	}
 
@@ -458,7 +459,7 @@ public class MyGame extends VariableFrameRateGame {
 		playerStats.put("level", scriptController.getStartingLevel());
 		playerStats.put("experience", scriptController.getStartingExperience());
 		playerStats.put("atk", scriptController.getAtk());
-		//Older Variables. May or may not be needed
+		// Older Variables. May or may not be needed
 		scoreCounter = 0;
 		showXYZ = true;
 		booster = false;
@@ -553,39 +554,41 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e){
-		if(!fireballCurrentlyMoving){
+	public void mouseClicked(MouseEvent e) {
+		if (!fireballCurrentlyMoving) {
+			/** May need to add some offset to spawn fireball in front of avatar */
 			fireball.setLocalLocation(avatar.getWorldLocation());
 			fireball.setLocalRotation(avatar.getWorldRotation());
 			fireball.getRenderStates().enableRendering();
 			initialFireballPosition = fireball.getWorldLocation();
 			fireballCurrentlyMoving = true;
-			if(currentlyMoving){
-				mageAS.playAnimation("MOVEATTACK", 2f,AnimatedShape.EndType.LOOP, 1);
+			if (currentlyMoving) {
+				mageAS.playAnimation("MOVEATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
 				Timer timer = new Timer();
-            	timer.schedule(new TimerTask() {
+				timer.schedule(new TimerTask() {
 					@Override
 					public void run() {
 						currentlyPlayingWalkAnimation = false;
 					}
 				}, 2000); // Delay in milliseconds
+			} else {
+				mageAS.playAnimation("ATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
 			}
-			else{
-				mageAS.playAnimation("ATTACK", 2f,AnimatedShape.EndType.LOOP, 1);
-			}
-			
+
 		}
 	}
 
-	private void handleFireballMovement(){
-		if (fireballCurrentlyMoving && 
-		(fireball.getWorldLocation().distance(initialFireballPosition) < scriptController.getFireballTravelDistance())){			
-			fireball.fwdAction(.01f * (float)elapsTime);
-		}
-		else if(fireballCurrentlyMoving &&
-		(fireball.getWorldLocation().distance(initialFireballPosition) >= scriptController.getFireballTravelDistance())){
+	private void handleFireballMovement() {
+		if (fireballCurrentlyMoving &&
+				(fireball.getWorldLocation().distance(initialFireballPosition) < scriptController
+						.getFireballTravelDistance())) {
+			fireball.fwdAction(.01f * (float) elapsTime);
+		} else if (fireballCurrentlyMoving &&
+				(fireball.getWorldLocation().distance(initialFireballPosition) >= scriptController
+						.getFireballTravelDistance())) {
 			fireball.getRenderStates().disableRendering();
-			//Moves the fireball below the world so it still doesnt interact with objects even though rendering was disabled
+			// Moves the fireball below the world so it still doesnt interact with objects
+			// even though rendering was disabled
 			fireball.setLocalLocation(new Vector3f(0, -10, 0));
 			fireballCurrentlyMoving = false;
 		}
@@ -687,14 +690,12 @@ public class MyGame extends VariableFrameRateGame {
 		String dispStr3 = "HP: " + playerStats.get("health");
 		String dispStr4 = "Level: " + playerStats.get("level");
 		String dispStr5 = "XP: " + playerStats.get("experience");
-		// String win = "You Win!";
-		// String lose = "You Lose!";
 		Vector3f hud1Color = new Vector3f(1, 0, 1);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
 		Vector3f hud3Color = new Vector3f(1, 0, 0);
 		Vector3f hud4Color = new Vector3f(1, 0, 0);
 		Vector3f hud5Color = new Vector3f(1, 0, 0);
-		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() /2 - 40);
+		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
 		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
 		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, timeStrX, timeStrY);
 
@@ -703,15 +704,15 @@ public class MyGame extends VariableFrameRateGame {
 		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, scoreStrX, scoreStrY);
 
 		int StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
-		int StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 180);
+		int StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 140);
 		(engine.getHUDmanager()).setHUD3(dispStr3, hud3Color, StrX, StrY);
 
 		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
-		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 140);
+		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 100);
 		(engine.getHUDmanager()).setHUD4(dispStr4, hud4Color, StrX, StrY);
 
 		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
-		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 100);
+		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 60);
 		(engine.getHUDmanager()).setHUD5(dispStr5, hud5Color, StrX, StrY);
 	}
 
@@ -727,7 +728,7 @@ public class MyGame extends VariableFrameRateGame {
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this);
 		TurnAction turnAction = new TurnAction(this);
 
-		SpeedUpAction speedUpAction = new SpeedUpAction(this);
+		// SpeedUpAction speedUpAction = new SpeedUpAction(this);
 
 		// Second Camera Control
 		SecCamPanUpAction secCamPanUpAction = new SecCamPanUpAction(this);
@@ -850,60 +851,53 @@ public class MyGame extends VariableFrameRateGame {
 	// Keyboard can use Esc and = key
 	@Override
 	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode())
-		{ 
-		case KeyEvent.VK_H:
-		{ mageAS.stopAnimation();
-			mageAS.playAnimation("ATTACK", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
-		break;
-		}
-		case KeyEvent.VK_B:
-		{ mageAS.stopAnimation();
-			mageAS.playAnimation("MOVEATTACK", 0.5f,
-		AnimatedShape.EndType.LOOP, 0);
-		break;
-		}
-		case KeyEvent.VK_C:
-		{ 
-			//Temporary key pressed action. Used to test xp orb creation
-			dropXP(randNum(),1f,randNum());
-			break;
-		}
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_H: {
+				mageAS.stopAnimation();
+				mageAS.playAnimation("ATTACK", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
+				break;
+			}
+			case KeyEvent.VK_B: {
+				mageAS.stopAnimation();
+				mageAS.playAnimation("MOVEATTACK", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
+				break;
+			}
+			case KeyEvent.VK_C: {
+				// Temporary key pressed action. Used to test xp orb creation
+				dropXP(randNum(), 1f, randNum());
+				break;
+			}
 		}
 		super.keyPressed(e);
 	}
 
-	//If the avatar is currently moving, it plays the movement animations
-	private void playWalkAnimation(){
+	// If the avatar is currently moving, it plays the movement animations
+	private void playWalkAnimation() {
 		lastFramePosition = currentFramePosition;
 		currentFramePosition = avatar.getWorldLocation();
 
-		if((lastFramePosition.x() == currentFramePosition.x()) && (lastFramePosition.z() == currentFramePosition.z())){
+		if ((lastFramePosition.x() == currentFramePosition.x())
+				&& (lastFramePosition.z() == currentFramePosition.z())) {
 			currentlyMoving = false;
-		}
-		else{
+		} else {
 			currentlyMoving = true;
 		}
 
-		if (currentlyMoving && !currentlyPlayingWalkAnimation){
+		if (currentlyMoving && !currentlyPlayingWalkAnimation) {
 			currentlyPlayingWalkAnimation = true;
-			mageAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);		
-		}
-		else if (!currentlyMoving && currentlyPlayingWalkAnimation){
+			mageAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);
+		} else if (!currentlyMoving && currentlyPlayingWalkAnimation) {
 			mageAS.stopAnimation();
 			currentlyPlayingWalkAnimation = false;
 		}
-		
+
 	}
 
-	public ScriptController getScriptController(){
+	public ScriptController getScriptController() {
 		return this.scriptController;
 	}
-
-	// private Matrix4f randLoc() {
-	// return (new Matrix4f()).translation(randNum(), 0, randNum());
-	// }
 
 	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
 	private int randNum() {
@@ -920,16 +914,7 @@ public class MyGame extends VariableFrameRateGame {
 		protClient.sendMoveMessage(getAvatar().getWorldLocation(), orientationEuler);
 	}
 
-	// // return a matrix that the scaling at least 1
-	// private Matrix4f randSize() {
-	// return (new Matrix4f()).scaling(1 + rand.nextInt(1));
-	// }
-
-	// private Matrix4f randRotate() {
-	// return (new Matrix4f()).rotate(rand.nextInt(360), 0, 0, 0);
-	// }
-
-	private void dropXP(float x, float y, float z){
+	private void dropXP(float x, float y, float z) {
 		GameObject xpOrb = new GameObject(GameObject.root(), xpOrbS, xpOrbT);
 		Matrix4f initialTranslation = (new Matrix4f()).translation(x, y, z);
 		xpOrb.setLocalTranslation(initialTranslation);
@@ -937,15 +922,16 @@ public class MyGame extends VariableFrameRateGame {
 		xpOrb.setLocalScale(initialScale);
 		mc.addTarget(xpOrb);
 		xpOrbs.add(xpOrb);
-		
+
 	}
-	private void checkTouchXPOrb(){
+
+	private void checkTouchXPOrb() {
 		Vector3f avloc, orbLoc;
 		float avrocDis;
 		float avsize;
 		float orbsize;
-		for (int i=0; i< xpOrbs.size(); i++){
-			
+		for (int i = 0; i < xpOrbs.size(); i++) {
+
 			avloc = avatar.getWorldLocation();
 			avsize = (avatar.getWorldScale()).m00();
 
@@ -962,26 +948,26 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	private void increaseXP(int amount){
+	private void increaseXP(int amount) {
 		int currXP = playerStats.get("experience");
 		int newXP = currXP + amount;
 		playerStats.replace("experience", newXP);
 	}
 
-	private void rotateOrbiters(){
-		amtt += 0.01f;
+	private void rotateOrbiters() {
+		amtt += 0.03f;
 		Matrix4f currentTranslation = avatarOrbiter1.getLocalTranslation();
-		currentTranslation.translation((float)Math.sin(amtt)*2f, 1f, (float)Math.cos(amtt)*2f);
+		currentTranslation.translation((float) Math.sin(amtt) * 2f, 0.3f, (float) Math.cos(amtt) * 2f);
 		avatarOrbiter1.setLocalTranslation(currentTranslation);
 
-		amtt2 += 0.01f;
+		amtt2 += 0.03f;
 		currentTranslation = avatarOrbiter2.getLocalTranslation();
-		currentTranslation.translation((float)Math.sin(amtt2)*2f, 1f, (float)Math.cos(amtt2)*2f);
+		currentTranslation.translation((float) Math.sin(amtt2) * 2f, 0.3f, (float) Math.cos(amtt2) * 2f);
 		avatarOrbiter2.setLocalTranslation(currentTranslation);
 
-		amtt3 += 0.01f;
+		amtt3 += 0.03f;
 		currentTranslation = avatarOrbiter3.getLocalTranslation();
-		currentTranslation.translation((float)Math.sin(amtt3)*2f, 1f, (float)Math.cos(amtt3)*2f);
+		currentTranslation.translation((float) Math.sin(amtt3) * 2f, 0.3f, (float) Math.cos(amtt3) * 2f);
 		avatarOrbiter3.setLocalTranslation(currentTranslation);
 	}
 }
