@@ -73,13 +73,13 @@ public class MyGame extends VariableFrameRateGame {
 	private Vector3f lastFramePosition, currentFramePosition;
 
 	private Random rand = new Random();
-	private GameObject avatar, x, y, z, rocket, fireball;
+	private GameObject avatar, x, y, z, rocket;
 	private GameObject soup;
 	private GameObject mage;
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
 
 	// Skills
-	private GameObject mage_skill1, avatarOrbiter1, avatarOrbiter2, avatarOrbiter3;
+	private GameObject fireball, avatarOrbiter1, avatarOrbiter2, avatarOrbiter3, circle;
 
 	private boolean fireballCurrentlyMoving = false;
 	private Vector3f initialFireballPosition;
@@ -87,21 +87,21 @@ public class MyGame extends VariableFrameRateGame {
 	private float amtt2 = 180f;
 	private float amtt3 = 360f;
 
-	private ObjShape dolS, prizeS, linxS, linyS, linzS, rocketS, fireballS, xpOrbS;
+	private ObjShape linxS, linyS, linzS, rocketS, fireballS, xpOrbS;
 	private ObjShape soupS, avatarOrbiterS;
 	private AnimatedShape mageAS;
 	private ObjShape ghostS;
 	// Skills
-	private ObjShape skill1S;
+	private ObjShape circleS;
 
-	private TextureImage doltx, fireballT, rocketT, avatarOrbiterT;
+	private TextureImage rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT;
 	private TextureImage ghostT;
 	private TextureImage mageT;
 	private TextureImage xpOrbT;
 	// Skills
-	private TextureImage skill1T;
+	private TextureImage fireballT, avatarOrbiterT, circleT;
 
 	private int darkSky, daySky;
 
@@ -118,7 +118,7 @@ public class MyGame extends VariableFrameRateGame {
 	private static boolean showXYZ;
 	private static boolean booster;
 	private boolean isBooster, isConsumed;
-	private boolean winFlag;
+	//private boolean winFlag;
 	private int scoreCounter;
 	private HashMap<String, Integer> playerStats;
 
@@ -144,12 +144,9 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadShapes() {
-		// dolS = new ImportedModel("dolphinHighPoly.obj");
 		rocketS = new Rocket();
 		planeS = new Plane();
-		fireballS = new ImportedModel("fireball.obj");
 		xpOrbS = new Sphere();
-		avatarOrbiterS = new Torus();
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -157,8 +154,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		soupS = new ImportedModel("soup.obj");
 		// mageS = new ImportedModel("mage.obj");
-		// myRobAS = new AnimatedShape("myRobot.rkm", "myRobot.rks");
-		// myRobAS.loadAnimation("WAVE", "myRobot_wave.rka");
 
 		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
 		mageAS.loadAnimation("MOVE", "mage_move.rka");
@@ -168,12 +163,13 @@ public class MyGame extends VariableFrameRateGame {
 		ghostS = new AnimatedShape("mage.rkm", "mage.rks");
 
 		// Skills
-		skill1S = new ImportedModel("circle.obj");
+		fireballS = new ImportedModel("fireball.obj");
+		avatarOrbiterS = new Torus();
+		circleS = new ImportedModel("circle.obj");
 	}
 
 	@Override
 	public void loadTextures() {
-		doltx = new TextureImage("Dolphin_HighPolyUV.png");
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("soup.jpg");
@@ -184,6 +180,7 @@ public class MyGame extends VariableFrameRateGame {
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
 		avatarOrbiterT = new TextureImage("soup.jpg");
+		circleT = new TextureImage("circle.png");
 	}
 
 	@Override
@@ -202,15 +199,6 @@ public class MyGame extends VariableFrameRateGame {
 		rocket.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
-
-		fireball = new GameObject(GameObject.root(), fireballS, fireballT);
-		initialTranslation = (new Matrix4f()).translation(0, 1, 0f);
-		fireball.setLocalTranslation(initialTranslation);
-		fireball.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-180.0f)));
-		initialScale = (new Matrix4f()).scaling(0.2f);
-		fireball.setLocalScale(initialScale);
-		fireball.getRenderStates().disableRendering();
 
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -238,6 +226,15 @@ public class MyGame extends VariableFrameRateGame {
 		// Sets the current playable character to mage
 		avatar = mage;
 
+		fireball = new GameObject(GameObject.root(), fireballS, fireballT);
+		initialTranslation = (new Matrix4f()).translation(0, 0.5f, 0);
+		fireball.setLocalTranslation(initialTranslation);
+		fireball.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-180.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		fireball.setLocalScale(initialScale);
+		fireball.getRenderStates().disableRendering();
+
 		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter1.setLocalTranslation(initialTranslation);
@@ -264,6 +261,15 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter3.setParent(avatar);
 		avatarOrbiter3.propagateTranslation(true);
 		avatarOrbiter3.propagateRotation(false);
+
+		circle = new GameObject(GameObject.root(), circleS, circleT);
+		initialTranslation = (new Matrix4f()).translation(0, -.58f, 0);
+		circle.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scale(10f);
+		circle.setLocalScale(initialScale);
+		circle.setParent(avatar);
+		circle.propagateTranslation(true);
+		circle.propagateRotation(false);
 	}
 
 	@Override
@@ -463,7 +469,7 @@ public class MyGame extends VariableFrameRateGame {
 		scoreCounter = 0;
 		showXYZ = true;
 		booster = false;
-		winFlag = false;
+		//winFlag = false;
 		isConsumed = false;
 		isBooster = false;
 	}
