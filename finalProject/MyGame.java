@@ -170,7 +170,7 @@ public class MyGame extends VariableFrameRateGame {
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 3f));
 
-		soupS = new ImportedModel("soup.obj");
+		soupS = new ImportedModel("icecream.obj");
 		rangerS = new ImportedModel("ranger.obj");
 		// mageS = new ImportedModel("mage.obj");
 
@@ -195,7 +195,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadTextures() {
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
-		soupT = new TextureImage("soup.jpg");
+		soupT = new TextureImage("icecream.png");
 		ghostT = new TextureImage("mage1.png");
 		mageT = new TextureImage("mage1.png");
 		xpOrbT = new TextureImage("soup.jpg");
@@ -716,7 +716,7 @@ public class MyGame extends VariableFrameRateGame {
 		soupsize = (soup.getWorldScale()).m00();
 		avrocDis = avloc.distance(souploc);
 
-		if (avrocDis - avsize - soupsize <= 0 && !isConsumed) {
+		if (avrocDis - avsize - soupsize <= .5 && !isConsumed) {
 			isBooster = true;
 			// rc.enable(); //If this is enabled, it crashed the game for some reason if the
 			// avatar collides with it.
