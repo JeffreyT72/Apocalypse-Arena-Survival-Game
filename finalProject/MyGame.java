@@ -716,7 +716,7 @@ public class MyGame extends VariableFrameRateGame {
 		soupsize = (soup.getWorldScale()).m00();
 		avrocDis = avloc.distance(souploc);
 
-		if (avrocDis - avsize - soupsize <= 0 && !isConsumed) {
+		if (avrocDis - avsize - soupsize <= .5 && !isConsumed) {
 			isBooster = true;
 			// rc.enable(); //If this is enabled, it crashed the game for some reason if the
 			// avatar collides with it.
