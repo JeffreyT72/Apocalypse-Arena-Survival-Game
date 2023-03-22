@@ -88,6 +88,7 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject angel;
 
 	private boolean fireballCurrentlyMoving = false;
+	private boolean leveledUp = false;
 	private Vector3f initialFireballPosition;
 	private float amtt = 0f;
 	private float amtt2 = 180f;
@@ -656,6 +657,19 @@ public class MyGame extends VariableFrameRateGame {
 		handleFireballMovement();
 		checkTouchXPOrb();
 		rotateOrbiters();
+		levelUp();
+	}
+
+	private void levelUp(){
+		int currExp = playerStats.get("experience");
+		int currLvl = playerStats.get("level");
+		if (currExp >= 100){
+			currExp -= 100;
+			currLvl++;
+			playerStats.replace("experience",currExp);
+			playerStats.replace("level", currLvl);
+			leveledUp = true;		
+		}
 	}
 
 	private void updateSkyboxes() {
@@ -728,11 +742,29 @@ public class MyGame extends VariableFrameRateGame {
 		String dispStr3 = "HP: " + playerStats.get("health");
 		String dispStr4 = "Level: " + playerStats.get("level");
 		String dispStr5 = "XP: " + playerStats.get("experience");
+		String dispStr6;
+		if(leveledUp){
+			dispStr6 = "Level Up";
+			Timer timer = new Timer();
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						leveledUp = false;
+					}
+				}, 5000); // Delay in milliseconds
+		}
+		else {
+			dispStr6 = "";
+		}
+		
+
 		Vector3f hud1Color = new Vector3f(1, 0, 1);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
 		Vector3f hud3Color = new Vector3f(1, 0, 0);
 		Vector3f hud4Color = new Vector3f(1, 0, 0);
 		Vector3f hud5Color = new Vector3f(1, 0, 0);
+		Vector3f hud6Color = new Vector3f(0, 1, 0);
+
 		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
 		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
 		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, timeStrX, timeStrY);
@@ -752,6 +784,10 @@ public class MyGame extends VariableFrameRateGame {
 		StrX = (int) (rs.getWidth() * playerVP.getRelativeWidth() + 10);
 		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 60);
 		(engine.getHUDmanager()).setHUD5(dispStr5, hud5Color, StrX, StrY);
+
+		StrX = (int) (rs.getWidth() /2);
+		StrY = (int) (rs.getHeight() * mainVp.getRelativeBottom()+ 200);
+		(engine.getHUDmanager()).setHUD6(dispStr6, hud6Color, timeStrX, StrY);
 	}
 
 	private void inputSetup() {
