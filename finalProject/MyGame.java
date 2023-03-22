@@ -132,6 +132,7 @@ public class MyGame extends VariableFrameRateGame {
 	//private boolean winFlag;
 	private int scoreCounter;
 	private HashMap<String, Integer> playerStats;
+	private HashMap<String, Integer> monsterStats;
 
 	private ScriptController scriptController;
 
@@ -497,6 +498,11 @@ public class MyGame extends VariableFrameRateGame {
 		playerStats.put("level", scriptController.getStartingLevel());
 		playerStats.put("experience", scriptController.getStartingExperience());
 		playerStats.put("atk", scriptController.getAtk());
+
+		monsterStats = new HashMap<String, Integer>();
+		monsterStats.put("monsterHealth", scriptController.getMonsterHealth());
+		monsterStats.put("monsterAtk", scriptController.getMonsterAtk());
+		monsterStats.put("monsterSpeed", scriptController.getMonsterSpeed());
 		// Older Variables. May or may not be needed
 		scoreCounter = 0;
 		showXYZ = true;

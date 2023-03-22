@@ -7,3 +7,6 @@ var startingExperience = 0;
 var atk = 10;
 var fireballTravelDistance = 15.0;
 var xpGainedPerOrb = 1;
+var monsterSpeed = 1;
+var monsterAtk = 2;
+var monsterHealth = 10;

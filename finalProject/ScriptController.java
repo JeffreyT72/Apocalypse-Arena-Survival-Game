@@ -22,6 +22,10 @@ public class ScriptController {
 	private int atk;
 	private float fireballTravelDistance;
 	private int xpGainedPerOrb;
+	private int monsterSpeed;
+	private int monsterHealth;
+	private int monsterAtk;
+
 
 	public ScriptController() {
 		ScriptEngineManager factory = new ScriptEngineManager();
@@ -42,6 +46,9 @@ public class ScriptController {
 		atk = ((int)(jsEngine.get("atk")));
 		fireballTravelDistance = ((Double)(jsEngine.get("fireballTravelDistance"))).floatValue();
 		xpGainedPerOrb = ((int)(jsEngine.get("xpGainedPerOrb")));
+		monsterAtk = ((int)(jsEngine.get("monsterAtk")));
+		monsterSpeed = ((int)(jsEngine.get("monsterSpeed")));
+		monsterHealth = ((int)(jsEngine.get("monsterHealth")));
     }
 
 	private void runScript(File scriptFile) {
@@ -89,5 +96,14 @@ public class ScriptController {
 	}
 	public int getXpGainedPerOrb(){
 		return this.xpGainedPerOrb;
+	}
+	public int getMonsterHealth(){
+		return this.monsterHealth;
+	}
+	public int getMonsterSpeed(){
+		return this.monsterSpeed;
+	}
+	public int getMonsterAtk(){
+		return this.monsterAtk;
 	}
 }
