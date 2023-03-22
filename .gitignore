@@ -39,3 +39,7 @@ Thumbs.db
 # Java classes
 *.class
 *.jar
+finalProject/MyGame.class
+finalProject/MyGame$1.class
+finalProject/MyGame$2.class
+finalProject/MyGame$SendCloseConnectionPacketAction.class
