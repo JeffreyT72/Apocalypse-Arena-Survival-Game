@@ -37,4 +37,5 @@ testem.log
 Thumbs.db
 
 # Java classes
-.class
+*.class
+*.jar

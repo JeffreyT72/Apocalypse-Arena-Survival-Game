@@ -6,6 +6,7 @@ import finalProject.control.*;
 import finalProject.manualObj.*;
 
 import tage.*;
+import tage.Light.LightType;
 import tage.shapes.*;
 import tage.input.*;
 import tage.input.action.AbstractInputAction;
@@ -76,10 +77,15 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject avatar, x, y, z, rocket;
 	private GameObject soup;
 	private GameObject mage;
+	private GameObject monsterNormal;
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
+	private ArrayList<GameObject> monsterNormals = new ArrayList<GameObject>();
 
-	// Skills
-	private GameObject fireball, avatarOrbiter1, avatarOrbiter2, avatarOrbiter3, circle;
+	// Skill Objects
+	private GameObject fireball;
+	private GameObject avatarOrbiter1, avatarOrbiter2, avatarOrbiter3;
+	private GameObject circle;
+	private GameObject angel;
 
 	private boolean fireballCurrentlyMoving = false;
 	private Vector3f initialFireballPosition;
@@ -87,25 +93,30 @@ public class MyGame extends VariableFrameRateGame {
 	private float amtt2 = 180f;
 	private float amtt3 = 360f;
 
-	private ObjShape linxS, linyS, linzS, rocketS, fireballS, xpOrbS;
-	private ObjShape soupS, avatarOrbiterS;
+	private ObjShape linxS, linyS, linzS, rocketS, xpOrbS;
+	private ObjShape soupS;
 	private AnimatedShape mageAS;
+	private AnimatedShape monsterNormalAS;
 	private ObjShape ghostS;
-	// Skills
+	// Skill Shapes
+	private ObjShape fireballS;
+	private ObjShape avatarOrbiterS;
 	private ObjShape circleS;
+	private ObjShape angelS;
 
 	private TextureImage rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT;
 	private TextureImage ghostT;
 	private TextureImage mageT;
+	private TextureImage monsterNormalT;
 	private TextureImage xpOrbT;
-	// Skills
+	// Skill Textures
 	private TextureImage fireballT, avatarOrbiterT, circleT;
 
 	private int darkSky, daySky;
 
-	private Light light1;
+	private Light light1, light2;
 
 	private Plane planeS;
 
@@ -161,12 +172,16 @@ public class MyGame extends VariableFrameRateGame {
 		mageAS.loadAnimation("ATTACK", "mage_attack.rka");
 		mageAS.loadAnimation("MOVEATTACK", "mage_moveattack.rka");
 
+		monsterNormalAS = new AnimatedShape("monster_normal.rkm", "monster_normal.rks");
+		monsterNormalAS.loadAnimation("MOVEATTACK", "monster_normal_moveattack.rka");
+
 		ghostS = new AnimatedShape("mage.rkm", "mage.rks");
 
 		// Skills
 		fireballS = new ImportedModel("fireball.obj");
 		avatarOrbiterS = new Torus();
 		circleS = new ImportedModel("circle.obj");
+		angelS = new ImportedModel("angel.obj");
 	}
 
 	@Override
@@ -177,6 +192,7 @@ public class MyGame extends VariableFrameRateGame {
 		ghostT = new TextureImage("mage1.png");
 		mageT = new TextureImage("mage1.png");
 		xpOrbT = new TextureImage("soup.jpg");
+		monsterNormalT = new TextureImage("monster_normal.png");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -239,7 +255,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter1.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scale(2f, 0.3f, 2);
+		initialScale = (new Matrix4f()).scale(2.5f, 0.3f, 2.5f);
 		avatarOrbiter1.setLocalScale(initialScale);
 		avatarOrbiter1.setParent(avatar);
 		avatarOrbiter1.propagateTranslation(true);
@@ -248,7 +264,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter2.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scale(2f, 0.3f, 2f);
+		initialScale = (new Matrix4f()).scale(2.5f, 0.3f, 2.5f);
 		avatarOrbiter2.setLocalScale(initialScale);
 		avatarOrbiter2.setParent(avatar);
 		avatarOrbiter2.propagateTranslation(true);
@@ -257,7 +273,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter3.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scale(2f, 0.3f, 2f);
+		initialScale = (new Matrix4f()).scale(2.5f, 0.3f, 2.5f);
 		avatarOrbiter3.setLocalScale(initialScale);
 		avatarOrbiter3.setParent(avatar);
 		avatarOrbiter3.propagateTranslation(true);
@@ -271,6 +287,18 @@ public class MyGame extends VariableFrameRateGame {
 		circle.setParent(avatar);
 		circle.propagateTranslation(true);
 		circle.propagateRotation(false);
+
+		angel = new GameObject(GameObject.root(), angelS);
+		angel.getRenderStates().setHasSolidColor(false);
+		angel.getRenderStates().setColor(new Vector3f(1f,1f,1f));
+		initialTranslation = (new Matrix4f()).translation(-.3f, 1f, -.3f);
+		angel.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scale(0.5f);
+		angel.setLocalScale(initialScale);
+		angel.setParent(avatar);
+		angel.propagateTranslation(true);
+		angel.propagateRotation(true);
+		angel.applyParentRotationToPosition(true);
 	}
 
 	@Override
@@ -368,8 +396,9 @@ public class MyGame extends VariableFrameRateGame {
 
 		if (protClient == null) {
 			System.out.println("missing protocol host");
-		} else { // ask client protocol to send initial join message
-					// to server, with a unique identifier for this client
+		} else { 
+			// ask client protocol to send initial join message
+			// to server, with a unique identifier for this client
 			System.out.println("sending join message to protocol host");
 			protClient.sendJoinMessage();
 		}
@@ -394,6 +423,9 @@ public class MyGame extends VariableFrameRateGame {
 
 		playWalkAnimation();
 		mageAS.updateAnimation();
+		monsterNormalAS.updateAnimation();
+	
+		monsterNormals.forEach((n) -> n.lookAt(avatar));
 
 		// update camera
 		orbitController.updateCameraPosition();
@@ -686,12 +718,6 @@ public class MyGame extends VariableFrameRateGame {
 		RenderSystem rs = engine.getRenderSystem();
 		Viewport mainVp = rs.getViewport(MAINVP);
 		Viewport playerVP = rs.getViewport(AVATARVP);
-		Viewport smallVp = rs.getViewport(TOPLEFTVP);
-
-		Vector3f avLoc = getAvatar().getWorldLocation();
-		float avLocX = avLoc.x();
-		float avLocY = avLoc.y();
-		float avLocZ = avLoc.z();
 
 		// build and set HUD
 		int elapsTimeSec = Math.round((float) displayTime);
@@ -878,7 +904,16 @@ public class MyGame extends VariableFrameRateGame {
 			}
 			case KeyEvent.VK_C: {
 				// Temporary key pressed action. Used to test xp orb creation
-				dropXP(randNum(), 1f, randNum());
+				float randX = randNum();
+				float randZ = randNum();
+				dropXP(randX, 1f, randZ);
+				spawnMonsterNormal(randX, 0.6f, randZ);
+				break;
+			}
+			case KeyEvent.VK_V: {
+				monsterNormalAS.stopAnimation();
+				monsterNormalAS.playAnimation("MOVEATTACK", 0.5f,
+				AnimatedShape.EndType.LOOP, 0);
 				break;
 			}
 		}
@@ -934,7 +969,17 @@ public class MyGame extends VariableFrameRateGame {
 		xpOrb.setLocalScale(initialScale);
 		mc.addTarget(xpOrb);
 		xpOrbs.add(xpOrb);
+	}
 
+	private void spawnMonsterNormal(float x, float y, float z) {
+		monsterNormal = new GameObject(GameObject.root(), monsterNormalAS, monsterNormalT);
+		Matrix4f initialTranslation = (new Matrix4f()).translation(x, y, z);
+		monsterNormal.setLocalTranslation(initialTranslation);
+		monsterNormal.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+		Matrix4f initialScale = (new Matrix4f()).scaling(0.2f);
+		monsterNormal.setLocalScale(initialScale);
+		monsterNormals.add(monsterNormal);
 	}
 
 	private void checkTouchXPOrb() {
@@ -982,4 +1027,5 @@ public class MyGame extends VariableFrameRateGame {
 		currentTranslation.translation((float) Math.sin(amtt3) * 2f, 0.3f, (float) Math.cos(amtt3) * 2f);
 		avatarOrbiter3.setLocalTranslation(currentTranslation);
 	}
+
 }
