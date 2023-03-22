@@ -81,6 +81,10 @@ public class MyGame extends VariableFrameRateGame {
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
 	private ArrayList<GameObject> monsterNormals = new ArrayList<GameObject>();
 
+	private GameObject ranger;
+	private ObjShape rangerS;
+	private TextureImage rangerT;
+
 	// Skill Objects
 	private GameObject fireball;
 	private GameObject avatarOrbiter1, avatarOrbiter2, avatarOrbiter3;
@@ -160,12 +164,14 @@ public class MyGame extends VariableFrameRateGame {
 		rocketS = new Rocket();
 		planeS = new Plane();
 		xpOrbS = new Sphere();
+		
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 3f));
 
 		soupS = new ImportedModel("soup.obj");
+		rangerS = new ImportedModel("ranger.obj");
 		// mageS = new ImportedModel("mage.obj");
 
 		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
@@ -194,6 +200,7 @@ public class MyGame extends VariableFrameRateGame {
 		mageT = new TextureImage("mage1.png");
 		xpOrbT = new TextureImage("soup.jpg");
 		monsterNormalT = new TextureImage("monster_normal.png");
+		rangerT = new TextureImage("ranger.png");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -218,6 +225,13 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
 
+		// build ranger
+		ranger = new GameObject(GameObject.root(), rangerS, rangerT);
+		initialTranslation = (new Matrix4f()).translation(0, 1, 2);
+		ranger.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(0.5f);
+		ranger.setLocalScale(initialScale);
+		
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
