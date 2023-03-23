@@ -19,13 +19,17 @@ public class ScriptController {
 	private int startingHealth;
 	private int startingLevel;
 	private int startingExperience;
+	private int startingSkillPoint;
 	private int atk;
+	private int fireballLv;
 	private float fireballTravelDistance;
+	private int avatarOrbiterLv;
+	private float orbiterSpeed;
+	private int circleLv;
 	private int xpGainedPerOrb;
 	private int monsterSpeed;
 	private int monsterHealth;
 	private int monsterAtk;
-
 
 	public ScriptController() {
 		ScriptEngineManager factory = new ScriptEngineManager();
@@ -36,20 +40,27 @@ public class ScriptController {
 		initializeParameters();
 	}
 
-    private void initializeParameters(){
-        baseSpeed = ((Double)(jsEngine.get("baseSpeed"))).floatValue();
-		sprintSpeed = ((Double)(jsEngine.get("sprintSpeed"))).floatValue();
-		teleportDistance = ((Double)(jsEngine.get("teleportDistance"))).floatValue();
-		startingHealth = ((int)(jsEngine.get("startingHealth")));
-		startingLevel = ((int)(jsEngine.get("startingLevel")));
-		startingExperience = ((int)(jsEngine.get("startingExperience")));
-		atk = ((int)(jsEngine.get("atk")));
-		fireballTravelDistance = ((Double)(jsEngine.get("fireballTravelDistance"))).floatValue();
-		xpGainedPerOrb = ((int)(jsEngine.get("xpGainedPerOrb")));
-		monsterAtk = ((int)(jsEngine.get("monsterAtk")));
-		monsterSpeed = ((int)(jsEngine.get("monsterSpeed")));
-		monsterHealth = ((int)(jsEngine.get("monsterHealth")));
-    }
+	private void initializeParameters() {
+		baseSpeed = ((Double) (jsEngine.get("baseSpeed"))).floatValue();
+		sprintSpeed = ((Double) (jsEngine.get("sprintSpeed"))).floatValue();
+		teleportDistance = ((Double) (jsEngine.get("teleportDistance"))).floatValue();
+		startingHealth = ((int) (jsEngine.get("startingHealth")));
+		startingLevel = ((int) (jsEngine.get("startingLevel")));
+		startingExperience = ((int) (jsEngine.get("startingExperience")));
+		startingSkillPoint = ((int) (jsEngine.get("startingSkillPoint")));
+		atk = ((int) (jsEngine.get("atk")));
+		
+		fireballLv = ((int) jsEngine.get("fireballLv"));
+		fireballTravelDistance = ((Double) (jsEngine.get("fireballTravelDistance"))).floatValue();
+		avatarOrbiterLv = ((int) jsEngine.get("avatarOrbiterLv"));
+		orbiterSpeed = ((Double) (jsEngine.get("orbiterSpeed"))).floatValue();
+		circleLv = ((int) jsEngine.get("circleLv"));
+
+		xpGainedPerOrb = ((int) (jsEngine.get("xpGainedPerOrb")));
+		monsterAtk = ((int) (jsEngine.get("monsterAtk")));
+		monsterSpeed = ((int) (jsEngine.get("monsterSpeed")));
+		monsterHealth = ((int) (jsEngine.get("monsterHealth")));
+	}
 
 	private void runScript(File scriptFile) {
 		try {
@@ -79,31 +90,60 @@ public class ScriptController {
 	public float getTeleportDistance() {
 		return this.teleportDistance;
 	}
-	public int getStartingHealth(){
+
+	public int getStartingHealth() {
 		return this.startingHealth;
 	}
-	public int getStartingLevel(){
+
+	public int getStartingLevel() {
 		return this.startingLevel;
 	}
-	public int getStartingExperience(){
+
+	public int getStartingExperience() {
 		return this.startingExperience;
 	}
-	public int getAtk(){
+
+	public int getStartingSkillPoint() {
+		return this.startingSkillPoint;
+	}
+
+	public int getAtk() {
 		return this.atk;
 	}
-	public float getFireballTravelDistance(){
+
+	public int getfireballLv() {
+		return this.fireballLv;
+	}
+
+	public float getFireballTravelDistance() {
 		return this.fireballTravelDistance;
 	}
-	public int getXpGainedPerOrb(){
+
+	public int getAvatarOrbiterLv() {
+		return this.avatarOrbiterLv;
+	}
+
+	public float getOrbiterSpeed() {
+		return this.orbiterSpeed;
+	}
+
+	public int getCircleLv() {
+		return this.circleLv;
+	}
+
+	public int getXpGainedPerOrb() {
 		return this.xpGainedPerOrb;
 	}
-	public int getMonsterHealth(){
+
+	public int getMonsterHealth() {
 		return this.monsterHealth;
 	}
-	public int getMonsterSpeed(){
+
+	public int getMonsterSpeed() {
 		return this.monsterSpeed;
 	}
-	public int getMonsterAtk(){
+
+	public int getMonsterAtk() {
 		return this.monsterAtk;
 	}
 }

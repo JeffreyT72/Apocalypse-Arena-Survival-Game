@@ -1,12 +1,24 @@
-var baseSpeed = .003;
-var sprintSpeed = .009;
-var teleportDistance = .7;
+// General
+var xpGainedPerOrb = 20;
+
+// Player stats
 var startingHealth = 100;
 var startingLevel = 1;
 var startingExperience = 0;
+var startingSkillPoint = 0;
+var baseSpeed = .003;
+var sprintSpeed = .009;
+var teleportDistance = .3;
 var atk = 10;
+
+// Player skills
+var fireballLv = 1;
 var fireballTravelDistance = 15.0;
-var xpGainedPerOrb = 20;
+var avatarOrbiterLv = 0;
+var orbiterSpeed = .03;
+var circleLv = 0;
+
+// Monster stats
 var monsterSpeed = 1;
 var monsterAtk = 2;
 var monsterHealth = 10;

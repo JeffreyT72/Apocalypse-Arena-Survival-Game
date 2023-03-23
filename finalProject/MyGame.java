@@ -6,7 +6,6 @@ import finalProject.control.*;
 import finalProject.manualObj.*;
 
 import tage.*;
-import tage.Light.LightType;
 import tage.shapes.*;
 import tage.input.*;
 import tage.input.action.AbstractInputAction;
@@ -57,7 +56,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Time variables
 	private double lastFrameTime, currFrameTime, elapsTime, displayTime;
-	private double tenSec;
+	private double fiveSec, tenSec;
 	private boolean skyboxCycleTime = true;
 
 	// Networking
@@ -93,6 +92,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	private boolean fireballCurrentlyMoving = false;
 	private boolean leveledUp = false;
+	private boolean skillMenu = false;
 	private Vector3f initialFireballPosition;
 	private float amtt = 0f;
 	private float amtt2 = 180f;
@@ -121,7 +121,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	private int darkSky, daySky;
 
-	private Light light1, light2;
+	private Light light1;
 
 	private Plane planeS;
 
@@ -134,6 +134,7 @@ public class MyGame extends VariableFrameRateGame {
 	private static boolean showXYZ;
 	private static boolean booster;
 	private boolean isBooster, isConsumed;
+	private float orbiterSpeed;
 	//private boolean winFlag;
 	private int scoreCounter;
 	private HashMap<String, Integer> playerStats;
@@ -164,7 +165,6 @@ public class MyGame extends VariableFrameRateGame {
 		rocketS = new Rocket();
 		planeS = new Plane();
 		xpOrbS = new Sphere();
-		
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -275,6 +275,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter1.setParent(avatar);
 		avatarOrbiter1.propagateTranslation(true);
 		avatarOrbiter1.propagateRotation(false);
+		avatarOrbiter1.getRenderStates().disableRendering();
 
 		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
@@ -284,6 +285,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter2.setParent(avatar);
 		avatarOrbiter2.propagateTranslation(true);
 		avatarOrbiter2.propagateRotation(false);
+		avatarOrbiter2.getRenderStates().disableRendering();
 
 		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
@@ -293,6 +295,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter3.setParent(avatar);
 		avatarOrbiter3.propagateTranslation(true);
 		avatarOrbiter3.propagateRotation(false);
+		avatarOrbiter3.getRenderStates().disableRendering();
 
 		circle = new GameObject(GameObject.root(), circleS, circleT);
 		initialTranslation = (new Matrix4f()).translation(0, -.58f, 0);
@@ -302,6 +305,7 @@ public class MyGame extends VariableFrameRateGame {
 		circle.setParent(avatar);
 		circle.propagateTranslation(true);
 		circle.propagateRotation(false);
+		circle.getRenderStates().disableRendering();
 
 		angel = new GameObject(GameObject.root(), angelS);
 		angel.getRenderStates().setHasSolidColor(false);
@@ -441,6 +445,7 @@ public class MyGame extends VariableFrameRateGame {
 		monsterNormalAS.updateAnimation();
 	
 		monsterNormals.forEach((n) -> n.lookAt(avatar));
+		ranger.lookAt(avatar);
 
 		// update camera
 		orbitController.updateCameraPosition();
@@ -513,6 +518,10 @@ public class MyGame extends VariableFrameRateGame {
 		playerStats.put("level", scriptController.getStartingLevel());
 		playerStats.put("experience", scriptController.getStartingExperience());
 		playerStats.put("atk", scriptController.getAtk());
+		playerStats.put("skillPoint", scriptController.getStartingSkillPoint());
+		playerStats.put("fireballLv", scriptController.getfireballLv());
+		playerStats.put("avatarOrbiterLv", scriptController.getAvatarOrbiterLv());
+		playerStats.put("circleLv", scriptController.getCircleLv());
 
 		monsterStats = new HashMap<String, Integer>();
 		monsterStats.put("monsterHealth", scriptController.getMonsterHealth());
@@ -525,6 +534,9 @@ public class MyGame extends VariableFrameRateGame {
 		//winFlag = false;
 		isConsumed = false;
 		isBooster = false;
+
+		fiveSec = -1;
+		orbiterSpeed = scriptController.getOrbiterSpeed();
 	}
 
 	private void initObj() {
@@ -670,19 +682,62 @@ public class MyGame extends VariableFrameRateGame {
 		checkTouchSoup();
 		handleFireballMovement();
 		checkTouchXPOrb();
-		rotateOrbiters();
+		rotateOrbiters(orbiterSpeed);
 		levelUp();
+		skillUpdate();
 	}
 
 	private void levelUp(){
 		int currExp = playerStats.get("experience");
 		int currLvl = playerStats.get("level");
+		int currATK = playerStats.get("atk");
+		int currSkillPoint = playerStats.get("skillPoint");
+		int currAvatarOrbiterLv = playerStats.get("avatarOrbiterLv");
+		int currCircleLv = playerStats.get("circleLv");
 		if (currExp >= 100){
 			currExp -= 100;
 			currLvl++;
-			playerStats.replace("experience",currExp);
+			currSkillPoint++;
+			playerStats.replace("experience", currExp);
 			playerStats.replace("level", currLvl);
-			leveledUp = true;		
+			playerStats.replace("skillPoint", currSkillPoint);
+			// 3 types of options for user to choose
+			// Increase player stats
+			//playerStats.replace("atk", ++currATK);
+			// Skill obtain
+			//playerStats.replace("avatarOrbiterLv", ++currAvatarOrbiterLv);	// To level 1
+			// Level up skill
+			//playerStats.replace("circleLv", ++currCircleLv);	// To level 2
+			
+			leveledUp = true;
+		}
+	}
+
+	private void skillUpdate() {
+		int currAvatarOrbiterLv = playerStats.get("avatarOrbiterLv");
+		int currCircleLv = playerStats.get("circleLv");
+		// AvatarOrbiter
+		if (currAvatarOrbiterLv == 1) {
+			avatarOrbiter1.getRenderStates().enableRendering();
+			avatarOrbiter2.getRenderStates().enableRendering();
+		} else if (currAvatarOrbiterLv == 2) {
+			avatarOrbiter1.setLocalScale(new Matrix4f().scale(3.5f, 0.3f, 3.5f));
+			avatarOrbiter2.setLocalScale(new Matrix4f().scale(3.5f, 0.3f, 3.5f));
+			avatarOrbiter3.setLocalScale(new Matrix4f().scale(3.5f, 0.3f, 3.5f));
+		} else if (currAvatarOrbiterLv == 3) {
+			avatarOrbiter3.getRenderStates().enableRendering();
+		} else if (currAvatarOrbiterLv == 4) {
+			orbiterSpeed = 0.06f;
+		}
+		// Circle
+		if (currCircleLv == 1) {
+			circle.getRenderStates().enableRendering();
+		} else if (currCircleLv == 2) {
+			circle.setLocalScale(new Matrix4f().scale(15f));
+		} else if (currCircleLv == 3) {
+			circle.setLocalScale(new Matrix4f().scale(20f));
+		} else if (currCircleLv == 4) {
+			rc.addTarget(circle);
 		}
 	}
 
@@ -757,8 +812,17 @@ public class MyGame extends VariableFrameRateGame {
 		String dispStr4 = "Level: " + playerStats.get("level");
 		String dispStr5 = "XP: " + playerStats.get("experience");
 		String dispStr6;
+		String dispStr7;
+
+		Vector3f hud1Color = new Vector3f(1, 0, 1);
+		Vector3f hud2Color = new Vector3f(0, 0, 1);
+		Vector3f hud3Color = new Vector3f(1, 0, 0);
+		Vector3f hud4Color = new Vector3f(1, 0, 0);
+		Vector3f hud5Color = new Vector3f(1, 0, 0);
+		Vector3f hud6Color = new Vector3f(0, 1, 0);
+
 		if(leveledUp){
-			dispStr6 = "Level Up";
+			dispStr6 = "Level Up! New Skill Point obtained";
 			Timer timer = new Timer();
 				timer.schedule(new TimerTask() {
 					@Override
@@ -770,14 +834,21 @@ public class MyGame extends VariableFrameRateGame {
 		else {
 			dispStr6 = "";
 		}
-		
 
-		Vector3f hud1Color = new Vector3f(1, 0, 1);
-		Vector3f hud2Color = new Vector3f(0, 0, 1);
-		Vector3f hud3Color = new Vector3f(1, 0, 0);
-		Vector3f hud4Color = new Vector3f(1, 0, 0);
-		Vector3f hud5Color = new Vector3f(1, 0, 0);
-		Vector3f hud6Color = new Vector3f(0, 1, 0);
+		if (skillMenu) {
+			fiveSec = elapsTimeSec+5;
+		}
+
+		if(elapsTimeSec <= fiveSec){
+			dispStr7 = "Skill point: " + playerStats.get("skillPoint");
+			hud6Color = new Vector3f(0, 1, 0);
+			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() /2), (rs.getHeight() /2));
+			skillMenu = false;
+		}
+		else {
+			dispStr7 = "";
+			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() /2), (rs.getHeight() /2));
+		}
 
 		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
 		int timeStrY = (int) (rs.getHeight() * mainVp.getRelativeHeight() - 80);
@@ -802,6 +873,7 @@ public class MyGame extends VariableFrameRateGame {
 		StrX = (int) (rs.getWidth() /2);
 		StrY = (int) (rs.getHeight() * mainVp.getRelativeBottom()+ 200);
 		(engine.getHUDmanager()).setHUD6(dispStr6, hud6Color, timeStrX, StrY);
+
 	}
 
 	private void inputSetup() {
@@ -966,6 +1038,40 @@ public class MyGame extends VariableFrameRateGame {
 				AnimatedShape.EndType.LOOP, 0);
 				break;
 			}
+			case KeyEvent.VK_F: {
+				skillMenu = true;
+				break;
+			}
+			case KeyEvent.VK_1: {
+				int sp = playerStats.get("skillPoint");
+				int currATK = playerStats.get("ATK");
+				if (sp >= 1) {
+					sp--;
+					playerStats.replace("skillPoint", sp);
+					playerStats.replace("ATK", ++currATK);
+				}
+				break;
+			}
+			case KeyEvent.VK_2: {
+				int sp = playerStats.get("skillPoint");
+				int currAvatarOrbiterLv = playerStats.get("avatarOrbiterLv");
+				if (sp >= 1) {
+					sp--;
+					playerStats.replace("skillPoint", sp);
+					playerStats.replace("avatarOrbiterLv", ++currAvatarOrbiterLv);
+				}
+				break;
+			}
+			case KeyEvent.VK_3: {
+				int sp = playerStats.get("skillPoint");
+				int currCircleLv = playerStats.get("circleLv");
+				if (sp >= 1) {
+					sp--;
+					playerStats.replace("skillPoint", sp);
+					playerStats.replace("circleLv", ++currCircleLv);
+				}
+				break;
+			}
 		}
 		super.keyPressed(e);
 	}
@@ -1061,18 +1167,18 @@ public class MyGame extends VariableFrameRateGame {
 		playerStats.replace("experience", newXP);
 	}
 
-	private void rotateOrbiters() {
-		amtt += 0.03f;
+	private void rotateOrbiters(float speed) {
+		amtt += speed;
 		Matrix4f currentTranslation = avatarOrbiter1.getLocalTranslation();
 		currentTranslation.translation((float) Math.sin(amtt) * 2f, 0.3f, (float) Math.cos(amtt) * 2f);
 		avatarOrbiter1.setLocalTranslation(currentTranslation);
 
-		amtt2 += 0.03f;
+		amtt2 += speed;
 		currentTranslation = avatarOrbiter2.getLocalTranslation();
 		currentTranslation.translation((float) Math.sin(amtt2) * 2f, 0.3f, (float) Math.cos(amtt2) * 2f);
 		avatarOrbiter2.setLocalTranslation(currentTranslation);
 
-		amtt3 += 0.03f;
+		amtt3 += speed;
 		currentTranslation = avatarOrbiter3.getLocalTranslation();
 		currentTranslation.translation((float) Math.sin(amtt3) * 2f, 0.3f, (float) Math.cos(amtt3) * 2f);
 		avatarOrbiter3.setLocalTranslation(currentTranslation);
