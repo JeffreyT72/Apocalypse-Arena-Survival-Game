@@ -33,15 +33,16 @@ public class HUDmanager
 	private GLUT glut = new GLUT();
 	private Engine engine;
 
-	private String HUD1string, HUD2string, HUD3string, HUD4string, HUD5string, HUD6string;
-	private float[] HUD1color, HUD2color, HUD3color, HUD4color, HUD5color, HUD6color;
+	private String HUD1string, HUD2string, HUD3string, HUD4string, HUD5string, HUD6string, HUD7string;
+	private float[] HUD1color, HUD2color, HUD3color, HUD4color, HUD5color, HUD6color, HUD7color;
 	private int HUD1font = GLUT.BITMAP_TIMES_ROMAN_24;
 	private int HUD2font = GLUT.BITMAP_TIMES_ROMAN_24;
 	private int HUD3font = GLUT.BITMAP_TIMES_ROMAN_24;
 	private int HUD4font = GLUT.BITMAP_TIMES_ROMAN_24;
 	private int HUD5font = GLUT.BITMAP_TIMES_ROMAN_24;
 	private int HUD6font = GLUT.BITMAP_TIMES_ROMAN_24;
-	private int HUD1x, HUD1y, HUD2x, HUD2y, HUD3x, HUD3y, HUD4x, HUD4y, HUD5x, HUD5y, HUD6x, HUD6y;
+	private int HUD7font = GLUT.BITMAP_TIMES_ROMAN_24;
+	private int HUD1x, HUD1y, HUD2x, HUD2y, HUD3x, HUD3y, HUD4x, HUD4y, HUD5x, HUD5y, HUD6x, HUD6y, HUD7x, HUD7y;
 	private int hudColorProgram;
 
 	// The constructor is called by the engine, and should not be called by the game application.
@@ -55,12 +56,14 @@ public class HUDmanager
 		HUD4string = "";
 		HUD5string = "";
 		HUD6string = "";
+		HUD7string = "";
 		HUD1color = new float[3];
 		HUD2color = new float[3];
 		HUD3color = new float[3];
 		HUD4color = new float[3];
 		HUD5color = new float[3];
 		HUD6color = new float[3];
+		HUD7color = new float[3];
 	}
 	
 	protected void setGLcanvas(GLCanvas g) { myCanvas = g; }
@@ -93,6 +96,10 @@ public class HUDmanager
 		gl4bc.glWindowPos2d (HUD6x, HUD6y);
 		prepHUDcolor(HUD6color, hcp);
 		glut.glutBitmapString (HUD6font, HUD6string);
+
+		gl4bc.glWindowPos2d (HUD7x, HUD7y);
+		prepHUDcolor(HUD7color, hcp);
+		glut.glutBitmapString (HUD7font, HUD7string);
 	}
 
 	/** sets HUD #1 to the specified text string, color, and location */
@@ -140,6 +147,14 @@ public class HUDmanager
 		HUD6color[0]=color.x(); HUD6color[1]=color.y(); HUD6color[2]=color.z();
 		HUD6x = x;
 		HUD6y = y;
+	}
+
+	/** sets HUD #5 to the specified text string, color, and location */
+	public void setHUD7(String string, Vector3f color, int x, int y)
+	{	HUD7string = string;
+		HUD7color[0]=color.x(); HUD7color[1]=color.y(); HUD7color[2]=color.z();
+		HUD7x = x;
+		HUD7y = y;
 	}
 
 	/** sets HUD #1 font - available fonts are listed above. */
