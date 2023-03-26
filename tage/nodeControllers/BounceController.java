@@ -5,7 +5,7 @@ import org.joml.*;
 public class BounceController extends NodeController {
     private float cycleTime = 2.0f;
     private float totalTime = 0.0f;
-    private float direction = 0.2f;
+    private float direction = 0.4f;
 
     public BounceController(Engine e) { 
         super();

@@ -13,7 +13,7 @@ public class ScriptController {
 	private ScriptEngine jsEngine;
 
 	// Game Parameters
-	private float baseSpeed;
+	private int baseSpeed;
 	private float sprintSpeed;
 	private float teleportDistance;
 	private int startingHealth;
@@ -41,7 +41,7 @@ public class ScriptController {
 	}
 
 	private void initializeParameters() {
-		baseSpeed = ((Double) (jsEngine.get("baseSpeed"))).floatValue();
+		baseSpeed = (int) jsEngine.get("baseSpeed");
 		sprintSpeed = ((Double) (jsEngine.get("sprintSpeed"))).floatValue();
 		teleportDistance = ((Double) (jsEngine.get("teleportDistance"))).floatValue();
 		startingHealth = ((int) (jsEngine.get("startingHealth")));
@@ -79,7 +79,7 @@ public class ScriptController {
 	}
 
 	// --------------Getters for Parameters--------------------
-	public float getBaseSpeed() {
+	public int getBaseSpeed() {
 		return this.baseSpeed;
 	}
 

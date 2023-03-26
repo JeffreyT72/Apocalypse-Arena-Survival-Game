@@ -21,7 +21,7 @@ public class BwdAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().bwdAction(game.getScriptController().getSprintSpeed() * time);
         } else {
-            game.getAvatar().bwdAction(game.getScriptController().getBaseSpeed() * time);
+            game.getAvatar().bwdAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
         }
         game.callSendMoveMessage();
     }
