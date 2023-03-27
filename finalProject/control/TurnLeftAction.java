@@ -20,7 +20,7 @@ public class TurnLeftAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().leftAction(game.getScriptController().getSprintSpeed() * time);
         } else {
-            game.getAvatar().leftAction(game.getScriptController().getBaseSpeed() * time);
+            game.getAvatar().leftAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
         }
         game.callSendMoveMessage();
     }

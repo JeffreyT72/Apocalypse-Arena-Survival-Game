@@ -12,11 +12,9 @@ import net.java.games.input.*;
 
 public class FwdAction extends AbstractInputAction {
     private MyGame game;
-    private ProtocolClient protClient;
 
-    public FwdAction(MyGame g, ProtocolClient p) {
+    public FwdAction(MyGame g) {
         game = g;
-        protClient = p;
     }
 
     @Override
@@ -28,7 +26,7 @@ public class FwdAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().fwdAction(game.getScriptController().getSprintSpeed() * time);
         } else {
-            game.getAvatar().fwdAction(game.getScriptController().getBaseSpeed() * time);
+            game.getAvatar().fwdAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
         }
 
         game.callSendMoveMessage();

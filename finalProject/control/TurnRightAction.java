@@ -18,7 +18,7 @@ public class TurnRightAction extends AbstractInputAction {
         if (MyGame.getBooster()) {
             game.getAvatar().rightAction(game.getScriptController().getSprintSpeed() * time);
         } else {
-            game.getAvatar().rightAction(game.getScriptController().getBaseSpeed() * time);
+            game.getAvatar().rightAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
         }
         game.callSendMoveMessage();
     }

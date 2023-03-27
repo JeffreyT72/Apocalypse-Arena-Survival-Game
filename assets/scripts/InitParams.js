@@ -6,9 +6,9 @@ var startingHealth = 100;
 var startingLevel = 1;
 var startingExperience = 0;
 var startingSkillPoint = 0;
-var baseSpeed = .003;
+var baseSpeed = 1;
 var sprintSpeed = .009;
-var teleportDistance = .3;
+var teleportDistance = .6;
 var atk = 10;
 
 // Player skills

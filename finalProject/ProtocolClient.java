@@ -3,6 +3,8 @@ package finalProject;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.Vector;
@@ -11,179 +13,261 @@ import org.joml.*;
 import tage.*;
 import tage.networking.client.GameConnectionClient;
 
-public class ProtocolClient extends GameConnectionClient
-{
+public class ProtocolClient extends GameConnectionClient {
 	private MyGame game;
 	private GhostManager ghostManager;
 	private UUID id;
-	
-	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException 
-	{	super(remoteAddr, remotePort, protocolType);
+
+	float prevX = 0, prevZ = 0, randX = 0, randZ = 0, trueX = 0, trueZ = 0;
+
+	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game)
+			throws IOException {
+		super(remoteAddr, remotePort, protocolType);
 		this.game = game;
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
 	}
-	
-	public UUID getID() { return id; }
-	
+
+	public UUID getID() {
+		return id;
+	}
+
 	@Override
-	protected void processPacket(Object message)
-	{	String strMessage = (String)message;
-		System.out.println("message received -->" + strMessage);
+	protected void processPacket(Object message) {
+		String strMessage = (String) message;
+		// System.out.println("message received -->" + strMessage);
 		String[] messageTokens = strMessage.split(",");
-		
+
 		// Game specific protocol to handle the message
-		if(messageTokens.length > 0)
-		{
+		if (messageTokens.length > 0) {
 			// Handle JOIN message
 			// Format: (join,success) or (join,failure)
-			if(messageTokens[0].compareTo("join") == 0)
-			{	if(messageTokens[1].compareTo("success") == 0)
-				{	System.out.println("join success confirmed");
+			if (messageTokens[0].compareTo("join") == 0) {
+				if (messageTokens[1].compareTo("success") == 0) {
+					System.out.println("join success confirmed");
 					game.setIsConnected(true);
 					sendCreateMessage(game.getPlayerPosition());
 				}
-				if(messageTokens[1].compareTo("failure") == 0)
-				{	System.out.println("join failure confirmed");
+				if (messageTokens[1].compareTo("failure") == 0) {
+					System.out.println("join failure confirmed");
 					game.setIsConnected(false);
-			}	}
-			
+				}
+			}
+
 			// Handle BYE message
 			// Format: (bye,remoteId)
-			if(messageTokens[0].compareTo("bye") == 0)
-			{	// remove ghost avatar with id = remoteId
-				// Parse out the id into a UUID
+			if (messageTokens[0].compareTo("bye") == 0) { // remove ghost avatar with id = remoteId
+															// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				ghostManager.removeGhostAvatar(ghostID);
 			}
-			
+
 			// Handle CREATE message
 			// Format: (create,remoteId,x,y,z)
 			// AND
 			// Handle DETAILS_FOR message
 			// Format: (dsfr,remoteId,x,y,z)
-			if (messageTokens[0].compareTo("create") == 0 || (messageTokens[0].compareTo("dsfr") == 0))
-			{	// create a new ghost avatar
-				// Parse out the id into a UUID
+			if (messageTokens[0].compareTo("create") == 0 || (messageTokens[0].compareTo("dsfr") == 0)) { // create a
+				// new ghost avatar Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
-				
+
 				// Parse out the position into a Vector3f
 				Vector3f ghostPosition = new Vector3f(
-					Float.parseFloat(messageTokens[2]),
-					Float.parseFloat(messageTokens[3]),
-					Float.parseFloat(messageTokens[4]));
+						Float.parseFloat(messageTokens[2]),
+						Float.parseFloat(messageTokens[3]),
+						Float.parseFloat(messageTokens[4]));
 
-				try
-				{	ghostManager.createGhostAvatar(ghostID, ghostPosition);
-				}	catch (IOException e)
-				{	System.out.println("error creating ghost avatar");
+				try {
+					ghostManager.createGhostAvatar(ghostID, ghostPosition);
+				} catch (IOException e) {
+					System.out.println("error creating ghost avatar");
 				}
 			}
-			
+
 			// Handle WANTS_DETAILS message
 			// Format: (wsds,remoteId)
-			if (messageTokens[0].compareTo("wsds") == 0)
-			{
+			if (messageTokens[0].compareTo("wsds") == 0) {
 				// Send the local client's avatar's information
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				sendDetailsForMessage(ghostID, game.getPlayerPosition());
 			}
-			
+
 			// Handle MOVE message
 			// Format: (move,remoteId,x,y,z)
-			if (messageTokens[0].compareTo("move") == 0)
-			{
+			if (messageTokens[0].compareTo("move") == 0) {
 				// move a ghost avatar
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
-				
+
 				// Parse out the position into a Vector3f
 				Vector3f ghostPosition = new Vector3f(
-					Float.parseFloat(messageTokens[2]),
-					Float.parseFloat(messageTokens[3]),
-					Float.parseFloat(messageTokens[4]));
-				
-				// Parse out the position into a Vector3f
+						Float.parseFloat(messageTokens[2]),
+						Float.parseFloat(messageTokens[3]),
+						Float.parseFloat(messageTokens[4]));
+
+				// Parse out the orientation into a Vector3f
 				Vector3f ghostOrientation = new Vector3f(
-					Float.parseFloat(messageTokens[5]),
-					Float.parseFloat(messageTokens[6]),
-					Float.parseFloat(messageTokens[7]));
+						Float.parseFloat(messageTokens[5]),
+						Float.parseFloat(messageTokens[6]),
+						Float.parseFloat(messageTokens[7]));
 
 				ghostManager.updateGhostAvatar(ghostID, ghostPosition, ghostOrientation);
-	}	}	}
-	
-	// The initial message from the game client requesting to join the 
-	// server. localId is a unique identifier for the client. Recommend 
+			}
+
+			if (messageTokens[0].compareTo("playerStats") == 0) {
+				// Parse out the id into a UUID
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+
+				HashMap<String, Integer> ghostStats = new HashMap<String, Integer>();
+				ghostStats.put("health", Integer.parseInt(messageTokens[2]));
+				ghostStats.put("level", Integer.parseInt(messageTokens[3]));
+				ghostStats.put("atk", Integer.parseInt(messageTokens[4]));
+				ghostStats.put("fireballLv", Integer.parseInt(messageTokens[5]));
+				ghostStats.put("avatarOrbiterLv", Integer.parseInt(messageTokens[6]));
+				ghostStats.put("circleLv", Integer.parseInt(messageTokens[7]));
+
+				ghostManager.updateGhostAvatarInfo(ghostID, ghostStats);
+			}
+
+			if (messageTokens[0].compareTo("changeSkyBoxes") == 0) {
+				// Parse out the id into a UUID
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+
+				if (Boolean.parseBoolean(messageTokens[2])) {
+					(MyGame.getEngine().getSceneGraph()).setActiveSkyBoxTexture(game.getDaySky());
+					MyGame.getEngine().getSceneGraph().setSkyBoxEnabled(true);
+				} else {
+					(MyGame.getEngine().getSceneGraph()).setActiveSkyBoxTexture(game.getDarkSky());
+					MyGame.getEngine().getSceneGraph().setSkyBoxEnabled(true);
+				}
+
+				prevX = randX;
+				prevZ = randZ;
+				randX = Float.parseFloat(messageTokens[3]);
+				randZ = Float.parseFloat(messageTokens[4]);
+				trueX = randX - prevX;
+				trueZ = randZ - prevZ;
+				// At most 50 enemy on screen
+				if (game.monsterNormals.size() < 50) {
+					if (!(trueX == 0f && trueZ == 0f)) {
+						game.dropXP(randX, 1f, randZ);
+						game.spawnMonsterNormal(randX, 0.6f, randZ);
+					}
+				} else {
+					GameObject deleteGO = game.monsterNormals.get(0);
+					(MyGame.getEngine().getSceneGraph()).removeGameObject(deleteGO);
+					game.monsterNormals.get(0).setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+					game.monsterNormals.remove(deleteGO);
+				}
+			}
+		}
+	}
+
+	// The initial message from the game client requesting to join the
+	// server. localId is a unique identifier for the client. Recommend
 	// a random UUID.
 	// Message Format: (join,localId)
-	
-	public void sendJoinMessage()
-	{	try 
-		{	sendPacket(new String("join," + id.toString()));
-		} catch (IOException e) 
-		{	e.printStackTrace();
-	}	}
-	
-	// Informs the server that the client is leaving the server. 
+
+	public void sendJoinMessage() {
+		try {
+			sendPacket(new String("join," + id.toString()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// Informs the server that the client is leaving the server.
 	// Message Format: (bye,localId)
 
-	public void sendByeMessage()
-	{	try 
-		{	sendPacket(new String("bye," + id.toString()));
-		} catch (IOException e) 
-		{	e.printStackTrace();
-	}	}
-	
-	// Informs the server of the client�s Avatar�s position. The server 
-	// takes this message and forwards it to all other clients registered 
+	public void sendByeMessage() {
+		try {
+			sendPacket(new String("bye," + id.toString()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// Informs the server of the client�s Avatar�s position. The server
+	// takes this message and forwards it to all other clients registered
 	// with the server.
-	// Message Format: (create,localId,x,y,z) where x, y, and z represent the position
+	// Message Format: (create,localId,x,y,z) where x, y, and z represent the
+	// position
 
-	public void sendCreateMessage(Vector3f position)
-	{	try 
-		{	String message = new String("create," + id.toString());
+	public void sendCreateMessage(Vector3f position) {
+		try {
+			String message = new String("create," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-			
+
 			sendPacket(message);
-		} catch (IOException e) 
-		{	e.printStackTrace();
-	}	}
-	
-	// Informs the server of the local avatar's position. The server then 
-	// forwards this message to the client with the ID value matching remoteId. 
-	// This message is generated in response to receiving a WANTS_DETAILS message 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// Informs the server of the local avatar's position. The server then
+	// forwards this message to the client with the ID value matching remoteId.
+	// This message is generated in response to receiving a WANTS_DETAILS message
 	// from the server.
-	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the position.
+	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the
+	// position.
 
-	public void sendDetailsForMessage(UUID remoteId, Vector3f position)
-	{	try 
-		{	String message = new String("dsfr," + remoteId.toString() + "," + id.toString());
+	public void sendDetailsForMessage(UUID remoteId, Vector3f position) {
+		try {
+			String message = new String("dsfr," + remoteId.toString() + "," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-			
-			sendPacket(message);
-		} catch (IOException e) 
-		{	e.printStackTrace();
-	}	}
-	
-	// Informs the server that the local avatar has changed position.  
-	// Message Format: (move,localId,x,y,z) where x, y, and z represent the position.
 
-	public void sendMoveMessage(Vector3f position, Vector3f orientation)
-	{	try {
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// Informs the server that the local avatar has changed position.
+	// Message Format: (move,localId,x,y,z) where x, y, and z represent the
+	// position.
+
+	public void sendMoveMessage(Vector3f position, Vector3f orientation) {
+		try {
 			String message = new String("move," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-			message += "," + orientation.x();	// Z
-			message += "," + orientation.y();	// Y
-			message += "," + orientation.z();	// X
+			message += "," + orientation.x(); // Z
+			message += "," + orientation.y(); // Y
+			message += "," + orientation.z(); // X
 			sendPacket(message);
-		} catch (IOException e) 
-		{	e.printStackTrace();
-	}	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void sendPlayerStatsMessage(HashMap playerStats) {
+		try {
+			String message = new String("playerStats," + id.toString());
+			message += "," + playerStats.get("health");
+			message += "," + playerStats.get("level");
+			message += "," + playerStats.get("atk");
+			message += "," + playerStats.get("fireballLv");
+			message += "," + playerStats.get("avatarOrbiterLv");
+			message += "," + playerStats.get("circleLv");
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void sendChangeSkyBoxesMessage(boolean switchSkyBoxes) {
+		try {
+			String message = new String("changeSkyBoxes," + id.toString());
+			//message += "," + switchSkyBoxes;
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
