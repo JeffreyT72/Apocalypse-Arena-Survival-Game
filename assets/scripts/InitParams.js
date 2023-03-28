@@ -1,5 +1,5 @@
 // General
-var xpGainedPerOrb = 20;
+var xpGainedPerOrb = 100;
 
 // Player stats
 var startingHealth = 100;
@@ -9,6 +9,7 @@ var startingSkillPoint = 0;
 var baseSpeed = 1;
 var sprintSpeed = .009;
 var teleportDistance = .6;
+var teleportCooldownTime = 5.0;
 var atk = 10;
 
 // Player skills

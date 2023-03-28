@@ -96,4 +96,8 @@ public class InputController {
 				net.java.games.input.Component.Identifier.Key.X, toggleXYZ,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 	}
+
+	public void update(float time){
+		im.update(time);
+	}
 }
