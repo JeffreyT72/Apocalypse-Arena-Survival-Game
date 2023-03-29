@@ -18,6 +18,10 @@ public class TeleportAction extends AbstractInputAction {
         float keyValue = e.getValue();
         if (keyValue > -.2 && keyValue < .2) return;  // deadzone
 
-        game.getAvatar().fwdAction(game.getScriptController().getTeleportDistance() * time);
+        
+        if(!game.getInTeleportCooldown()){
+            game.getAvatar().fwdAction(game.getScriptController().getTeleportDistance() * time);
+            game.startTeleportCooldown();
+        }
     }
 }
