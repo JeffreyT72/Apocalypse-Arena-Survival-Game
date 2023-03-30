@@ -91,7 +91,8 @@ public class MyGame extends VariableFrameRateGame {
 	private TextureImage rangerT;
 
 	// Skill Objects
-	private GameObject fireball;
+	private GameObject fireball0, fireball1, fireball2;
+	private boolean fire3Fireballs = false;
 	private GameObject avatarOrbiter1, avatarOrbiter2, avatarOrbiter3;
 	private GameObject circle;
 	private GameObject angel;
@@ -170,6 +171,8 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject terr;
 	private ObjShape terrS;
 	private TextureImage wall;
+	private boolean inTeleportCooldown=false;
+	private double timeToEndCooldown = 0.0;
 
 	public MyGame(String serverAddress, int serverPort, String protocol) {
 		super();
@@ -357,14 +360,32 @@ public class MyGame extends VariableFrameRateGame {
 		// avatar = mage;
 		avatar = archer;
 
-		fireball = new GameObject(GameObject.root(), fireballS, fireballT);
+		fireball0 = new GameObject(GameObject.root(), fireballS, fireballT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.5f, 0);
-		fireball.setLocalTranslation(initialTranslation);
-		fireball.getRenderStates().setModelOrientationCorrection(
+		fireball0.setLocalTranslation(initialTranslation);
+		fireball0.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-180.0f)));
 		initialScale = (new Matrix4f()).scaling(0.2f);
-		fireball.setLocalScale(initialScale);
-		fireball.getRenderStates().disableRendering();
+		fireball0.setLocalScale(initialScale);
+		fireball0.getRenderStates().disableRendering();
+
+		fireball1 = new GameObject(GameObject.root(), fireballS, fireballT);
+		initialTranslation = (new Matrix4f()).translation(0, 0.5f, 0);
+		fireball1.setLocalTranslation(initialTranslation);
+		fireball1.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-180.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		fireball1.setLocalScale(initialScale);
+		fireball1.getRenderStates().disableRendering();
+
+		fireball2 = new GameObject(GameObject.root(), fireballS, fireballT);
+		initialTranslation = (new Matrix4f()).translation(0, 0.5f, 0);
+		fireball2.setLocalTranslation(initialTranslation);
+		fireball2.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-180.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		fireball2.setLocalScale(initialScale);
+		fireball2.getRenderStates().disableRendering();
 
 		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
@@ -502,7 +523,8 @@ public class MyGame extends VariableFrameRateGame {
 		initCamera();
 
 		// keyboard and gamepad input manager setup
-		inputController = new InputController(this, engine);
+		//inputController = new InputController(this, engine);
+		inputSetup();
 
 		// Used for playing animations while avatar is moving
 		lastFramePosition = avatar.getWorldLocation();
@@ -547,6 +569,7 @@ public class MyGame extends VariableFrameRateGame {
 		updateGameLogic();
 		// update inputs
 		im.update((float) elapsTime);
+		//inputController.update((float) elapsTime);
 
 		playWalkAnimation();
 		mageAS.updateAnimation();
@@ -738,12 +761,32 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		
+		
 		if (!fireballCurrentlyMoving) {
-			/** May need to add some offset to spawn fireball in front of avatar */
-			fireball.setLocalLocation(avatar.getWorldLocation());
-			fireball.setLocalRotation(avatar.getWorldRotation());
-			fireball.getRenderStates().enableRendering();
-			initialFireballPosition = fireball.getWorldLocation();
+			/** May need to add some offset to spawn fireball0 in front of avatar */
+			fireball0.setLocalLocation(avatar.getWorldLocation());
+			fireball0.setLocalRotation(avatar.getWorldRotation());
+			fireball0.getRenderStates().enableRendering();
+
+			//If the player's level is greater than 3, they get access to 3 fireballs
+			if(playerStats.get("level") >= 3){
+				fire3Fireballs = true;
+			}
+			else{
+				fire3Fireballs = false;
+			}
+			if(fire3Fireballs){
+				fireball1.setLocalLocation(avatar.getWorldLocation());
+				fireball1.setLocalRotation(avatar.getWorldRotation());
+				fireball1.turnRightAction(.1f);
+				fireball1.getRenderStates().enableRendering();
+				fireball2.setLocalLocation(avatar.getWorldLocation());
+				fireball2.setLocalRotation(avatar.getWorldRotation());
+				fireball2.turnLeftAction(.1f);
+				fireball2.getRenderStates().enableRendering();
+			}
+			initialFireballPosition = fireball0.getWorldLocation();
 			fireballCurrentlyMoving = true;
 			if (currentlyMoving) {
 				mageAS.playAnimation("MOVEATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
@@ -765,17 +808,28 @@ public class MyGame extends VariableFrameRateGame {
 
 	private void handleFireballMovement() {
 		if (fireballCurrentlyMoving &&
-				(fireball.getWorldLocation().distance(initialFireballPosition) < scriptController
+				(fireball0.getWorldLocation().distance(initialFireballPosition) < scriptController
 						.getFireballTravelDistance())) {
-			fireball.fwdAction(.01f * (float) elapsTime);
+			fireball0.fwdAction(.01f * (float) elapsTime);
+			if(fire3Fireballs){
+				fireball1.fwdAction(.01f * (float) elapsTime);
+				fireball2.fwdAction(.01f * (float) elapsTime);
+			}
 		} else if (fireballCurrentlyMoving &&
-				(fireball.getWorldLocation().distance(initialFireballPosition) >= scriptController
+				(fireball0.getWorldLocation().distance(initialFireballPosition) >= scriptController
 						.getFireballTravelDistance())) {
-			fireball.getRenderStates().disableRendering();
-			// Moves the fireball below the world so it still doesnt interact with objects
+			fireball0.getRenderStates().disableRendering();
+			// Moves the fireball0 below the world so it still doesnt interact with objects
 			// even though rendering was disabled
-			fireball.setLocalLocation(new Vector3f(0, -10, 0));
+			fireball0.setLocalLocation(new Vector3f(0, -10, 0));
+			if(fire3Fireballs){
+				fireball1.getRenderStates().disableRendering();
+				fireball1.setLocalLocation(new Vector3f(0, -10, 0));
+				fireball2.getRenderStates().disableRendering();
+				fireball2.setLocalLocation(new Vector3f(0, -10, 0));
+			}
 			fireballCurrentlyMoving = false;
+			
 		}
 	}
 
@@ -800,6 +854,7 @@ public class MyGame extends VariableFrameRateGame {
 		rotateOrbiters(orbiterSpeed);
 		levelUp();
 		skillUpdate();
+		handleTeleportCooldown();
 	}
 
 	private void levelUp() {
@@ -1279,6 +1334,95 @@ public class MyGame extends VariableFrameRateGame {
 		currentTranslation = gavatarOrbiter3.getLocalTranslation();
 		currentTranslation.translation((float) Math.sin(amtt3) * 2f, 0.3f, (float) Math.cos(amtt3) * 2f);
 		gavatarOrbiter3.setLocalTranslation(currentTranslation);
+	}
+
+	private void inputSetup() {
+		// ----------------- INPUTS SECTION -----------------------------
+		//im = e.getInputManager();
+		FwdAction fwdAction = new FwdAction(this);
+		BwdAction bwdAction = new BwdAction(this);
+		FwdBwdAction fwdbwdAction = new FwdBwdAction(this);
+		TeleportAction teleportAction = new TeleportAction(this);
+
+		TurnRightAction turnRightAction = new TurnRightAction(this);
+		TurnLeftAction turnLeftAction = new TurnLeftAction(this);
+		TurnAction turnAction = new TurnAction(this);
+
+		// SpeedUpAction speedUpAction = new SpeedUpAction(this);
+
+		// Second Camera Control
+		SecCamPanUpAction secCamPanUpAction = new SecCamPanUpAction(this);
+		SecCamPanDownAction secCamPanDownAction = new SecCamPanDownAction(this);
+		SecCamPanLeftAction secCamPanLeftAction = new SecCamPanLeftAction(this);
+		SecCamPanRightAction secCamPanRightAction = new SecCamPanRightAction(this);
+		SecCamPanZoomInAction secCamPanZoomInAction = new SecCamPanZoomInAction(this);
+		SecCamPanZoomOutAction secCamPanZoomOutAction = new SecCamPanZoomOutAction(this);
+
+		ToggleXYZ toggleXYZ = new ToggleXYZ(this);
+
+		// Gamepad
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Axis.Y, fwdbwdAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Axis.X, turnAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+
+		// Keyboard
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.W, fwdAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.S, bwdAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.A, turnLeftAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.D, turnRightAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.LSHIFT, teleportAction,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		// im.associateActionWithAllKeyboards(
+		// net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
+		// InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
+
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.UP, secCamPanUpAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.DOWN, secCamPanDownAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.LEFT, secCamPanLeftAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.RIGHT, secCamPanRightAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.PERIOD, secCamPanZoomInAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.COMMA, secCamPanZoomOutAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.X, toggleXYZ,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+	}
+
+	public void startTeleportCooldown(){
+		this.inTeleportCooldown = true;
+		timeToEndCooldown = displayTime + scriptController.getTeleportCooldownTime();
+	}
+	public boolean getInTeleportCooldown(){
+		return this.inTeleportCooldown;
+	}
+	private void handleTeleportCooldown(){
+		if(displayTime >= timeToEndCooldown){
+			this.inTeleportCooldown = false;
+		}
 	}
 
 }

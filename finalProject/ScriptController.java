@@ -30,6 +30,7 @@ public class ScriptController {
 	private int monsterSpeed;
 	private int monsterHealth;
 	private int monsterAtk;
+	private double teleportCooldownTime;
 
 	public ScriptController() {
 		ScriptEngineManager factory = new ScriptEngineManager();
@@ -49,6 +50,8 @@ public class ScriptController {
 		startingExperience = ((int) (jsEngine.get("startingExperience")));
 		startingSkillPoint = ((int) (jsEngine.get("startingSkillPoint")));
 		atk = ((int) (jsEngine.get("atk")));
+		teleportCooldownTime = ((Double) (jsEngine.get("teleportCooldownTime")));
+
 		
 		fireballLv = ((int) jsEngine.get("fireballLv"));
 		fireballTravelDistance = ((Double) (jsEngine.get("fireballTravelDistance"))).floatValue();
@@ -145,5 +148,9 @@ public class ScriptController {
 
 	public int getMonsterAtk() {
 		return this.monsterAtk;
+	}
+
+	public double getTeleportCooldownTime(){
+		return this.teleportCooldownTime;
 	}
 }
