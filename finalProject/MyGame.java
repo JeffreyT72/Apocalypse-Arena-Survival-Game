@@ -75,8 +75,14 @@ public class MyGame extends VariableFrameRateGame {
 	private Random rand = new Random();
 	private GameObject avatar, x, y, z, rocket;
 	private GameObject soup;
+	private GameObject gateN, gateE, gateS, gateW;
 	private GameObject mage;
+	private GameObject archer;
 	private GameObject monsterNormal;
+
+	// Additional object
+	private GameObject fence, lamp, house;
+
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
 	public ArrayList<GameObject> monsterNormals = new ArrayList<GameObject>();
 
@@ -104,9 +110,17 @@ public class MyGame extends VariableFrameRateGame {
 
 	private ObjShape linxS, linyS, linzS, rocketS, xpOrbS;
 	private ObjShape soupS;
+	private ObjShape gateSh;
+	// private ObjShape archerS;
 	private AnimatedShape mageAS;
+	private AnimatedShape archerAS;
 	private AnimatedShape monsterNormalAS;
-	private ObjShape ghostS;
+	private ObjShape ghostS_Mage;
+	private ObjShape ghostS_Archer;
+
+	// Additional object Shape
+	private ObjShape fenceS, lampS, houseS;
+
 	// Skill Shapes
 	private ObjShape fireballS;
 	private ObjShape avatarOrbiterS;
@@ -116,10 +130,16 @@ public class MyGame extends VariableFrameRateGame {
 	private TextureImage rocketT;
 	private TextureImage planeT;
 	private TextureImage soupT;
-	private TextureImage ghostT;
+	private TextureImage gateT;
+	private TextureImage ghostT_Mage;
+	private TextureImage ghostT_Archer;
 	private TextureImage mageT;
+	private TextureImage archerT;
 	private TextureImage monsterNormalT;
 	private TextureImage xpOrbT;
+	// Additional object Texture
+	private TextureImage fenceT, lampT, houseT;
+
 	// Skill Textures
 	private TextureImage fireballT, avatarOrbiterT, circleT;
 
@@ -139,7 +159,7 @@ public class MyGame extends VariableFrameRateGame {
 	private static boolean booster;
 	private boolean isBooster, isConsumed;
 	private float orbiterSpeed;
-	//private boolean winFlag;
+	// private boolean winFlag;
 	private int scoreCounter;
 	private HashMap<String, Integer> playerStats;
 	private HashMap<String, Integer> monsterStats;
@@ -147,6 +167,10 @@ public class MyGame extends VariableFrameRateGame {
 	private ScriptController scriptController;
 	private InputController inputController;
 
+	// Image-Based Height Maps
+	private GameObject terr;
+	private ObjShape terrS;
+	private TextureImage wall;
 	private boolean inTeleportCooldown=false;
 	private double timeToEndCooldown = 0.0;
 
@@ -173,24 +197,37 @@ public class MyGame extends VariableFrameRateGame {
 		rocketS = new Rocket();
 		planeS = new Plane();
 		xpOrbS = new Sphere();
+		terrS = new TerrainPlane(1000); // pixel per axis = 1000 x 1000
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 3f));
 
 		soupS = new ImportedModel("icecream.obj");
+		gateSh = new ImportedModel("gate.obj");
 		rangerS = new ImportedModel("ranger.obj");
 		// mageS = new ImportedModel("mage.obj");
+		// archerS = new ImportedModel("archer_join.obj");
+
+		fenceS = new ImportedModel("fence.obj");
+		lampS = new ImportedModel("lamp.obj");
+		houseS = new ImportedModel("house.obj");
 
 		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
 		mageAS.loadAnimation("MOVE", "mage_move.rka");
 		mageAS.loadAnimation("ATTACK", "mage_attack.rka");
 		mageAS.loadAnimation("MOVEATTACK", "mage_moveattack.rka");
 
+		archerAS = new AnimatedShape("archer.rkm", "archer.rks");
+		archerAS.loadAnimation("MOVE", "archer_move.rka");
+		archerAS.loadAnimation("ATTACK", "archer_attack.rka");
+		archerAS.loadAnimation("MOVEATTACK", "archer_moveattack.rka");
+
 		monsterNormalAS = new AnimatedShape("monster_normal.rkm", "monster_normal.rks");
 		monsterNormalAS.loadAnimation("MOVEATTACK", "monster_normal_moveattack.rka");
 
-		ghostS = new AnimatedShape("mage.rkm", "mage.rks");
+		ghostS_Mage = new AnimatedShape("mage.rkm", "mage.rks");
+		ghostS_Archer = new AnimatedShape("archer.rkm", "archer.rks");
 
 		// Skills
 		fireballS = new ImportedModel("fireball.obj");
@@ -204,11 +241,18 @@ public class MyGame extends VariableFrameRateGame {
 		rocketT = new TextureImage("myTextures.png");
 		planeT = new TextureImage("sea.png");
 		soupT = new TextureImage("icecream.png");
-		ghostT = new TextureImage("mage1.png");
+		gateT = new TextureImage("gate.png");
+		ghostT_Mage = new TextureImage("mage1.png");
+		ghostT_Archer = new TextureImage("archer.png");
 		mageT = new TextureImage("mage1.png");
+		archerT = new TextureImage("archer.png");
 		xpOrbT = new TextureImage("soup.jpg");
 		monsterNormalT = new TextureImage("monster_normal.png");
 		rangerT = new TextureImage("ranger.png");
+		fenceT = new TextureImage("fence.png");
+		lampT = new TextureImage("lamp.png");
+		houseT = new TextureImage("house.png");
+		wall = new TextureImage("wall.jpg");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -219,6 +263,14 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void buildObjects() {
 		Matrix4f initialTranslation, initialScale;
+
+		// build terrain object
+		terr = new GameObject(GameObject.root(), terrS, wall);
+		initialTranslation = (new Matrix4f()).translation(0f, -0.1f, 0f);
+		terr.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(50f);
+		terr.setLocalScale(initialScale);
+		terr.setHeightMap(wall);
 
 		GameObject plane = new GameObject(GameObject.root(), planeS, planeT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
@@ -239,7 +291,7 @@ public class MyGame extends VariableFrameRateGame {
 		ranger.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		ranger.setLocalScale(initialScale);
-		
+
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
@@ -255,6 +307,38 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		soup.setLocalScale(initialScale);
 
+		// Gates
+		gateN = new GameObject(GameObject.root(), gateSh, gateT);
+		initialTranslation = (new Matrix4f()).translation(0, 0, 46.2f);
+		gateN.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
+		gateN.setLocalTranslation(initialTranslation);
+		gateE = new GameObject(GameObject.root(), gateSh, gateT);
+		initialTranslation = (new Matrix4f()).translation(-46.2f, 0, 0);
+		gateE.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(0f)));
+		gateE.setLocalTranslation(initialTranslation);
+		gateS = new GameObject(GameObject.root(), gateSh, gateT);
+		initialTranslation = (new Matrix4f()).translation(0, 0, -46.2f);
+		gateS.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+		gateS.setLocalTranslation(initialTranslation);
+		gateW = new GameObject(GameObject.root(), gateSh, gateT);
+		initialTranslation = (new Matrix4f()).translation(46.2f, 0, 0);
+		gateW.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+		gateW.setLocalTranslation(initialTranslation);
+
+		fence = new GameObject(GameObject.root(), fenceS, fenceT);
+		initialTranslation = (new Matrix4f()).translation(5, 0, 6);
+		fence.setLocalTranslation(initialTranslation);
+		lamp = new GameObject(GameObject.root(), lampS, lampT);
+		initialTranslation = (new Matrix4f()).translation(0, 0, 6);
+		lamp.setLocalTranslation(initialTranslation);
+		house = new GameObject(GameObject.root(), houseS, houseT);
+		initialTranslation = (new Matrix4f()).translation(-5, 0, 6);
+		house.setLocalTranslation(initialTranslation);
+
 		mage = new GameObject(GameObject.root(), mageAS, mageT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0.6f, 0f);
 		mage.setLocalTranslation(initialTranslation);
@@ -262,9 +346,19 @@ public class MyGame extends VariableFrameRateGame {
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		mage.setLocalScale(initialScale);
+		mage.getRenderStates().disableRendering();
+
+		archer = new GameObject(GameObject.root(), archerAS, archerT);
+		initialTranslation = (new Matrix4f()).translation(0f, 0.6f, 0f);
+		archer.setLocalTranslation(initialTranslation);
+		archer.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		archer.setLocalScale(initialScale);
 
 		// Sets the current playable character to mage
-		avatar = mage;
+		// avatar = mage;
+		avatar = archer;
 
 		fireball0 = new GameObject(GameObject.root(), fireballS, fireballT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.5f, 0);
@@ -335,7 +429,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		angel = new GameObject(GameObject.root(), angelS);
 		angel.getRenderStates().setHasSolidColor(false);
-		angel.getRenderStates().setColor(new Vector3f(1f,1f,1f));
+		angel.getRenderStates().setColor(new Vector3f(1f, 1f, 1f));
 		initialTranslation = (new Matrix4f()).translation(-.3f, 1f, -.3f);
 		angel.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(0.5f);
@@ -451,7 +545,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		if (protClient == null) {
 			System.out.println("missing protocol host");
-		} else { 
+		} else {
 			// ask client protocol to send initial join message
 			// to server, with a unique identifier for this client
 			System.out.println("sending join message to protocol host");
@@ -479,8 +573,9 @@ public class MyGame extends VariableFrameRateGame {
 
 		playWalkAnimation();
 		mageAS.updateAnimation();
+		archerAS.updateAnimation();
 		monsterNormalAS.updateAnimation();
-	
+
 		monsterNormals.forEach((n) -> n.lookAt(avatar));
 		ranger.lookAt(avatar);
 
@@ -695,6 +790,7 @@ public class MyGame extends VariableFrameRateGame {
 			fireballCurrentlyMoving = true;
 			if (currentlyMoving) {
 				mageAS.playAnimation("MOVEATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
+				archerAS.playAnimation("MOVEATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
 				Timer timer = new Timer();
 				timer.schedule(new TimerTask() {
 					@Override
@@ -704,6 +800,7 @@ public class MyGame extends VariableFrameRateGame {
 				}, 2000); // Delay in milliseconds
 			} else {
 				mageAS.playAnimation("ATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
+				archerAS.playAnimation("ATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
 			}
 
 		}
@@ -749,8 +846,8 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void updateGameLogic() {
-		callSendChangeSkyBoxesMessage();
-		//updateSkyboxes();
+		// callSendChangeSkyBoxesMessage();
+		// updateSkyboxes();
 		checkTouchSoup();
 		handleFireballMovement();
 		checkTouchXPOrb();
@@ -760,11 +857,11 @@ public class MyGame extends VariableFrameRateGame {
 		handleTeleportCooldown();
 	}
 
-	private void levelUp(){
+	private void levelUp() {
 		int currExp = playerStats.get("experience");
 		int currLvl = playerStats.get("level");
 		int currSkillPoint = playerStats.get("skillPoint");
-		if (currExp >= 100){
+		if (currExp >= 100) {
 			currExp -= 100;
 			currLvl++;
 			currSkillPoint++;
@@ -810,19 +907,19 @@ public class MyGame extends VariableFrameRateGame {
 
 	// May use for single person game
 	// private void updateSkyboxes() {
-	// 	if (switchSkyBoxes) {
-	// 		(engine.getSceneGraph()).setActiveSkyBoxTexture(daySky);
-	// 		engine.getSceneGraph().setSkyBoxEnabled(true);
-	// 	} else {
-	// 		(engine.getSceneGraph()).setActiveSkyBoxTexture(darkSky);
-	// 		engine.getSceneGraph().setSkyBoxEnabled(true);
-	// 	}
-	// 	// Update the flag every 30 seconds
-	// 	if (displayTime % 60 < 30) {
-	// 		switchSkyBoxes = true;
-	// 	} else {
-	// 		switchSkyBoxes = false;
-	// 	}
+	// if (switchSkyBoxes) {
+	// (engine.getSceneGraph()).setActiveSkyBoxTexture(daySky);
+	// engine.getSceneGraph().setSkyBoxEnabled(true);
+	// } else {
+	// (engine.getSceneGraph()).setActiveSkyBoxTexture(darkSky);
+	// engine.getSceneGraph().setSkyBoxEnabled(true);
+	// }
+	// // Update the flag every 30 seconds
+	// if (displayTime % 60 < 30) {
+	// switchSkyBoxes = true;
+	// } else {
+	// switchSkyBoxes = false;
+	// }
 	// }
 
 	private void checkTouchSoup() {
@@ -886,33 +983,31 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f hud5Color = new Vector3f(1, 0, 0);
 		Vector3f hud6Color = new Vector3f(0, 1, 0);
 
-		if(leveledUp){
+		if (leveledUp) {
 			dispStr6 = "Level Up! New Skill Point obtained";
 			Timer timer = new Timer();
-				timer.schedule(new TimerTask() {
-					@Override
-					public void run() {
-						leveledUp = false;
-					}
-				}, 5000); // Delay in milliseconds
-		}
-		else {
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					leveledUp = false;
+				}
+			}, 5000); // Delay in milliseconds
+		} else {
 			dispStr6 = "";
 		}
 
 		if (skillMenu) {
-			fiveSec = elapsTimeSec+5;
+			fiveSec = elapsTimeSec + 5;
 		}
 
-		if(elapsTimeSec <= fiveSec){
+		if (elapsTimeSec <= fiveSec) {
 			dispStr7 = "Skill point: " + playerStats.get("skillPoint");
 			hud6Color = new Vector3f(0, 1, 0);
-			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() /2), (rs.getHeight() /2));
+			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2), (rs.getHeight() / 2));
 			skillMenu = false;
-		}
-		else {
+		} else {
 			dispStr7 = "";
-			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() /2), (rs.getHeight() /2));
+			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2), (rs.getHeight() / 2));
 		}
 
 		int timeStrX = (int) (rs.getWidth() * mainVp.getRelativeWidth() / 2 - 40);
@@ -935,8 +1030,8 @@ public class MyGame extends VariableFrameRateGame {
 		StrY = (int) (rs.getHeight() * playerVP.getRelativeBottom() + 60);
 		(engine.getHUDmanager()).setHUD5(dispStr5, hud5Color, StrX, StrY);
 
-		StrX = (int) (rs.getWidth() /2);
-		StrY = (int) (rs.getHeight() * mainVp.getRelativeBottom()+ 200);
+		StrX = (int) (rs.getWidth() / 2);
+		StrY = (int) (rs.getHeight() * mainVp.getRelativeBottom() + 200);
 		(engine.getHUDmanager()).setHUD6(dispStr6, hud6Color, timeStrX, StrY);
 	}
 
@@ -947,6 +1042,7 @@ public class MyGame extends VariableFrameRateGame {
 	public HashMap getPlayerStats() {
 		return playerStats;
 	}
+
 	public GameObject getXLine() {
 		return x;
 	}
@@ -964,11 +1060,11 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public ObjShape getGhostShape() {
-		return ghostS;
+		return ghostS_Mage;
 	}
 
 	public TextureImage getGhostTexture() {
-		return ghostT;
+		return ghostT_Mage;
 	}
 
 	public GameObject getgavatarOrbiter1() {
@@ -1031,11 +1127,17 @@ public class MyGame extends VariableFrameRateGame {
 				mageAS.stopAnimation();
 				mageAS.playAnimation("ATTACK", 0.5f,
 						AnimatedShape.EndType.LOOP, 0);
+				archerAS.stopAnimation();
+				archerAS.playAnimation("ATTACK", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
 				break;
 			}
 			case KeyEvent.VK_B: {
 				mageAS.stopAnimation();
 				mageAS.playAnimation("MOVEATTACK", 0.5f,
+						AnimatedShape.EndType.LOOP, 0);
+				archerAS.stopAnimation();
+				archerAS.playAnimation("MOVEATTACK", 0.5f,
 						AnimatedShape.EndType.LOOP, 0);
 				break;
 			}
@@ -1050,7 +1152,7 @@ public class MyGame extends VariableFrameRateGame {
 			case KeyEvent.VK_V: {
 				monsterNormalAS.stopAnimation();
 				monsterNormalAS.playAnimation("MOVEATTACK", 0.5f,
-				AnimatedShape.EndType.LOOP, 0);
+						AnimatedShape.EndType.LOOP, 0);
 				break;
 			}
 			case KeyEvent.VK_F: {
@@ -1091,6 +1193,16 @@ public class MyGame extends VariableFrameRateGame {
 				callSendPlayerStatsMessage();
 				break;
 			}
+			case KeyEvent.VK_6: {
+				getAvatar().setLocalLocation(
+						new Vector3f(getAvatar().getLocalLocation().x(), 30f, getAvatar().getLocalLocation().z()));
+				break;
+			}
+			case KeyEvent.VK_7: {
+				getAvatar().setLocalLocation(
+						new Vector3f(getAvatar().getLocalLocation().x(), 0.6f, getAvatar().getLocalLocation().z()));
+				break;
+			}
 		}
 		super.keyPressed(e);
 	}
@@ -1110,8 +1222,10 @@ public class MyGame extends VariableFrameRateGame {
 		if (currentlyMoving && !currentlyPlayingWalkAnimation) {
 			currentlyPlayingWalkAnimation = true;
 			mageAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);
+			archerAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);
 		} else if (!currentlyMoving && currentlyPlayingWalkAnimation) {
 			mageAS.stopAnimation();
+			archerAS.stopAnimation();
 			currentlyPlayingWalkAnimation = false;
 		}
 
@@ -1150,7 +1264,7 @@ public class MyGame extends VariableFrameRateGame {
 		xpOrb.setLocalTranslation(initialTranslation);
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.1f);
 		xpOrb.setLocalScale(initialScale);
-		//mc.addTarget(xpOrb);
+		// mc.addTarget(xpOrb);
 		xpOrbs.add(xpOrb);
 	}
 
