@@ -27,7 +27,7 @@ public class GhostAvatar extends GameObject {
 		setPosition(p);
 		// initialize game variables + scripting setup
 		scriptController = new ScriptController();
-
+		playerStats.put("class", 0);
 		playerStats.put("health", scriptController.getStartingHealth());
 		playerStats.put("level", scriptController.getStartingLevel());
 		playerStats.put("experience", scriptController.getStartingExperience());

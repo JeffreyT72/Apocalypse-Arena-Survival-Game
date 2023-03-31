@@ -20,18 +20,31 @@ public class GhostManager {
 		game = (MyGame) vfrg;
 	}
 
-	public void createGhostAvatar(UUID id, Vector3f position) throws IOException {
+	public void createGhostAvatar(UUID id, Vector3f position, Integer ghostClass) throws IOException {
 		System.out.println("adding ghost with ID --> " + id);
 		
-		ObjShape s = game.getGhostShape();
-		TextureImage t = game.getGhostTexture();
+		ObjShape ds = game.getXPOrbShape();
+		ObjShape ms = game.getGhostMageShape();
+		ObjShape as = game.getGhostArcherShape();
 
-		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position);
+		TextureImage dt = game.getXPOrbTexture();
+		TextureImage mt = game.getGhostMageTexture();
+		TextureImage at = game.getGhostArcherTexture();
+		GhostAvatar newAvatar;
+
+		if (ghostClass == 1) {
+			newAvatar = new GhostAvatar(id, ms, mt, position);
+		} else if (ghostClass == 2) {
+			newAvatar = new GhostAvatar(id, as, at, position);
+		} else {
+			newAvatar = new GhostAvatar(id, ds, dt, position);
+		}
+
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.2f);
 		newAvatar.setLocalScale(initialScale);
 		newAvatar.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
-		
+
 		game.getgavatarOrbiter1().setParent(newAvatar);
 		Matrix4f initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		game.getgavatarOrbiter1().setLocalTranslation(initialTranslation);
