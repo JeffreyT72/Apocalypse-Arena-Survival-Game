@@ -46,7 +46,7 @@ public class ProtocolClient extends GameConnectionClient {
 				if (messageTokens[1].compareTo("success") == 0) {
 					System.out.println("join success confirmed");
 					game.setIsConnected(true);
-					sendCreateMessage(game.getPlayerPosition());
+					sendCreateMessage(game.getPlayerPosition(), (int) game.getPlayerStats().get("class"));
 				}
 				if (messageTokens[1].compareTo("failure") == 0) {
 					System.out.println("join failure confirmed");
@@ -77,8 +77,10 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[3]),
 						Float.parseFloat(messageTokens[4]));
 
+				Integer ghostClass = Integer.parseInt(messageTokens[5]);
+
 				try {
-					ghostManager.createGhostAvatar(ghostID, ghostPosition);
+					ghostManager.createGhostAvatar(ghostID, ghostPosition, ghostClass);
 				} catch (IOException e) {
 					System.out.println("error creating ghost avatar");
 				}
@@ -90,7 +92,7 @@ public class ProtocolClient extends GameConnectionClient {
 				// Send the local client's avatar's information
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
-				sendDetailsForMessage(ghostID, game.getPlayerPosition());
+				sendDetailsForMessage(ghostID, game.getPlayerPosition(), (int) game.getPlayerStats().get("class"));
 			}
 
 			// Handle MOVE message
@@ -120,12 +122,13 @@ public class ProtocolClient extends GameConnectionClient {
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 
 				HashMap<String, Integer> ghostStats = new HashMap<String, Integer>();
-				ghostStats.put("health", Integer.parseInt(messageTokens[2]));
-				ghostStats.put("level", Integer.parseInt(messageTokens[3]));
-				ghostStats.put("atk", Integer.parseInt(messageTokens[4]));
-				ghostStats.put("fireballLv", Integer.parseInt(messageTokens[5]));
-				ghostStats.put("avatarOrbiterLv", Integer.parseInt(messageTokens[6]));
-				ghostStats.put("circleLv", Integer.parseInt(messageTokens[7]));
+				ghostStats.put("class", Integer.parseInt(messageTokens[2]));
+				ghostStats.put("health", Integer.parseInt(messageTokens[3]));
+				ghostStats.put("level", Integer.parseInt(messageTokens[4]));
+				ghostStats.put("atk", Integer.parseInt(messageTokens[5]));
+				ghostStats.put("fireballLv", Integer.parseInt(messageTokens[6]));
+				ghostStats.put("avatarOrbiterLv", Integer.parseInt(messageTokens[7]));
+				ghostStats.put("circleLv", Integer.parseInt(messageTokens[8]));
 
 				ghostManager.updateGhostAvatarInfo(ghostID, ghostStats);
 			}
@@ -141,11 +144,13 @@ public class ProtocolClient extends GameConnectionClient {
 					(MyGame.getEngine().getSceneGraph()).setActiveSkyBoxTexture(game.getDarkSky());
 					MyGame.getEngine().getSceneGraph().setSkyBoxEnabled(true);
 				}
+			}
 
+			if (messageTokens[0].compareTo("spawnMonster") == 0) {
 				prevX = randX;
 				prevZ = randZ;
-				randX = Float.parseFloat(messageTokens[3]);
-				randZ = Float.parseFloat(messageTokens[4]);
+				randX = Float.parseFloat(messageTokens[1]);
+				randZ = Float.parseFloat(messageTokens[2]);
 				trueX = randX - prevX;
 				trueZ = randZ - prevZ;
 				// At most 50 enemy on screen
@@ -194,13 +199,13 @@ public class ProtocolClient extends GameConnectionClient {
 	// Message Format: (create,localId,x,y,z) where x, y, and z represent the
 	// position
 
-	public void sendCreateMessage(Vector3f position) {
+	public void sendCreateMessage(Vector3f position, Integer playerClass) {
 		try {
 			String message = new String("create," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-
+			message += "," + playerClass;
 			sendPacket(message);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -214,13 +219,13 @@ public class ProtocolClient extends GameConnectionClient {
 	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the
 	// position.
 
-	public void sendDetailsForMessage(UUID remoteId, Vector3f position) {
+	public void sendDetailsForMessage(UUID remoteId, Vector3f position, Integer playerClass) {
 		try {
 			String message = new String("dsfr," + remoteId.toString() + "," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-
+			message += "," + playerClass;
 			sendPacket(message);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -249,6 +254,7 @@ public class ProtocolClient extends GameConnectionClient {
 	public void sendPlayerStatsMessage(HashMap playerStats) {
 		try {
 			String message = new String("playerStats," + id.toString());
+			message += "," + playerStats.get("class");
 			message += "," + playerStats.get("health");
 			message += "," + playerStats.get("level");
 			message += "," + playerStats.get("atk");
@@ -264,7 +270,15 @@ public class ProtocolClient extends GameConnectionClient {
 	public void sendChangeSkyBoxesMessage(boolean switchSkyBoxes) {
 		try {
 			String message = new String("changeSkyBoxes," + id.toString());
-			//message += "," + switchSkyBoxes;
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void sendSpawnMonsterMessage() {
+		try {
+			String message = new String("spawnMonster," + id.toString());
 			sendPacket(message);
 		} catch (IOException e) {
 			e.printStackTrace();
