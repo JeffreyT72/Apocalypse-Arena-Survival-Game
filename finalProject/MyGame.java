@@ -81,7 +81,7 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject monsterNormal;
 
 	// Additional object
-	private GameObject fence, lamp, house;
+	private GameObject fence, lamp, house, fence2, fence3, fence4, fence5, fence6, fence7, fence8;
 
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
 	public ArrayList<GameObject> monsterNormals = new ArrayList<GameObject>();
@@ -170,7 +170,7 @@ public class MyGame extends VariableFrameRateGame {
 	// Image-Based Height Maps
 	private GameObject terr;
 	private ObjShape terrS;
-	private TextureImage wall;
+	private TextureImage wall, terrT;
 	private boolean inTeleportCooldown=false;
 	private double timeToEndCooldown = 0.0;
 
@@ -253,6 +253,7 @@ public class MyGame extends VariableFrameRateGame {
 		lampT = new TextureImage("lamp.png");
 		houseT = new TextureImage("house.png");
 		wall = new TextureImage("wall.jpg");
+		terrT = new TextureImage("wood.jpg");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -265,7 +266,7 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f initialTranslation, initialScale;
 
 		// build terrain object
-		terr = new GameObject(GameObject.root(), terrS, wall);
+		terr = new GameObject(GameObject.root(), terrS, terrT);
 		initialTranslation = (new Matrix4f()).translation(0f, -0.1f, 0f);
 		terr.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(50f);
@@ -275,7 +276,7 @@ public class MyGame extends VariableFrameRateGame {
 		GameObject plane = new GameObject(GameObject.root(), planeS, planeT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
 		plane.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(50f);
+		initialScale = (new Matrix4f()).scaling(60f);
 		plane.setLocalScale(initialScale);
 
 		// build manual object - rocket
@@ -309,35 +310,110 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Gates
 		gateN = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(0, 0, 46.2f);
+		initialTranslation = (new Matrix4f()).translation(-31, 0, 36);
 		gateN.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(50f)));
 		gateN.setLocalTranslation(initialTranslation);
 		gateE = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(-46.2f, 0, 0);
+		initialTranslation = (new Matrix4f()).translation(-31, 0, -36);
 		gateE.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-45f)));
 		gateE.setLocalTranslation(initialTranslation);
 		gateS = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(0, 0, -46.2f);
+		initialTranslation = (new Matrix4f()).translation(31, 0, -36);
 		gateS.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(225f)));
 		gateS.setLocalTranslation(initialTranslation);
 		gateW = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(46.2f, 0, 0);
+		initialTranslation = (new Matrix4f()).translation(31, 0, 36);
 		gateW.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(130.0f)));
 		gateW.setLocalTranslation(initialTranslation);
 
-		fence = new GameObject(GameObject.root(), fenceS, fenceT);
-		initialTranslation = (new Matrix4f()).translation(5, 0, 6);
-		fence.setLocalTranslation(initialTranslation);
-		lamp = new GameObject(GameObject.root(), lampS, lampT);
-		initialTranslation = (new Matrix4f()).translation(0, 0, 6);
-		lamp.setLocalTranslation(initialTranslation);
+		//------House Hierarchical Object----------------------------
 		house = new GameObject(GameObject.root(), houseS, houseT);
-		initialTranslation = (new Matrix4f()).translation(-5, 0, 6);
+		initialTranslation = (new Matrix4f()).translation(0, 0, 30);
 		house.setLocalTranslation(initialTranslation);
+		//Fences
+		Matrix4f rotationMatrix = new Matrix4f().rotateY((float)Math.toRadians(90));
+		fence = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(3, 0, -5);
+		fence.setLocalTranslation(initialTranslation);
+		fence.setParent(house);
+		fence.propagateTranslation(true);
+		fence.propagateRotation(true);
+		fence.propagateScale(true);
+		fence.applyParentRotationToPosition(true);
+		fence2 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(-3, 0, -5);
+		fence2.setLocalTranslation(initialTranslation);
+		fence2.setParent(house);
+		fence2.propagateTranslation(true);
+		fence2.propagateRotation(true);
+		fence2.propagateScale(true);
+		fence2.applyParentRotationToPosition(true);
+		fence3 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(-3, 0, 3);
+		fence3.setLocalTranslation(initialTranslation);
+		fence3.setParent(house);
+		fence3.propagateTranslation(true);
+		fence3.propagateRotation(true);
+		fence3.propagateScale(true);
+		fence3.applyParentRotationToPosition(true);
+		fence4 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(3, 0, 3);
+		fence4.setLocalTranslation(initialTranslation);
+		fence4.setParent(house);
+		fence4.propagateTranslation(true);
+		fence4.propagateRotation(true);
+		fence4.propagateScale(true);
+		fence4.applyParentRotationToPosition(true);
+		fence5 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(-5, 0, -3);
+		fence5.setLocalRotation(rotationMatrix);
+		fence5.setLocalTranslation(initialTranslation);
+		fence5.setParent(house);
+		fence5.propagateTranslation(true);
+		fence5.propagateRotation(true);
+		fence5.propagateScale(true);
+		fence5.applyParentRotationToPosition(true);
+		fence6 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(-5, 0, 1);
+		fence6.setLocalRotation(rotationMatrix);
+		fence6.setLocalTranslation(initialTranslation);
+		fence6.setParent(house);
+		fence6.propagateTranslation(true);
+		fence6.propagateRotation(true);
+		fence6.propagateScale(true);
+		fence6.applyParentRotationToPosition(true);
+		fence7 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(5, 0, -3);
+		fence7.setLocalRotation(rotationMatrix);
+		fence7.setLocalTranslation(initialTranslation);
+		fence7.setParent(house);
+		fence7.propagateTranslation(true);
+		fence7.propagateRotation(true);
+		fence7.propagateScale(true);
+		fence7.applyParentRotationToPosition(true);
+		fence8 = new GameObject(GameObject.root(), fenceS, terrT);
+		initialTranslation = (new Matrix4f()).translation(5, 0, 1);
+		fence8.setLocalRotation(rotationMatrix);
+		fence8.setLocalTranslation(initialTranslation);
+		fence8.setParent(house);
+		fence8.propagateTranslation(true);
+		fence8.propagateRotation(true);
+		fence8.propagateScale(true);
+		fence8.applyParentRotationToPosition(true);
+
+		lamp = new GameObject(GameObject.root(), lampS, lampT);
+		initialTranslation = (new Matrix4f()).translation(-3, 0, 0);
+		lamp.setLocalTranslation(initialTranslation);
+		lamp.setParent(house);
+		lamp.propagateTranslation(true);
+		lamp.propagateRotation(true);
+		lamp.propagateScale(true);
+		lamp.applyParentRotationToPosition(true);
+		// -----------------------------------------------
 
 		mage = new GameObject(GameObject.root(), mageAS, mageT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0.6f, 0f);
@@ -451,7 +527,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void initializeLights() {
-		Light.setGlobalAmbient(0.5f, 0.5f, 0.5f);
+		Light.setGlobalAmbient(0.4f, 0.4f, 0.4f);
 		light1 = new Light();
 		light1.setLocation(new Vector3f(5.0f, 4.0f, 2.0f));
 		(engine.getSceneGraph()).addLight(light1);
@@ -848,6 +924,7 @@ public class MyGame extends VariableFrameRateGame {
 	private void updateGameLogic() {
 		// callSendChangeSkyBoxesMessage();
 		// updateSkyboxes();
+		keepPlayerOnTerrain();
 		checkTouchSoup();
 		handleFireballMovement();
 		checkTouchXPOrb();
@@ -855,6 +932,14 @@ public class MyGame extends VariableFrameRateGame {
 		levelUp();
 		skillUpdate();
 		handleTeleportCooldown();
+	}
+
+	private void keepPlayerOnTerrain(){
+		Vector3f loc = avatar.getWorldLocation();
+		float terrHeight = terr.getHeight(loc.x(), loc.z()) + .6f;
+		if (terrHeight <= 10){
+			avatar.setLocalLocation(new Vector3f(loc.x(), terrHeight, loc.z()));
+		}
 	}
 
 	private void levelUp() {
