@@ -339,10 +339,25 @@ public class MyGame extends VariableFrameRateGame {
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(130.0f)));
 		gateW.setLocalTranslation(initialTranslation);
 
+		// Town
+		town = new GameObject(GameObject.root(), townS, townT);
+		initialTranslation = (new Matrix4f()).translation(70, 0, 70);
+		town.setLocalTranslation(initialTranslation);
+		town.getRenderStates().setModelOrientationCorrection(
+			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+		initialScale = (new Matrix4f()).scaling(4f);
+		town.setLocalScale(initialScale);
+
 		//------House Hierarchical Object----------------------------
 		house = new GameObject(GameObject.root(), houseS, houseT);
-		initialTranslation = (new Matrix4f()).translation(0, 0, 30);
+		initialTranslation = (new Matrix4f()).translation(0, 0, -10);
 		house.setLocalTranslation(initialTranslation);
+		house.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+		house.setParent(town);
+		house.propagateTranslation(true);
+		house.propagateRotation(false);
+		house.propagateScale(false);
 		//Fences
 		Matrix4f rotationMatrix = new Matrix4f().rotateY((float)Math.toRadians(90));
 		fence = new GameObject(GameObject.root(), fenceS, terrT);
@@ -415,61 +430,61 @@ public class MyGame extends VariableFrameRateGame {
 		fence8.applyParentRotationToPosition(true);
 
 		lamp = new GameObject(GameObject.root(), lampS, lampT);
-		initialTranslation = (new Matrix4f()).translation(60, 0, 63);
+		initialTranslation = (new Matrix4f()).translation(0, 0, 5);
 		lamp.setLocalTranslation(initialTranslation);
-		house = new GameObject(GameObject.root(), houseS, houseT);
-		initialTranslation = (new Matrix4f()).translation(-5, 0, 6);
-		house.setLocalTranslation(initialTranslation);
-		town = new GameObject(GameObject.root(), townS, townT);
-		initialTranslation = (new Matrix4f()).translation(60, 0, 64);
-		town.setLocalTranslation(initialTranslation);
-		town.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
-		initialScale = (new Matrix4f()).scaling(4f);
-		town.setLocalScale(initialScale);
-		for (int i = 0; i <= 50; i++) {
+		lamp.setParent(town);
+		lamp.propagateTranslation(true);
+		lamp.propagateRotation(false);
+		lamp.propagateScale(false);
+
+		for (int i = 0; i < 2; i++) {
 			GameObject tree = new GameObject(GameObject.root(), treeS, treeT);
-			initialTranslation = (new Matrix4f()).translation(i*5 , 0, 0);
+			initialTranslation = (new Matrix4f()).translation(i*8 -4 , 0, -4);
 			tree.setLocalTranslation(initialTranslation);
+			tree.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
 			initialScale = (new Matrix4f()).scaling(0.5f);
 			tree.setLocalScale(initialScale);
-			// mc.addTarget(xpOrb);
+			tree.setParent(town);
+			tree.propagateTranslation(true);
+			tree.propagateScale(false);
 			trees.add(tree);
 		}
 
-
 		mageNPC = new GameObject(GameObject.root(), mageAS, mageT);
-		initialTranslation = (new Matrix4f()).translation(64, 0.9f, 68);
+		initialTranslation = (new Matrix4f()).translation(-5, 0.9f, 10);
 		mageNPC.setLocalTranslation(initialTranslation);
 		mageNPC.getRenderStates().setModelOrientationCorrection(
 			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.4f);
 		mageNPC.setLocalScale(initialScale);
+		mageNPC.setParent(town);
+		mageNPC.propagateTranslation(true);
+		mageNPC.propagateRotation(true);
+		mageNPC.propagateScale(false);
+		mageNPC.applyParentRotationToPosition(true);
 
 		archerNPC = new GameObject(GameObject.root(), archerAS, archerT);
-		initialTranslation = (new Matrix4f()).translation(56, 0.9f, 68);
+		initialTranslation = (new Matrix4f()).translation(5, 0.9f, 10);
 		archerNPC.setLocalTranslation(initialTranslation);
 		archerNPC.getRenderStates().setModelOrientationCorrection(
 			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.4f);
 		archerNPC.setLocalScale(initialScale);
+		archerNPC.setParent(town);
+		archerNPC.propagateTranslation(true);
+		archerNPC.propagateRotation(true);
+		archerNPC.propagateScale(false);
+		archerNPC.applyParentRotationToPosition(true);
+		// -----------------------------------------------
 
 		// Sets the current playable character to mage
 		// avatar = mage;
 		avatar = new GameObject(GameObject.root(), xpOrbS, xpOrbT); 
-		initialTranslation = (new Matrix4f()).translation(60f, 0.6f, 60f);
+		initialTranslation = (new Matrix4f()).translation(70f, 0.60f, 66f);
 		avatar.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		avatar.setLocalScale(initialScale);
-		//avatar.getRenderStates().disableRendering();
-		initialTranslation = (new Matrix4f()).translation(-3, 0, 0);
-		lamp.setLocalTranslation(initialTranslation);
-		lamp.setParent(house);
-		lamp.propagateTranslation(true);
-		lamp.propagateRotation(true);
-		lamp.propagateScale(true);
-		lamp.applyParentRotationToPosition(true);
-		// -----------------------------------------------
 
 		mage = new GameObject(GameObject.root(), mageAS, mageT);
 		// initialTranslation = (new Matrix4f()).translation(0f, 0.6f, 0f);
