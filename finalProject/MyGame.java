@@ -100,6 +100,10 @@ public class MyGame extends VariableFrameRateGame {
 	private ObjShape rangerS;
 	private TextureImage rangerT;
 
+	private GameObject arenaWall;
+	private ObjShape arenaWallS;
+	private TextureImage arenaWallT;
+
 	// Skill Objects
 	private GameObject fireball0, fireball1, fireball2;
 	private boolean fire3Fireballs = false;
@@ -239,6 +243,7 @@ public class MyGame extends VariableFrameRateGame {
 		townS = new ImportedModel("town.obj");
 		treeS = new ImportedModel("tree.obj");
 		dogS = new ImportedModel("dog.obj");
+		arenaWallS = new ImportedModel("arenaWall.obj");
 
 		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
 		mageAS.loadAnimation("MOVE", "mage_move.rka");
@@ -284,6 +289,7 @@ public class MyGame extends VariableFrameRateGame {
 		wall = new TextureImage("wall.jpg");
 		terrT = new TextureImage("wood.jpg");
 		dogT = new TextureImage("dog.png");
+		arenaWallT = new TextureImage("wood.jpg");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -306,7 +312,7 @@ public class MyGame extends VariableFrameRateGame {
 		GameObject plane = new GameObject(GameObject.root(), planeS, planeT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
 		plane.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(60f);
+		initialScale = (new Matrix4f()).scaling(80f);
 		plane.setLocalScale(initialScale);
 
 		// build manual object - rocket
@@ -322,6 +328,13 @@ public class MyGame extends VariableFrameRateGame {
 		ranger.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		ranger.setLocalScale(initialScale);
+
+		arenaWall = new GameObject(GameObject.root(), arenaWallS, arenaWallT);
+		initialTranslation = (new Matrix4f()).translation(0, 0, 0);
+		arenaWall.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(35f);
+		arenaWall.setLocalScale(initialScale);
+		arenaWall.getRenderStates().setRenderHiddenFaces(true);
 
 		// add X,Y,-Z axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -339,30 +352,30 @@ public class MyGame extends VariableFrameRateGame {
 		soup.setLocalScale(initialScale);
 
 		// Gates
-		gateN = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(-31, 0, 36);
-		gateN.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(50f)));
-		gateN.setLocalTranslation(initialTranslation);
-		gateE = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(-31, 0, -36);
-		gateE.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-45f)));
-		gateE.setLocalTranslation(initialTranslation);
-		gateS = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(31, 0, -36);
-		gateS.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(225f)));
-		gateS.setLocalTranslation(initialTranslation);
-		gateW = new GameObject(GameObject.root(), gateSh, gateT);
-		initialTranslation = (new Matrix4f()).translation(31, 0, 36);
-		gateW.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(130.0f)));
-		gateW.setLocalTranslation(initialTranslation);
+		// gateN = new GameObject(GameObject.root(), gateSh, gateT);
+		// initialTranslation = (new Matrix4f()).translation(-31, 0, 36);
+		// gateN.getRenderStates().setModelOrientationCorrection(
+		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(50f)));
+		// gateN.setLocalTranslation(initialTranslation);
+		// gateE = new GameObject(GameObject.root(), gateSh, gateT);
+		// initialTranslation = (new Matrix4f()).translation(-31, 0, -36);
+		// gateE.getRenderStates().setModelOrientationCorrection(
+		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-45f)));
+		// gateE.setLocalTranslation(initialTranslation);
+		// gateS = new GameObject(GameObject.root(), gateSh, gateT);
+		// initialTranslation = (new Matrix4f()).translation(31, 0, -36);
+		// gateS.getRenderStates().setModelOrientationCorrection(
+		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(225f)));
+		// gateS.setLocalTranslation(initialTranslation);
+		// gateW = new GameObject(GameObject.root(), gateSh, gateT);
+		// initialTranslation = (new Matrix4f()).translation(31, 0, 36);
+		// gateW.getRenderStates().setModelOrientationCorrection(
+		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(130.0f)));
+		// gateW.setLocalTranslation(initialTranslation);
 
 		// Town
 		town = new GameObject(GameObject.root(), townS, townT);
-		initialTranslation = (new Matrix4f()).translation(70, 0, 70);
+		initialTranslation = (new Matrix4f()).translation(90, 0, 90);
 		town.setLocalTranslation(initialTranslation);
 		town.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
@@ -515,7 +528,7 @@ public class MyGame extends VariableFrameRateGame {
 		// Sets the current playable character to mage
 		// avatar = mage;
 		avatar = new GameObject(GameObject.root(), xpOrbS, xpOrbT);
-		initialTranslation = (new Matrix4f()).translation(70f, 0.60f, 66f);
+		initialTranslation = (new Matrix4f()).translation(90f, 0.60f, 86f);
 		avatar.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		avatar.setLocalScale(initialScale);
@@ -690,7 +703,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadSkyBoxes() {
 		darkSky = engine.getSceneGraph().loadCubeMap("darkSky");
-		daySky = engine.getSceneGraph().loadCubeMap("fluffyClouds");
+		daySky = engine.getSceneGraph().loadCubeMap("customSky");
 		(engine.getSceneGraph()).setActiveSkyBoxTexture(daySky);
 		engine.getSceneGraph().setSkyBoxEnabled(true);
 	}
@@ -842,6 +855,7 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		// updateSkyboxes();
 		keepPlayerOnTerrain();
+		checkAvatarSelect();
 		checkTouchSoup();
 		handleFireballMovement();
 		checkTouchXPOrb();
@@ -1135,9 +1149,10 @@ public class MyGame extends VariableFrameRateGame {
 	private void keepPlayerOnTerrain() {
 		Vector3f loc = avatar.getWorldLocation();
 		float terrHeight = terr.getHeight(loc.x(), loc.z()) + .6f;
-		if (terrHeight <= 10) {
-			avatar.setLocalLocation(new Vector3f(loc.x(), terrHeight, loc.z()));
-		}
+		avatar.setLocalLocation(new Vector3f(loc.x(), terrHeight, loc.z()));
+		// if (terrHeight <= 10){
+			
+		// }
 	}
 
 	private void levelUp() {
@@ -1227,6 +1242,42 @@ public class MyGame extends VariableFrameRateGame {
 					break;
 				}
 			}
+		}
+	}
+
+	private void checkAvatarSelect() {
+		Vector3f avloc, mNPCloc, aNPCloc;
+		float avmNPCDis, avaNPCDis;
+		float avsize;
+		float mNPCsize, aNPCsize;
+		avloc = avatar.getWorldLocation();
+		avsize = (avatar.getWorldScale()).m00();
+
+		mNPCloc = mageNPC.getWorldLocation();
+		mNPCsize = (mageNPC.getWorldScale()).m00();
+		avmNPCDis = avloc.distance(mNPCloc);
+		aNPCloc = archerNPC.getWorldLocation();
+		aNPCsize = (archerNPC.getWorldScale()).m00();
+		avaNPCDis = avloc.distance(aNPCloc);
+
+		if (avmNPCDis - avsize - mNPCsize <= .5) {
+			// Sets the current playable character to mage
+			mage.getRenderStates().enableRendering();
+			archer.getRenderStates().disableRendering();
+			avatar.getRenderStates().disableRendering();
+			avatar.setLocalTranslation((new Matrix4f()).translation(0, 0.6f, 0));
+			playerStats.replace("class", 1);
+			protClient.sendPlayerStatsMessage(playerStats);
+		}
+
+		if (avaNPCDis - avsize - aNPCsize <= .5) {
+			// Sets the current playable character to archer
+			archer.getRenderStates().enableRendering();
+			mage.getRenderStates().disableRendering();
+			avatar.getRenderStates().disableRendering();
+			avatar.setLocalTranslation((new Matrix4f()).translation(0, 0.6f, 0));
+			playerStats.replace("class", 2);
+			protClient.sendPlayerStatsMessage(playerStats);
 		}
 	}
 
