@@ -12,6 +12,12 @@ import tage.input.action.AbstractInputAction;
 import tage.networking.IGameConnection.ProtocolType;
 import tage.nodeControllers.BounceController;
 import tage.nodeControllers.RotationController;
+import tage.physics.PhysicsEngine;
+import tage.physics.PhysicsObject;
+import tage.physics.PhysicsEngineFactory;
+import tage.physics.JBullet.*;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.collision.dispatch.CollisionObject;
 
 import org.joml.*;
 
@@ -84,6 +90,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Additional object
 	private GameObject fence, lamp, house, town, fence2, fence3, fence4, fence5, fence6, fence7, fence8;
+	private GameObject dog;
 	private ArrayList<GameObject> trees = new ArrayList<GameObject>();
 
 	private ArrayList<GameObject> xpOrbs = new ArrayList<GameObject>();
@@ -128,6 +135,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Additional object Shape
 	private ObjShape fenceS, lampS, houseS, townS, treeS;
+	private ObjShape dogS;
 
 	// Skill Shapes
 	private ObjShape fireballS;
@@ -148,6 +156,7 @@ public class MyGame extends VariableFrameRateGame {
 	private TextureImage treeT;
 	// Additional object Texture
 	private TextureImage fenceT, lampT, houseT, townT;
+	private TextureImage dogT;
 
 	// Skill Textures
 	private TextureImage fireballT, avatarOrbiterT, circleT;
@@ -162,6 +171,16 @@ public class MyGame extends VariableFrameRateGame {
 
 	private File scriptFile1;
 	private ScriptEngine jsEngine;
+
+	// Physics Engine
+	private PhysicsEngine physicsEngine;
+	private PhysicsObject monster;
+	private PhysicsObject fireball0P, fireball1P, fireball2P;
+	private PhysicsObject avatarOrbiter1P, avatarOrbiter2P, avatarOrbiter3P;
+	private PhysicsObject circleP;
+
+	private boolean running = false;
+	private float vals[] = new float[16];
 
 	// ---------- Game Variables ----------
 	private static boolean showXYZ;
@@ -180,7 +199,7 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject terr;
 	private ObjShape terrS;
 	private TextureImage wall, terrT;
-	private boolean inTeleportCooldown=false;
+	private boolean inTeleportCooldown = false;
 	private double timeToEndCooldown = 0.0;
 
 	public MyGame(String serverAddress, int serverPort, String protocol) {
@@ -223,6 +242,7 @@ public class MyGame extends VariableFrameRateGame {
 		houseS = new ImportedModel("house.obj");
 		townS = new ImportedModel("town.obj");
 		treeS = new ImportedModel("tree.obj");
+		dogS = new ImportedModel("dog.obj");
 		arenaWallS = new ImportedModel("arenaWall.obj");
 
 		mageAS = new AnimatedShape("mage.rkm", "mage.rks");
@@ -268,6 +288,7 @@ public class MyGame extends VariableFrameRateGame {
 		treeT = new TextureImage("tree.png");
 		wall = new TextureImage("wall.jpg");
 		terrT = new TextureImage("wood.jpg");
+		dogT = new TextureImage("dog.png");
 		arenaWallT = new TextureImage("wood.jpg");
 
 		// Skills
@@ -354,25 +375,25 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Town
 		town = new GameObject(GameObject.root(), townS, townT);
-		initialTranslation = (new Matrix4f()).translation(70, 0, 70);
+		initialTranslation = (new Matrix4f()).translation(90, 0, 90);
 		town.setLocalTranslation(initialTranslation);
 		town.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
 		initialScale = (new Matrix4f()).scaling(4f);
 		town.setLocalScale(initialScale);
 
-		//------House Hierarchical Object----------------------------
+		// ------House Hierarchical Object----------------------------
 		house = new GameObject(GameObject.root(), houseS, houseT);
 		initialTranslation = (new Matrix4f()).translation(0, 0, -10);
 		house.setLocalTranslation(initialTranslation);
-		house.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+		initialScale = (new Matrix4f()).scaling(0.5f);
+		house.setLocalScale(initialScale);
 		house.setParent(town);
 		house.propagateTranslation(true);
 		house.propagateRotation(false);
 		house.propagateScale(false);
-		//Fences
-		Matrix4f rotationMatrix = new Matrix4f().rotateY((float)Math.toRadians(90));
+		// Fences
+		Matrix4f rotationMatrix = new Matrix4f().rotateY((float) Math.toRadians(90));
 		fence = new GameObject(GameObject.root(), fenceS, terrT);
 		initialTranslation = (new Matrix4f()).translation(3, 0, -5);
 		fence.setLocalTranslation(initialTranslation);
@@ -450,12 +471,24 @@ public class MyGame extends VariableFrameRateGame {
 		lamp.propagateRotation(false);
 		lamp.propagateScale(false);
 
+		dog = new GameObject(GameObject.root(), dogS, dogT);
+		initialTranslation = (new Matrix4f()).translation(-1, 0, 4);
+		dog.setLocalTranslation(initialTranslation);
+		dog.getRenderStates().setModelOrientationCorrection(
+			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+		initialScale = (new Matrix4f()).scaling(0.4f);
+		dog.setLocalScale(initialScale);
+		dog.setParent(town);
+		dog.propagateTranslation(true);
+		dog.propagateRotation(false);
+		dog.propagateScale(false);
+
 		for (int i = 0; i < 2; i++) {
 			GameObject tree = new GameObject(GameObject.root(), treeS, treeT);
-			initialTranslation = (new Matrix4f()).translation(i*8 -4 , 0, -4);
+			initialTranslation = (new Matrix4f()).translation(i * 8 - 4, 0, -4);
 			tree.setLocalTranslation(initialTranslation);
 			tree.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+					(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
 			initialScale = (new Matrix4f()).scaling(0.5f);
 			tree.setLocalScale(initialScale);
 			tree.setParent(town);
@@ -466,9 +499,10 @@ public class MyGame extends VariableFrameRateGame {
 
 		mageNPC = new GameObject(GameObject.root(), mageAS, mageT);
 		initialTranslation = (new Matrix4f()).translation(-5, 0.9f, 10);
+		//initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
 		mageNPC.setLocalTranslation(initialTranslation);
 		mageNPC.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.4f);
 		mageNPC.setLocalScale(initialScale);
 		mageNPC.setParent(town);
@@ -481,7 +515,7 @@ public class MyGame extends VariableFrameRateGame {
 		initialTranslation = (new Matrix4f()).translation(5, 0.9f, 10);
 		archerNPC.setLocalTranslation(initialTranslation);
 		archerNPC.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
 		initialScale = (new Matrix4f()).scaling(0.4f);
 		archerNPC.setLocalScale(initialScale);
 		archerNPC.setParent(town);
@@ -493,8 +527,8 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Sets the current playable character to mage
 		// avatar = mage;
-		avatar = new GameObject(GameObject.root(), xpOrbS, xpOrbT); 
-		initialTranslation = (new Matrix4f()).translation(70f, 0.60f, 66f);
+		avatar = new GameObject(GameObject.root(), xpOrbS, xpOrbT);
+		initialTranslation = (new Matrix4f()).translation(90f, 0.60f, 86f);
 		avatar.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		avatar.setLocalScale(initialScale);
@@ -598,6 +632,7 @@ public class MyGame extends VariableFrameRateGame {
 		angel.getRenderStates().setHasSolidColor(false);
 		angel.getRenderStates().setColor(new Vector3f(1f, 1f, 1f));
 		initialTranslation = (new Matrix4f()).translation(-.3f, 1f, -.3f);
+		//initialTranslation = (new Matrix4f()).translation(0f, 0f, -1f);
 		angel.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(0.1f);
 		angel.setLocalScale(initialScale);
@@ -685,6 +720,8 @@ public class MyGame extends VariableFrameRateGame {
 		initGameVar();
 		// initialize objects
 		initObj();
+		// initialize physics system
+		initPhysics();
 
 		initMouseMode();
 		// ----------------- initialize camera ----------------
@@ -699,6 +736,63 @@ public class MyGame extends VariableFrameRateGame {
 		currentFramePosition = lastFramePosition;
 
 		setupNetworking();
+	}
+
+	private void initPhysics() {
+		// --- initialize physics system ---
+		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
+		float[] gravity = { 0f, -5f, 0f };
+		physicsEngine = PhysicsEngineFactory.createPhysicsEngine(engine);
+		physicsEngine.initSystem();
+		//physicsEngine.setGravity(gravity);
+		// --- create physics world ---
+		float mass = 1.0f;
+		float up[] = { 0, 1, 0 };
+		double[] tempTransform;
+
+		Matrix4f translation = new Matrix4f(angel.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		fireball0P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
+				mass, tempTransform, 0.5f);
+		//fireball0P.setBounciness(1.0f);
+		angel.setPhysicsObject(fireball0P);
+
+		translation = new Matrix4f(mageNPC.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		fireball1P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
+				mass, tempTransform, 0.5f);	
+		//fireball1P.setBounciness(1.0f);
+		mageNPC.setPhysicsObject(fireball1P);
+
+		// translation = new Matrix4f(monsterNormal.getLocalTranslation());
+		// tempTransform = toDoubleArray(translation.get(vals));
+		// monster = physicsEngine.addStaticPlaneObject(
+		// 		physicsEngine.nextUID(), tempTransform, up, 0.0f);
+		// monster.setBounciness(1.0f);
+		// monsterNormal.setPhysicsObject(monster);
+	}
+
+	// ------------------ UTILITY FUNCTIONS used by physics
+	private float[] toFloatArray(double[] arr) {
+		if (arr == null)
+			return null;
+		int n = arr.length;
+		float[] ret = new float[n];
+		for (int i = 0; i < n; i++) {
+			ret[i] = (float) arr[i];
+		}
+		return ret;
+	}
+
+	private double[] toDoubleArray(float[] arr) {
+		if (arr == null)
+			return null;
+		int n = arr.length;
+		double[] ret = new double[n];
+		for (int i = 0; i < n; i++) {
+			ret[i] = (double) arr[i];
+		}
+		return ret;
 	}
 
 	private void setupNetworking() {
@@ -735,14 +829,10 @@ public class MyGame extends VariableFrameRateGame {
 		updateTime();
 
 		updateGameLogic();
-		// update inputs
+		// update inputs, avatar location
 		im.update((float) elapsTime);
-		// inputController.update((float) elapsTime);
 
-		playWalkAnimation();
-		mageAS.updateAnimation();
-		archerAS.updateAnimation();
-		monsterNormalAS.updateAnimation();
+		updatePhysics();
 
 		monsterNormals.forEach((n) -> n.lookAt(avatar));
 		ranger.lookAt(avatar);
@@ -755,6 +845,48 @@ public class MyGame extends VariableFrameRateGame {
 		updateHUD();
 
 		processNetworking((float) elapsTime);
+	}
+
+	private void updateGameLogic() {
+		if (currFrameTime - timer >= 1000) {
+			timer = currFrameTime;
+			callSendChangeSkyBoxesMessage();
+			callSendSpawnMonsterMessage();
+		}
+		// updateSkyboxes();
+		keepPlayerOnTerrain();
+		checkAvatarSelect();
+		checkTouchSoup();
+		handleFireballMovement();
+		checkTouchXPOrb();
+		rotateOrbiters(orbiterSpeed);
+		levelUp();
+		skillUpdate();
+		handleTeleportCooldown();
+		updateAnimation();
+	}
+
+	private void updateAnimation() {
+		playWalkAnimation();
+		mageAS.updateAnimation();
+		archerAS.updateAnimation();
+		monsterNormalAS.updateAnimation();
+	}
+
+	private void updatePhysics() {
+		Matrix4f mat = new Matrix4f();
+		Matrix4f mat2 = new Matrix4f().identity();
+		checkForCollisions();
+		physicsEngine.update((float) elapsTime);
+		for (GameObject go : engine.getSceneGraph().getGameObjects()) {
+			if (go.getPhysicsObject() != null) {
+				mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+				mat2.set(3, 0, mat.m30());
+				mat2.set(3, 1, mat.m31());
+				mat2.set(3, 2, mat.m32());
+				go.setLocalTranslation(mat2);
+			}
+		}
 	}
 
 	protected void processNetworking(float elapsTime) {
@@ -811,7 +943,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		mc = new BounceController(engine);
 		mc.addTarget(soup);
-		//mc.addTarget(avatar);
+		// mc.addTarget(avatar);
 		(engine.getSceneGraph()).addNodeController(mc);
 		mc.enable();
 	}
@@ -1013,24 +1145,8 @@ public class MyGame extends VariableFrameRateGame {
 		displayTime += (currFrameTime - lastFrameTime) / 1000;
 	}
 
-	private void updateGameLogic() {
-		if (currFrameTime - timer >= 1000) {
-			timer = currFrameTime;
-			callSendChangeSkyBoxesMessage();
-			callSendSpawnMonsterMessage();
-		}
-		// updateSkyboxes();
-		keepPlayerOnTerrain();
-		checkTouchSoup();
-		handleFireballMovement();
-		checkTouchXPOrb();
-		rotateOrbiters(orbiterSpeed);
-		levelUp();
-		skillUpdate();
-		handleTeleportCooldown();
-	}
 
-	private void keepPlayerOnTerrain(){
+	private void keepPlayerOnTerrain() {
 		Vector3f loc = avatar.getWorldLocation();
 		float terrHeight = terr.getHeight(loc.x(), loc.z()) + .6f;
 		avatar.setLocalLocation(new Vector3f(loc.x(), terrHeight, loc.z()));
@@ -1103,6 +1219,67 @@ public class MyGame extends VariableFrameRateGame {
 	// switchSkyBoxes = false;
 	// }
 	// }
+
+	private void checkForCollisions() {
+		com.bulletphysics.dynamics.DynamicsWorld dynamicsWorld;
+		com.bulletphysics.collision.broadphase.Dispatcher dispatcher;
+		com.bulletphysics.collision.narrowphase.PersistentManifold manifold;
+		com.bulletphysics.dynamics.RigidBody object1, object2;
+		com.bulletphysics.collision.narrowphase.ManifoldPoint contactPoint;
+		dynamicsWorld = ((JBulletPhysicsEngine) physicsEngine).getDynamicsWorld();
+		dispatcher = dynamicsWorld.getDispatcher();
+		int manifoldCount = dispatcher.getNumManifolds();
+		for (int i = 0; i < manifoldCount; i++) {
+			manifold = dispatcher.getManifoldByIndexInternal(i);
+			object1 = (com.bulletphysics.dynamics.RigidBody) manifold.getBody0();
+			object2 = (com.bulletphysics.dynamics.RigidBody) manifold.getBody1();
+			JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
+			JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
+			for (int j = 0; j < manifold.getNumContacts(); j++) {
+				contactPoint = manifold.getContactPoint(j);
+				if (contactPoint.getDistance() < 0.0f) {
+					System.out.println("---- hit between " + obj1 + " and " + obj2);
+					break;
+				}
+			}
+		}
+	}
+
+	private void checkAvatarSelect() {
+		Vector3f avloc, mNPCloc, aNPCloc;
+		float avmNPCDis, avaNPCDis;
+		float avsize;
+		float mNPCsize, aNPCsize;
+		avloc = avatar.getWorldLocation();
+		avsize = (avatar.getWorldScale()).m00();
+
+		mNPCloc = mageNPC.getWorldLocation();
+		mNPCsize = (mageNPC.getWorldScale()).m00();
+		avmNPCDis = avloc.distance(mNPCloc);
+		aNPCloc = archerNPC.getWorldLocation();
+		aNPCsize = (archerNPC.getWorldScale()).m00();
+		avaNPCDis = avloc.distance(aNPCloc);
+
+		if (avmNPCDis - avsize - mNPCsize <= .5) {
+			// Sets the current playable character to mage
+			mage.getRenderStates().enableRendering();
+			archer.getRenderStates().disableRendering();
+			avatar.getRenderStates().disableRendering();
+			avatar.setLocalTranslation((new Matrix4f()).translation(0, 0.6f, 0));
+			playerStats.replace("class", 1);
+			protClient.sendPlayerStatsMessage(playerStats);
+		}
+
+		if (avaNPCDis - avsize - aNPCsize <= .5) {
+			// Sets the current playable character to archer
+			archer.getRenderStates().enableRendering();
+			mage.getRenderStates().disableRendering();
+			avatar.getRenderStates().disableRendering();
+			avatar.setLocalTranslation((new Matrix4f()).translation(0, 0.6f, 0));
+			playerStats.replace("class", 2);
+			protClient.sendPlayerStatsMessage(playerStats);
+		}
+	}
 
 	private void checkTouchSoup() {
 		Vector3f avloc, souploc;
@@ -1415,7 +1592,7 @@ public class MyGame extends VariableFrameRateGame {
 				archer.getRenderStates().enableRendering();
 				mage.getRenderStates().disableRendering();
 				avatar.getRenderStates().disableRendering();
-				playerStats.replace("class",2);
+				playerStats.replace("class", 2);
 				protClient.sendPlayerStatsMessage(playerStats);
 				break;
 			}
