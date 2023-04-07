@@ -1,0 +1,1 @@
+L: toggle the lights on and off for the lamp
