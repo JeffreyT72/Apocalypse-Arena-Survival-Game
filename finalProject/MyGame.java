@@ -163,7 +163,8 @@ public class MyGame extends VariableFrameRateGame {
 
 	private int darkSky, daySky;
 
-	private Light light1;
+	private Light light1, light2;
+	private boolean lightsEnabled = true;
 
 	private Plane planeS;
 
@@ -654,10 +655,20 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void initializeLights() {
-		Light.setGlobalAmbient(0.4f, 0.4f, 0.4f);
+		Light.setGlobalAmbient(0.2f, 0.2f, 0.2f);
 		light1 = new Light();
-		light1.setLocation(new Vector3f(5.0f, 4.0f, 2.0f));
+		light1.setType(Light.LightType.SPOTLIGHT);
+		light1.setDirection(new Vector3f(0, -1, 0));
+		light1.setLocation(new Vector3f(0f,5f,0f));
 		(engine.getSceneGraph()).addLight(light1);
+		setUpToggleableLights();
+	}
+	private void setUpToggleableLights(){
+		//IMPORTANT: for any additional light added, you must also change the toggleLight().
+		light2 = new Light();
+		light2.setType(Light.LightType.POSITIONAL);
+		light2.setLocation(lamp.getWorldLocation());
+		(engine.getSceneGraph()).addLight(light2);
 	}
 
 	@Override
@@ -864,6 +875,7 @@ public class MyGame extends VariableFrameRateGame {
 		skillUpdate();
 		handleTeleportCooldown();
 		updateAnimation();
+		moveLightsWithAvatar();
 	}
 
 	private void updateAnimation() {
@@ -1740,6 +1752,7 @@ public class MyGame extends VariableFrameRateGame {
 		BwdAction bwdAction = new BwdAction(this);
 		FwdBwdAction fwdbwdAction = new FwdBwdAction(this);
 		TeleportAction teleportAction = new TeleportAction(this);
+		ToggleLightAction toggleLightAction = new ToggleLightAction(this);
 
 		TurnRightAction turnRightAction = new TurnRightAction(this);
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this);
@@ -1781,6 +1794,9 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.LSHIFT, teleportAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllKeyboards(
+				net.java.games.input.Component.Identifier.Key.L, toggleLightAction,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// im.associateActionWithAllKeyboards(
 		// net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
 		// InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
@@ -1821,6 +1837,22 @@ public class MyGame extends VariableFrameRateGame {
 	private void handleTeleportCooldown() {
 		if (displayTime >= timeToEndCooldown) {
 			this.inTeleportCooldown = false;
+		}
+	}
+
+	private void moveLightsWithAvatar(){
+		light1.setLocation(new Vector3f(avatar.getWorldLocation().x(), avatar.getWorldLocation().y() + 10, avatar.getWorldLocation().z()));
+	}
+
+	public void toggleLight(){
+		//Added a new removeLight method to TAGE. Changed SceneGraph and LightManager
+		if(lightsEnabled){
+			(engine.getSceneGraph()).removeLight(light2);
+			lightsEnabled = false;
+		}
+		else {
+			(engine.getSceneGraph()).addLight(light2);
+			lightsEnabled = true;
 		}
 	}
 

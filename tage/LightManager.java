@@ -45,6 +45,17 @@ public class LightManager
 		light.setIndex(lights.size()-1);
 	}
 
+	protected void removeLight(Light light) {
+		// remove the light from the list of lights
+		lights.remove(light);
+
+		// update the indices of the remaining lights
+		for (int i = 0; i < lights.size(); i++) {
+			lights.get(i).setIndex(i);
+		}
+	}
+
+
 	/** returns a reference to the ith Light - not likely to be useful in the game application. */
 	public Light getLight(int i) { return lights.get(i); }
 
