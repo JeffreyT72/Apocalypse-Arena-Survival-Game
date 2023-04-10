@@ -186,6 +186,7 @@ public class MyGame extends VariableFrameRateGame {
 	// ---------- Game Variables ----------
 	private static boolean showXYZ;
 	private static boolean booster;
+	private boolean isSelect;
 	private boolean isBooster, isConsumed;
 	private float orbiterSpeed;
 	// private boolean winFlag;
@@ -356,22 +357,22 @@ public class MyGame extends VariableFrameRateGame {
 		// gateN = new GameObject(GameObject.root(), gateSh, gateT);
 		// initialTranslation = (new Matrix4f()).translation(-31, 0, 36);
 		// gateN.getRenderStates().setModelOrientationCorrection(
-		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(50f)));
+		// (new Matrix4f()).rotationY((float) java.lang.Math.toRadians(50f)));
 		// gateN.setLocalTranslation(initialTranslation);
 		// gateE = new GameObject(GameObject.root(), gateSh, gateT);
 		// initialTranslation = (new Matrix4f()).translation(-31, 0, -36);
 		// gateE.getRenderStates().setModelOrientationCorrection(
-		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-45f)));
+		// (new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-45f)));
 		// gateE.setLocalTranslation(initialTranslation);
 		// gateS = new GameObject(GameObject.root(), gateSh, gateT);
 		// initialTranslation = (new Matrix4f()).translation(31, 0, -36);
 		// gateS.getRenderStates().setModelOrientationCorrection(
-		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(225f)));
+		// (new Matrix4f()).rotationY((float) java.lang.Math.toRadians(225f)));
 		// gateS.setLocalTranslation(initialTranslation);
 		// gateW = new GameObject(GameObject.root(), gateSh, gateT);
 		// initialTranslation = (new Matrix4f()).translation(31, 0, 36);
 		// gateW.getRenderStates().setModelOrientationCorrection(
-		// 		(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(130.0f)));
+		// (new Matrix4f()).rotationY((float) java.lang.Math.toRadians(130.0f)));
 		// gateW.setLocalTranslation(initialTranslation);
 
 		// Town
@@ -476,8 +477,8 @@ public class MyGame extends VariableFrameRateGame {
 		initialTranslation = (new Matrix4f()).translation(-1, 0, 4);
 		dog.setLocalTranslation(initialTranslation);
 		dog.getRenderStates().setModelOrientationCorrection(
-			(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
-		initialScale = (new Matrix4f()).scaling(0.4f);
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
 		dog.setLocalScale(initialScale);
 		dog.setParent(town);
 		dog.propagateTranslation(true);
@@ -500,7 +501,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		mageNPC = new GameObject(GameObject.root(), mageAS, mageT);
 		initialTranslation = (new Matrix4f()).translation(-5, 0.9f, 10);
-		//initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
+		// initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
 		mageNPC.setLocalTranslation(initialTranslation);
 		mageNPC.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
@@ -589,7 +590,7 @@ public class MyGame extends VariableFrameRateGame {
 		fireball2.setLocalScale(initialScale);
 		fireball2.getRenderStates().disableRendering();
 
-		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter1.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 10f, 2.5f);
@@ -599,7 +600,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter1.propagateRotation(false);
 		avatarOrbiter1.getRenderStates().disableRendering();
 
-		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter2.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 10f, 2.5f);
@@ -609,7 +610,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter2.propagateRotation(false);
 		avatarOrbiter2.getRenderStates().disableRendering();
 
-		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
 		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		avatarOrbiter3.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 10f, 2.5f);
@@ -633,7 +634,7 @@ public class MyGame extends VariableFrameRateGame {
 		angel.getRenderStates().setHasSolidColor(false);
 		angel.getRenderStates().setColor(new Vector3f(1f, 1f, 1f));
 		initialTranslation = (new Matrix4f()).translation(-.3f, 1f, -.3f);
-		//initialTranslation = (new Matrix4f()).translation(0f, 0f, -1f);
+		// initialTranslation = (new Matrix4f()).translation(0f, 0f, -1f);
 		angel.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(0.1f);
 		angel.setLocalScale(initialScale);
@@ -642,6 +643,7 @@ public class MyGame extends VariableFrameRateGame {
 		angel.propagateRotation(true);
 		angel.propagateScale(false);
 		angel.applyParentRotationToPosition(true);
+		angel.getRenderStates().disableRendering();
 
 		gavatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
 		gavatarOrbiter1.getRenderStates().disableRendering();
@@ -659,12 +661,14 @@ public class MyGame extends VariableFrameRateGame {
 		light1 = new Light();
 		light1.setType(Light.LightType.SPOTLIGHT);
 		light1.setDirection(new Vector3f(0, -1, 0));
-		light1.setLocation(new Vector3f(0f,5f,0f));
+		light1.setLocation(new Vector3f(0f, 5f, 0f));
 		(engine.getSceneGraph()).addLight(light1);
 		setUpToggleableLights();
 	}
-	private void setUpToggleableLights(){
-		//IMPORTANT: for any additional light added, you must also change the toggleLight().
+
+	private void setUpToggleableLights() {
+		// IMPORTANT: for any additional light added, you must also change the
+		// toggleLight().
 		light2 = new Light();
 		light2.setType(Light.LightType.POSITIONAL);
 		light2.setLocation(lamp.getWorldLocation());
@@ -755,30 +759,30 @@ public class MyGame extends VariableFrameRateGame {
 		float[] gravity = { 0f, -5f, 0f };
 		physicsEngine = PhysicsEngineFactory.createPhysicsEngine(engine);
 		physicsEngine.initSystem();
-		//physicsEngine.setGravity(gravity);
+		// physicsEngine.setGravity(gravity);
 		// --- create physics world ---
 		float mass = 1.0f;
 		float up[] = { 0, 1, 0 };
 		double[] tempTransform;
 
-		Matrix4f translation = new Matrix4f(angel.getLocalTranslation());
+		Matrix4f translation = new Matrix4f(fireball0.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		fireball0P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
 				mass, tempTransform, 0.5f);
-		//fireball0P.setBounciness(1.0f);
-		angel.setPhysicsObject(fireball0P);
+		// fireball0P.setBounciness(1.0f);
+		fireball0.setPhysicsObject(fireball0P);
 
 		translation = new Matrix4f(mageNPC.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		fireball1P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
-				mass, tempTransform, 0.5f);	
-		//fireball1P.setBounciness(1.0f);
+				mass, tempTransform, 0.5f);
+		// fireball1P.setBounciness(1.0f);
 		mageNPC.setPhysicsObject(fireball1P);
 
 		// translation = new Matrix4f(monsterNormal.getLocalTranslation());
 		// tempTransform = toDoubleArray(translation.get(vals));
 		// monster = physicsEngine.addStaticPlaneObject(
-		// 		physicsEngine.nextUID(), tempTransform, up, 0.0f);
+		// physicsEngine.nextUID(), tempTransform, up, 0.0f);
 		// monster.setBounciness(1.0f);
 		// monsterNormal.setPhysicsObject(monster);
 	}
@@ -845,7 +849,18 @@ public class MyGame extends VariableFrameRateGame {
 
 		updatePhysics();
 
-		monsterNormals.forEach((n) -> n.lookAt(avatar));
+		// temp
+		if (isSelect == false) {
+			for (GameObject n : monsterNormals) {
+				n.lookAt(avatar);
+				n.fwdAction(0.01f);
+			}
+
+			for (GameObject o : xpOrbs) {
+				o.lookAt(avatar);
+				o.fwdAction(0.01f);
+			}
+		}
 		ranger.lookAt(avatar);
 
 		// update camera
@@ -892,11 +907,15 @@ public class MyGame extends VariableFrameRateGame {
 		physicsEngine.update((float) elapsTime);
 		for (GameObject go : engine.getSceneGraph().getGameObjects()) {
 			if (go.getPhysicsObject() != null) {
-				mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
-				mat2.set(3, 0, mat.m30());
-				mat2.set(3, 1, mat.m31());
-				mat2.set(3, 2, mat.m32());
-				go.setLocalTranslation(mat2);
+				// mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+				// mat2.set(3, 0, mat.m30());
+				// mat2.set(3, 1, mat.m31());
+				// mat2.set(3, 2, mat.m32());
+				// go.setLocalTranslation(mat2);
+
+				// Matrix4f translation = new Matrix4f(go.getLocalTranslation());
+				// double[] tempTransform = toDoubleArray(translation.get(vals));
+				// go.getPhysicsObject().setTransform(tempTransform);
 			}
 		}
 	}
@@ -962,7 +981,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	private void initGameVar() {
 		playerStats = new HashMap<String, Integer>();
-		playerStats.put("class", 0);
+		playerStats.put("class", 0); // 0 = soul, 1 = mage, 2 = archer
 		playerStats.put("health", scriptController.getStartingHealth());
 		playerStats.put("level", scriptController.getStartingLevel());
 		playerStats.put("experience", scriptController.getStartingExperience());
@@ -972,6 +991,7 @@ public class MyGame extends VariableFrameRateGame {
 		playerStats.put("fireballLv", scriptController.getfireballLv());
 		playerStats.put("avatarOrbiterLv", scriptController.getAvatarOrbiterLv());
 		playerStats.put("circleLv", scriptController.getCircleLv());
+		playerStats.put("angelLv", 0);
 
 		monsterStats = new HashMap<String, Integer>();
 		monsterStats.put("monsterHealth", scriptController.getMonsterHealth());
@@ -983,7 +1003,10 @@ public class MyGame extends VariableFrameRateGame {
 		booster = false;
 		isConsumed = false;
 		isBooster = false;
+		isSelect = true;
 
+		monsterNormalAS.playAnimation("MOVEATTACK", 0.5f,
+				AnimatedShape.EndType.LOOP, 0);
 		fiveSec = -1;
 		orbiterSpeed = scriptController.getOrbiterSpeed();
 	}
@@ -1157,13 +1180,12 @@ public class MyGame extends VariableFrameRateGame {
 		displayTime += (currFrameTime - lastFrameTime) / 1000;
 	}
 
-
 	private void keepPlayerOnTerrain() {
 		Vector3f loc = avatar.getWorldLocation();
 		float terrHeight = terr.getHeight(loc.x(), loc.z()) + .6f;
 		avatar.setLocalLocation(new Vector3f(loc.x(), terrHeight, loc.z()));
 		// if (terrHeight <= 10){
-			
+
 		// }
 	}
 
@@ -1280,6 +1302,9 @@ public class MyGame extends VariableFrameRateGame {
 			avatar.setLocalTranslation((new Matrix4f()).translation(0, 0.6f, 0));
 			playerStats.replace("class", 1);
 			protClient.sendPlayerStatsMessage(playerStats);
+
+			isSelect = false;
+			angel.getRenderStates().enableRendering();
 		}
 
 		if (avaNPCDis - avsize - aNPCsize <= .5) {
@@ -1290,6 +1315,9 @@ public class MyGame extends VariableFrameRateGame {
 			avatar.setLocalTranslation((new Matrix4f()).translation(0, 0.6f, 0));
 			playerStats.replace("class", 2);
 			protClient.sendPlayerStatsMessage(playerStats);
+
+			isSelect = false;
+			angel.getRenderStates().enableRendering();
 		}
 	}
 
@@ -1532,7 +1560,7 @@ public class MyGame extends VariableFrameRateGame {
 				// Temporary key pressed action. Used to test xp orb creation
 				float randX = randNum();
 				float randZ = randNum();
-				dropXP(randX, 1f, randZ);
+				dropXP(randX, 1.2f, randZ);
 				spawnMonsterNormal(randX, 0.6f, randZ);
 				break;
 			}
@@ -1597,6 +1625,8 @@ public class MyGame extends VariableFrameRateGame {
 				avatar.getRenderStates().disableRendering();
 				playerStats.replace("class", 1);
 				protClient.sendPlayerStatsMessage(playerStats);
+
+				angel.getRenderStates().enableRendering();
 				break;
 			}
 			case KeyEvent.VK_9: {
@@ -1606,6 +1636,8 @@ public class MyGame extends VariableFrameRateGame {
 				avatar.getRenderStates().disableRendering();
 				playerStats.replace("class", 2);
 				protClient.sendPlayerStatsMessage(playerStats);
+
+				angel.getRenderStates().enableRendering();
 				break;
 			}
 		}
@@ -1840,17 +1872,17 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	private void moveLightsWithAvatar(){
-		light1.setLocation(new Vector3f(avatar.getWorldLocation().x(), avatar.getWorldLocation().y() + 10, avatar.getWorldLocation().z()));
+	private void moveLightsWithAvatar() {
+		light1.setLocation(new Vector3f(avatar.getWorldLocation().x(), avatar.getWorldLocation().y() + 10,
+				avatar.getWorldLocation().z()));
 	}
 
-	public void toggleLight(){
-		//Added a new removeLight method to TAGE. Changed SceneGraph and LightManager
-		if(lightsEnabled){
+	public void toggleLight() {
+		// Added a new removeLight method to TAGE. Changed SceneGraph and LightManager
+		if (lightsEnabled) {
 			(engine.getSceneGraph()).removeLight(light2);
 			lightsEnabled = false;
-		}
-		else {
+		} else {
 			(engine.getSceneGraph()).addLight(light2);
 			lightsEnabled = true;
 		}
