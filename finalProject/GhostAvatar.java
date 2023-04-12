@@ -63,6 +63,7 @@ public class GhostAvatar extends GameObject {
 	}
 
 	public void setInfo(HashMap ghostStats) {
+		playerStats.replace("class", (Integer) ghostStats.get("class"));
 		playerStats.replace("health", (Integer) ghostStats.get("health"));
 		playerStats.replace("level", (Integer) ghostStats.get("level"));
 		playerStats.replace("atk", (Integer) ghostStats.get("atk"));
