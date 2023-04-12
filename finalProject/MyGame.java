@@ -645,11 +645,11 @@ public class MyGame extends VariableFrameRateGame {
 		angel.applyParentRotationToPosition(true);
 		angel.getRenderStates().disableRendering();
 
-		gavatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		gavatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
 		gavatarOrbiter1.getRenderStates().disableRendering();
-		gavatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		gavatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
 		gavatarOrbiter2.getRenderStates().disableRendering();
-		gavatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, avatarOrbiterT);
+		gavatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
 		gavatarOrbiter3.getRenderStates().disableRendering();
 		gcircle = new GameObject(GameObject.root(), circleS, circleT);
 		gcircle.getRenderStates().disableRendering();

@@ -15,6 +15,9 @@ import tage.*;
 public class GhostManager {
 	private MyGame game;
 	private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
+	private GameObject gmage, garcher;
+	private GhostAvatar newAvatar;
+	private Matrix4f initialScale, initialTranslation;
 
 	public GhostManager(VariableFrameRateGame vfrg) {
 		game = (MyGame) vfrg;
@@ -30,7 +33,6 @@ public class GhostManager {
 		TextureImage dt = game.getXPOrbTexture();
 		TextureImage mt = game.getGhostMageTexture();
 		TextureImage at = game.getGhostArcherTexture();
-		GhostAvatar newAvatar;
 
 		if (ghostClass == 1) {
 			newAvatar = new GhostAvatar(id, ms, mt, position);
@@ -40,13 +42,37 @@ public class GhostManager {
 			newAvatar = new GhostAvatar(id, ds, dt, position);
 		}
 
-		Matrix4f initialScale = (new Matrix4f()).scaling(0.2f);
+		initialScale = (new Matrix4f()).scaling(0.2f);
 		newAvatar.setLocalScale(initialScale);
 		newAvatar.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
 
+		gmage = new GameObject(GameObject.root(), ms, mt);
+		gmage.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		gmage.setLocalScale(initialScale);
+		gmage.setParent(newAvatar);
+		gmage.propagateTranslation(true);
+		gmage.propagateRotation(true);
+		gmage.propagateScale(false);
+		gmage.applyParentRotationToPosition(true);
+		gmage.getRenderStates().disableRendering();
+
+		garcher = new GameObject(GameObject.root(), as, at);
+		garcher.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
+		initialScale = (new Matrix4f()).scaling(0.2f);
+		garcher.setLocalScale(initialScale);
+		garcher.setParent(newAvatar);
+		garcher.propagateTranslation(true);
+		garcher.propagateRotation(true);
+		garcher.propagateScale(false);
+		garcher.applyParentRotationToPosition(true);
+		garcher.getRenderStates().disableRendering();
+
 		game.getgavatarOrbiter1().setParent(newAvatar);
-		Matrix4f initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
+		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
 		game.getgavatarOrbiter1().setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 0.3f, 2.5f);
 		game.getgavatarOrbiter1().setLocalScale(initialScale);
@@ -125,9 +151,23 @@ public class GhostManager {
 
 		if (ghostAvatar != null) {
 			ghostAvatar.setInfo(ghostStats);
+			avatarUpdate(ghostStats);
 			skillUpdate(ghostStats);
 		} else {
 			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
+		}
+	}
+
+	private void avatarUpdate(HashMap ghostStats) {
+		int currClass = (Integer) ghostStats.get("class");
+		if (currClass == 1) {
+			gmage.getRenderStates().enableRendering();
+			garcher.getRenderStates().disableRendering();
+			newAvatar.getRenderStates().disableRendering();
+		} else if (currClass == 2) {
+			garcher.getRenderStates().enableRendering();
+			gmage.getRenderStates().disableRendering();
+			newAvatar.getRenderStates().disableRendering();
 		}
 	}
 
