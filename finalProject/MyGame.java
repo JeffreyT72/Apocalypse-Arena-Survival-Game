@@ -89,7 +89,8 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject mageNPC, archerNPC;
 
 	// Additional object
-	private GameObject fence, lamp, house, town, fence2, fence3, fence4, fence5, fence6, fence7, fence8;
+	private GameObject fence, lamp, house, town, fence2, fence3, fence4, fence5, fence6, fence7, fence8, grenade1;
+	private GameObject plane;
 	private GameObject dog;
 	private ArrayList<GameObject> trees = new ArrayList<GameObject>();
 
@@ -134,7 +135,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ObjShape ghostS_Archer;
 
 	// Additional object Shape
-	private ObjShape fenceS, lampS, houseS, townS, treeS;
+	private ObjShape fenceS, lampS, houseS, townS, treeS, grenadeS;
 	private ObjShape dogS;
 
 	// Skill Shapes
@@ -178,7 +179,8 @@ public class MyGame extends VariableFrameRateGame {
 	private PhysicsObject monster;
 	private PhysicsObject fireball0P, fireball1P, fireball2P;
 	private PhysicsObject avatarOrbiter1P, avatarOrbiter2P, avatarOrbiter3P;
-	private PhysicsObject circleP;
+	private PhysicsObject circleP, grenade1P, planeP, avatarP;
+	private int grenadeID, avatarID;
 
 	private boolean running = false;
 	private float vals[] = new float[16];
@@ -228,6 +230,7 @@ public class MyGame extends VariableFrameRateGame {
 		planeS = new Plane();
 		xpOrbS = new Sphere();
 		terrS = new TerrainPlane(1000); // pixel per axis = 1000 x 1000
+		grenadeS = new Sphere();
 
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
@@ -311,7 +314,7 @@ public class MyGame extends VariableFrameRateGame {
 		terr.setLocalScale(initialScale);
 		terr.setHeightMap(wall);
 
-		GameObject plane = new GameObject(GameObject.root(), planeS, planeT);
+		plane = new GameObject(GameObject.root(), planeS, planeT);
 		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
 		plane.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(80f);
@@ -323,6 +326,13 @@ public class MyGame extends VariableFrameRateGame {
 		rocket.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
+
+		// build grenade1
+		grenade1 = new GameObject(GameObject.root(), grenadeS);
+		initialTranslation = (new Matrix4f()).translation(0, 5, 0);
+		grenade1.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(0.5f);
+		grenade1.setLocalScale(initialScale);
 
 		// build ranger
 		ranger = new GameObject(GameObject.root(), rangerS, rangerT);
@@ -757,27 +767,28 @@ public class MyGame extends VariableFrameRateGame {
 		// --- initialize physics system ---
 		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
 		float[] gravity = { 0f, -5f, 0f };
+		Matrix4f translation;
 		physicsEngine = PhysicsEngineFactory.createPhysicsEngine(engine);
 		physicsEngine.initSystem();
-		// physicsEngine.setGravity(gravity);
+		physicsEngine.setGravity(gravity);
 		// --- create physics world ---
 		float mass = 1.0f;
 		float up[] = { 0, 1, 0 };
 		double[] tempTransform;
 
-		Matrix4f translation = new Matrix4f(fireball0.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		fireball0P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
-				mass, tempTransform, 0.5f);
-		// fireball0P.setBounciness(1.0f);
-		fireball0.setPhysicsObject(fireball0P);
+		// translation = new Matrix4f(fireball0.getLocalTranslation());
+		// tempTransform = toDoubleArray(translation.get(vals));
+		// fireball0P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
+		// 		mass, tempTransform, 0.5f);
+		// // fireball0P.setBounciness(1.0f);
+		// fireball0.setPhysicsObject(fireball0P);
 
-		translation = new Matrix4f(mageNPC.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		fireball1P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
-				mass, tempTransform, 0.5f);
-		// fireball1P.setBounciness(1.0f);
-		mageNPC.setPhysicsObject(fireball1P);
+		// translation = new Matrix4f(mageNPC.getLocalTranslation());
+		// tempTransform = toDoubleArray(translation.get(vals));
+		// fireball1P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
+		// 		mass, tempTransform, 0.5f);
+		// // fireball1P.setBounciness(1.0f);
+		// mageNPC.setPhysicsObject(fireball1P);
 
 		// translation = new Matrix4f(monsterNormal.getLocalTranslation());
 		// tempTransform = toDoubleArray(translation.get(vals));
@@ -785,6 +796,29 @@ public class MyGame extends VariableFrameRateGame {
 		// physicsEngine.nextUID(), tempTransform, up, 0.0f);
 		// monster.setBounciness(1.0f);
 		// monsterNormal.setPhysicsObject(monster);
+
+		translation = new Matrix4f(grenade1.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		grenadeID = physicsEngine.nextUID();
+		grenade1P = physicsEngine.addSphereObject(grenadeID, mass, tempTransform, 0.5f);
+		grenade1P.setBounciness(0.8f);
+		grenade1.setPhysicsObject(grenade1P);
+
+		translation = new Matrix4f(avatar.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		float[] cylinderSize = {.5f,1f,.5f};
+		avatarID = physicsEngine.nextUID();
+		avatarP = physicsEngine.addCylinderObject(avatarID, 1000000000, tempTransform, cylinderSize);
+		avatarP.setBounciness(.1f);
+		avatar.setPhysicsObject(avatarP);
+
+		translation = new Matrix4f(plane.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		planeP = physicsEngine.addStaticPlaneObject(physicsEngine.nextUID(), tempTransform, up, 0.0f);
+		planeP.setBounciness(1.0f);
+		plane.setPhysicsObject(planeP);
+
+		
 	}
 
 	// ------------------ UTILITY FUNCTIONS used by physics
@@ -904,20 +938,34 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f mat = new Matrix4f();
 		Matrix4f mat2 = new Matrix4f().identity();
 		checkForCollisions();
-		physicsEngine.update((float) elapsTime);
+
+		// Update the position of the avatar's physics object
+		if (avatarP != null) {
+			float[] zeroVelocity = {0,0,0};
+			avatarP.setLinearVelocity(zeroVelocity);
+			avatarP.setAngularVelocity(zeroVelocity);
+			Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
+			double[] tempTransform = toDoubleArray(translation.get(vals));
+			avatarP.setTransform(tempTransform);
+		}
+
+		
 		for (GameObject go : engine.getSceneGraph().getGameObjects()) {
-			if (go.getPhysicsObject() != null) {
-				// mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
-				// mat2.set(3, 0, mat.m30());
-				// mat2.set(3, 1, mat.m31());
-				// mat2.set(3, 2, mat.m32());
-				// go.setLocalTranslation(mat2);
+			if (go.getPhysicsObject() != null && go.getPhysicsObject() != avatarP) {
+
+				mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+				mat2.set(3, 0, mat.m30());
+				mat2.set(3, 1, mat.m31());
+				mat2.set(3, 2, mat.m32());
+				go.setLocalTranslation(mat2);
 
 				// Matrix4f translation = new Matrix4f(go.getLocalTranslation());
 				// double[] tempTransform = toDoubleArray(translation.get(vals));
 				// go.getPhysicsObject().setTransform(tempTransform);
 			}
 		}
+
+		physicsEngine.update((float) elapsTime);
 	}
 
 	protected void processNetworking(float elapsTime) {
@@ -1272,7 +1320,14 @@ public class MyGame extends VariableFrameRateGame {
 			for (int j = 0; j < manifold.getNumContacts(); j++) {
 				contactPoint = manifold.getContactPoint(j);
 				if (contactPoint.getDistance() < 0.0f) {
-					System.out.println("---- hit between " + obj1 + " and " + obj2);
+					//System.out.println("---- hit between " + obj1 + " and " + obj2);
+					
+					if ((obj1 == grenade1P && obj2 == avatarP)) {
+						System.out.println("Grenade hit the avatar!");
+						int oldHealth = playerStats.get("health");
+						playerStats.replace("health", oldHealth - 1);
+						
+					}
 					break;
 				}
 			}
@@ -1638,6 +1693,25 @@ public class MyGame extends VariableFrameRateGame {
 				protClient.sendPlayerStatsMessage(playerStats);
 
 				angel.getRenderStates().enableRendering();
+				break;
+			}
+			case KeyEvent.VK_O: {
+				grenade1.setLocalLocation(ranger.getWorldLocation());
+
+				Matrix4f translation = new Matrix4f(grenade1.getLocalTranslation());
+				double [] tempTransform = toDoubleArray(translation.get(vals));
+				grenade1P.setTransform(tempTransform);				
+				//grenade1P.applyForce(0,100,0,0,0,0);
+
+				float[] zeroVelocity = {0,0,0};
+				grenade1P.setLinearVelocity(zeroVelocity);
+				grenade1P.setAngularVelocity(zeroVelocity);
+
+				Vector3f launchVector = ranger.getWorldForwardVector();
+				float forceMagnitude = 1000f;
+				launchVector.mul(forceMagnitude);
+				grenade1P.applyForce(launchVector.x(), launchVector.y(), launchVector.z(), 0, 0, 0);
+
 				break;
 			}
 		}
