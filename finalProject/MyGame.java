@@ -967,11 +967,6 @@ public class MyGame extends VariableFrameRateGame {
 				n.lookAt(avatar);
 				n.fwdAction(0.01f);
 			}
-
-			for (GameObject o : xpOrbs) {
-				o.lookAt(avatar);
-				o.fwdAction(0.01f);
-			}
 		}
 		ranger.lookAt(avatar);
 
@@ -997,6 +992,7 @@ public class MyGame extends VariableFrameRateGame {
 		checkTouchSoup();
 		handleFireballMovement();
 		checkTouchXPOrb();
+		checkTouchMonster();
 		rotateOrbiters(orbiterSpeed);
 		levelUp();
 		skillUpdate();
@@ -1497,6 +1493,62 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
+	private void checkTouchMonster() {
+		Vector3f avloc, monloc, fire0loc, fire1loc, fire2loc;
+		float avrocDis;
+		float avsize;
+		float monsize;
+		int elapsTimeSec = Math.round((float) displayTime);
+		float fireball0MonDis, fireball1MonDis, fireball2MonDis;
+
+		avloc = avatar.getWorldLocation();
+		avsize = (avatar.getWorldScale()).m00();
+		//monsize = (monsterNormal.getWorldScale()).m00();
+		fire0loc = fireball0.getWorldLocation();
+		fire1loc = fireball1.getWorldLocation();
+		fire2loc = fireball2.getWorldLocation();
+
+		for (GameObject n : monsterNormals) {
+			avrocDis = avloc.distance(n.getWorldLocation());
+			if (avrocDis - avsize <= .5) {
+				int oldHealth = playerStats.get("health");
+				playerStats.replace("health", oldHealth - 1);
+			}
+		}
+
+		Iterator<GameObject> iterator = monsterNormals.iterator();
+		while (iterator.hasNext()) {
+			GameObject n = iterator.next();
+			fireball0MonDis = fire0loc.distance(n.getWorldLocation());
+			fireball1MonDis = fire1loc.distance(n.getWorldLocation());
+			fireball2MonDis = fire2loc.distance(n.getWorldLocation());
+
+			if (fireball0MonDis <= .5) {
+				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
+				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
+				iterator.remove();
+				return;
+			}
+
+			if (fireball1MonDis <= .5) {
+				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
+				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
+				iterator.remove();
+				return;
+			}
+
+			if (fireball2MonDis <= .5) {
+				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
+				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
+				iterator.remove();
+				return;
+			}
+		}
+	}
+
 	private void updateHUD() {
 		DecimalFormat df = new DecimalFormat();
 		df.setMaximumFractionDigits(3);
@@ -1701,7 +1753,7 @@ public class MyGame extends VariableFrameRateGame {
 				// Temporary key pressed action. Used to test xp orb creation
 				float randX = randNum();
 				float randZ = randNum();
-				dropXP(randX, 1.2f, randZ);
+				//dropXP(randX, 1.2f, randZ);
 				spawnMonsterNormal(randX, 0.6f, randZ);
 				break;
 			}
@@ -1834,10 +1886,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
 	private int randNum() {
-		int max = 7;
-		int min = -7;
+		int max = 50;
+		int min = -50;
 		int num = (rand.nextInt(max - min) + min);
-		if (num <= 2 && num >= -2)
+		if (num <= 10 && num >= -10)
 			randNum();
 		return num;
 	}
