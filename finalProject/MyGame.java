@@ -40,11 +40,18 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import tage.audio.*;
+import tage.audio.joal.*;
+
 import javax.script.ScriptEngine;
 
 public class MyGame extends VariableFrameRateGame {
 	// Engine
 	private static Engine engine;
+
+	//Sound
+	private IAudioManager audioMgr;
+	private Sound fireballSound, ambientSound, monsterSound, dogSound;
 
 	// Input variables
 	private InputManager im;
@@ -756,11 +763,81 @@ public class MyGame extends VariableFrameRateGame {
 		// inputController = new InputController(this, engine);
 		inputSetup();
 
+		initAudio();
+
 		// Used for playing animations while avatar is moving
 		lastFramePosition = avatar.getWorldLocation();
 		currentFramePosition = lastFramePosition;
 
 		setupNetworking();
+	}
+
+	public void initAudio(){
+		AudioResource resource1, resource2, resource3;
+		// audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
+		audioMgr = new JOALAudioManager();
+		if (!audioMgr.initialize())
+		{ 
+			System.out.println("Audio Manager failed to initialize!");
+			return;
+		}
+		resource1 = audioMgr.createAudioResource("assets/sounds/pew.wav", AudioResourceType.AUDIO_SAMPLE);
+		fireballSound = new Sound(resource1, SoundType.SOUND_EFFECT, 100, false);
+		fireballSound.initialize(audioMgr);	
+		// fireballSound.setMaxDistance(10.0f);
+		// fireballSound.setMinDistance(0.5f);
+		fireballSound.setRollOff(5.0f);
+		fireballSound.setLocation(avatar.getWorldLocation());
+
+		resource2 = audioMgr.createAudioResource("assets/sounds/ambient.wav", AudioResourceType.AUDIO_STREAM);
+		ambientSound = new Sound(resource2, SoundType.SOUND_MUSIC, 50, true);
+		ambientSound.initialize(audioMgr);	
+		ambientSound.setLocation(avatar.getWorldLocation());
+		ambientSound.play();
+
+		resource3 = audioMgr.createAudioResource("assets/sounds/bark.wav", AudioResourceType.AUDIO_SAMPLE);
+		dogSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, true);
+		dogSound.initialize(audioMgr);	
+		//dogSound.setMaxDistance(1.0f);
+		dogSound.setMinDistance(0.5f);
+		dogSound.setEmitDirection(dog.getWorldForwardVector(), 360f);
+		dogSound.setRollOff(2.0f);
+
+		// Vector3f dogLocation = dog.getWorldLocation();
+		// dogLocation.add(0, 5f, 0); // adjust y-coordinate by 0.5 units
+		// dogSound.setLocation(dogLocation);
+		dogSound.play();
+
+		setEarParameters();
+		
+	}
+
+	public void setEarParameters(){
+		if (!audioMgr.initialize())
+		{ 
+			System.out.println("Audio Manager failed to initialize!");
+			return;
+		}
+		Camera camera = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
+		audioMgr.getEar().setLocation(avatar.getWorldLocation());
+		audioMgr.getEar().setOrientation(avatar.getWorldForwardVector(), new Vector3f(0.0f, 1.0f, 0.0f));
+	}
+
+	private void updateAudioProperties(){
+		if (!audioMgr.initialize())
+		{ 
+			System.out.println("Audio Manager failed to initialize!");
+			return;
+		}
+
+		fireballSound.setLocation(fireball0.getWorldLocation());
+		ambientSound.setLocation(avatar.getWorldLocation());
+		Vector3f dogLocation = dog.getWorldLocation();
+		dogLocation.add(0, 1f, 0); // adjust y-coordinate by 0.5 units
+		dogSound.setLocation(dogLocation);
+
+		setEarParameters();
+
 	}
 
 	private void initPhysics() {
@@ -878,6 +955,7 @@ public class MyGame extends VariableFrameRateGame {
 		updateTime();
 
 		updateGameLogic();
+		updateAudioProperties();
 		// update inputs, avatar location
 		im.update((float) elapsTime);
 
@@ -925,6 +1003,14 @@ public class MyGame extends VariableFrameRateGame {
 		handleTeleportCooldown();
 		updateAnimation();
 		moveLightsWithAvatar();
+		playDogSoundWhenNextToDog();
+	}
+
+	private void playDogSoundWhenNextToDog(){
+		// float distanceToDog = avatar.getWorldLocation().distance(dog.getWorldLocation());
+		// if (distanceToDog < 5){
+		// 	dogSound.play();
+		// }
 	}
 
 	private void updateAnimation() {
@@ -1185,7 +1271,7 @@ public class MyGame extends VariableFrameRateGame {
 				mageAS.playAnimation("ATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
 				archerAS.playAnimation("ATTACK", 2f, AnimatedShape.EndType.LOOP, 1);
 			}
-
+			fireballSound.play();
 		}
 	}
 
