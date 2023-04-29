@@ -96,7 +96,9 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject mageNPC, archerNPC;
 
 	// Additional object
-	private GameObject fence, lamp, house, town, fence2, fence3, fence4, fence5, fence6, fence7, fence8, grenade1;
+	private GameObject fence, lamp, house, town, fence2, fence3, fence4, fence5, fence6, fence7, fence8, grenade0,grenade1,grenade2,grenade3,grenade4;
+	private ArrayList<GameObject> rangerGrenades = new ArrayList<GameObject>();
+
 	private GameObject plane;
 	private GameObject dog;
 	private ArrayList<GameObject> trees = new ArrayList<GameObject>();
@@ -186,8 +188,13 @@ public class MyGame extends VariableFrameRateGame {
 	private PhysicsObject monster;
 	private PhysicsObject fireball0P, fireball1P, fireball2P;
 	private PhysicsObject avatarOrbiter1P, avatarOrbiter2P, avatarOrbiter3P;
-	private PhysicsObject circleP, grenade1P, planeP, avatarP;
-	private int grenadeID, avatarID;
+	private PhysicsObject circleP, grenade0P, grenade1P, grenade2P, grenade3P, grenade4P, planeP, avatarP;
+	private ArrayList<PhysicsObject> rangerGrenadesPhy = new ArrayList<PhysicsObject>();
+	private boolean rangerCurrentlyAttacking = false;
+	private float rangerTimeBetweenAttack = 0;
+	private int currentGrenadeNumber = 0;
+
+	private boolean rangerReadyToLaunchNextAttack = true;
 
 	private boolean running = false;
 	private float vals[] = new float[16];
@@ -334,12 +341,22 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		rocket.setLocalScale(initialScale);
 
-		// build grenade1
-		grenade1 = new GameObject(GameObject.root(), grenadeS);
-		initialTranslation = (new Matrix4f()).translation(0, 5, 0);
-		grenade1.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(0.5f);
-		grenade1.setLocalScale(initialScale);
+		//Grenade Creation
+		rangerGrenades.add(grenade0);
+		rangerGrenades.add(grenade1);
+		rangerGrenades.add(grenade2);
+		rangerGrenades.add(grenade3);
+		rangerGrenades.add(grenade4);
+		//Need to change this for loop if adding more grenades
+		for (int i=0; i<rangerGrenades.size(); i++){			
+			GameObject grenade = new GameObject(GameObject.root(), grenadeS);
+			rangerGrenades.set(i, grenade);
+
+			initialTranslation = (new Matrix4f()).translation(-100, 1, -100);
+			rangerGrenades.get(i).setLocalTranslation(initialTranslation);
+			initialScale = (new Matrix4f()).scaling(0.5f);
+			rangerGrenades.get(i).setLocalScale(initialScale);
+		}
 
 		// build ranger
 		ranger = new GameObject(GameObject.root(), rangerS, rangerT);
@@ -853,39 +870,26 @@ public class MyGame extends VariableFrameRateGame {
 		float up[] = { 0, 1, 0 };
 		double[] tempTransform;
 
-		// translation = new Matrix4f(fireball0.getLocalTranslation());
-		// tempTransform = toDoubleArray(translation.get(vals));
-		// fireball0P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
-		// 		mass, tempTransform, 0.5f);
-		// // fireball0P.setBounciness(1.0f);
-		// fireball0.setPhysicsObject(fireball0P);
+		rangerGrenadesPhy.add(grenade0P);
+		rangerGrenadesPhy.add(grenade1P);
+		rangerGrenadesPhy.add(grenade2P);
+		rangerGrenadesPhy.add(grenade3P);
+		rangerGrenadesPhy.add(grenade4P);
 
-		// translation = new Matrix4f(mageNPC.getLocalTranslation());
-		// tempTransform = toDoubleArray(translation.get(vals));
-		// fireball1P = physicsEngine.addSphereObject(physicsEngine.nextUID(),
-		// 		mass, tempTransform, 0.5f);
-		// // fireball1P.setBounciness(1.0f);
-		// mageNPC.setPhysicsObject(fireball1P);
+		for (int i = 0; i < rangerGrenades.size(); i++) {
+			translation = new Matrix4f(rangerGrenades.get(i).getLocalTranslation());
+			tempTransform = toDoubleArray(translation.get(vals));
+			PhysicsObject sphereObject = physicsEngine.addSphereObject(physicsEngine.nextUID(), mass, tempTransform, 0.5f);
+			sphereObject.setBounciness(0.8f);
+			rangerGrenadesPhy.set(i, sphereObject);
+			rangerGrenades.get(i).setPhysicsObject(sphereObject);
+		}
 
-		// translation = new Matrix4f(monsterNormal.getLocalTranslation());
-		// tempTransform = toDoubleArray(translation.get(vals));
-		// monster = physicsEngine.addStaticPlaneObject(
-		// physicsEngine.nextUID(), tempTransform, up, 0.0f);
-		// monster.setBounciness(1.0f);
-		// monsterNormal.setPhysicsObject(monster);
-
-		translation = new Matrix4f(grenade1.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		grenadeID = physicsEngine.nextUID();
-		grenade1P = physicsEngine.addSphereObject(grenadeID, mass, tempTransform, 0.5f);
-		grenade1P.setBounciness(0.8f);
-		grenade1.setPhysicsObject(grenade1P);
 
 		translation = new Matrix4f(avatar.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		float[] cylinderSize = {.5f,1f,.5f};
-		avatarID = physicsEngine.nextUID();
-		avatarP = physicsEngine.addCylinderObject(avatarID, 1000000000, tempTransform, cylinderSize);
+		avatarP = physicsEngine.addCylinderObject(physicsEngine.nextUID(), 1000000000, tempTransform, cylinderSize);
 		avatarP.setBounciness(.1f);
 		avatar.setPhysicsObject(avatarP);
 
@@ -1000,6 +1004,8 @@ public class MyGame extends VariableFrameRateGame {
 		updateAnimation();
 		moveLightsWithAvatar();
 		playDogSoundWhenNextToDog();
+		launchRangerGrenadeAttacks();
+
 	}
 
 	private void playDogSoundWhenNextToDog(){
@@ -1404,12 +1410,15 @@ public class MyGame extends VariableFrameRateGame {
 				if (contactPoint.getDistance() < 0.0f) {
 					//System.out.println("---- hit between " + obj1 + " and " + obj2);
 					
-					if ((obj1 == grenade1P && obj2 == avatarP)) {
-						System.out.println("Grenade hit the avatar!");
-						int oldHealth = playerStats.get("health");
-						playerStats.replace("health", oldHealth - 1);
-						
+					
+					for (int k=0; k < rangerGrenadesPhy.size(); k++){
+						if (((obj1 == rangerGrenadesPhy.get(k)) && obj2 == avatarP)) {
+							System.out.println("Grenade hit the avatar!");
+							int oldHealth = playerStats.get("health");
+							playerStats.replace("health", oldHealth - 1);
+						}
 					}
+
 					break;
 				}
 			}
@@ -1834,26 +1843,52 @@ public class MyGame extends VariableFrameRateGame {
 				break;
 			}
 			case KeyEvent.VK_O: {
-				grenade1.setLocalLocation(ranger.getWorldLocation());
-
-				Matrix4f translation = new Matrix4f(grenade1.getLocalTranslation());
-				double [] tempTransform = toDoubleArray(translation.get(vals));
-				grenade1P.setTransform(tempTransform);				
-				//grenade1P.applyForce(0,100,0,0,0,0);
-
-				float[] zeroVelocity = {0,0,0};
-				grenade1P.setLinearVelocity(zeroVelocity);
-				grenade1P.setAngularVelocity(zeroVelocity);
-
-				Vector3f launchVector = ranger.getWorldForwardVector();
-				float forceMagnitude = 1000f;
-				launchVector.mul(forceMagnitude);
-				grenade1P.applyForce(launchVector.x(), launchVector.y(), launchVector.z(), 0, 0, 0);
-
+				rangerCurrentlyAttacking = !rangerCurrentlyAttacking;
 				break;
 			}
 		}
 		super.keyPressed(e);
+	}
+
+	private void launchRangerGrenadeAttacks(){
+		Matrix4f translation;
+		double [] tempTransform;
+		float[] zeroVelocity = {0,0,0};
+		Vector3f launchVector;
+		float forceMagnitude = 1000f;
+
+		if(rangerTimeBetweenAttack >= 3000f && rangerCurrentlyAttacking){
+			rangerReadyToLaunchNextAttack = true;
+			rangerTimeBetweenAttack = 0;
+		}
+		else if (rangerCurrentlyAttacking){
+			rangerTimeBetweenAttack += elapsTime;
+		}
+
+		if(rangerCurrentlyAttacking && rangerReadyToLaunchNextAttack){
+			rangerGrenades.get(currentGrenadeNumber).setLocalLocation(ranger.getWorldLocation());
+
+			translation = new Matrix4f(rangerGrenades.get(currentGrenadeNumber).getLocalTranslation());
+			tempTransform = toDoubleArray(translation.get(vals));
+			rangerGrenadesPhy.get(currentGrenadeNumber).setTransform(tempTransform);				
+
+			rangerGrenadesPhy.get(currentGrenadeNumber).setLinearVelocity(zeroVelocity);
+			rangerGrenadesPhy.get(currentGrenadeNumber).setAngularVelocity(zeroVelocity);
+
+			launchVector = ranger.getWorldForwardVector();
+			launchVector.mul(forceMagnitude);
+			rangerGrenadesPhy.get(currentGrenadeNumber).applyForce(launchVector.x(), launchVector.y(), launchVector.z(), 0, 0, 0);
+
+			if(currentGrenadeNumber + 1 >= rangerGrenades.size()){
+				currentGrenadeNumber=0;
+			} 
+			else {
+				currentGrenadeNumber++;
+			} 
+
+			rangerReadyToLaunchNextAttack = false;
+		}
+
 	}
 
 	// If the avatar is currently moving, it plays the movement animations
