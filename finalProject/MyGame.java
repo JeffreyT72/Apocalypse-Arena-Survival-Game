@@ -1727,6 +1727,14 @@ public class MyGame extends VariableFrameRateGame {
 		return darkSky;
 	}
 
+	public ObjShape getNPCshape() {
+		return rangerS;
+	}
+
+	public TextureImage getNPCtexture() {
+		return rangerT;
+	}
+
 	// Keyboard can use Esc and = key
 	@Override
 	public void keyPressed(KeyEvent e) {
