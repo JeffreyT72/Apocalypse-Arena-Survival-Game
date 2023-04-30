@@ -16,6 +16,7 @@ import tage.networking.client.GameConnectionClient;
 public class ProtocolClient extends GameConnectionClient {
 	private MyGame game;
 	private GhostManager ghostManager;
+	private GhostNPC ghostNPC;
 	private UUID id;
 
 	float prevX = 0, prevZ = 0, randX = 0, randZ = 0, trueX = 0, trueZ = 0;
@@ -30,6 +31,30 @@ public class ProtocolClient extends GameConnectionClient {
 
 	public UUID getID() {
 		return id;
+	}
+
+	// ----------- Ghost NPC Section -------------
+	private void createGhostNPC(Vector3f position) throws IOException {
+		if (ghostNPC == null)
+			ghostNPC = new GhostNPC(0, game.getNPCshape(),
+					game.getNPCtexture(), position);
+	}
+
+	private void updateGhostNPC(Vector3f position, double gsize) {
+		boolean gs;
+		if (ghostNPC == null) {
+			try {
+				createGhostNPC(position);
+			} catch (IOException e) {
+				System.out.println("error creating npc");
+			}
+		}
+		ghostNPC.setPosition(position);
+		if (gsize == 1.0)
+			gs = false;
+		else
+			gs = true;
+		ghostNPC.setSize(gs);
 	}
 
 	@Override
@@ -135,7 +160,7 @@ public class ProtocolClient extends GameConnectionClient {
 
 			if (messageTokens[0].compareTo("changeSkyBoxes") == 0) {
 				// Parse out the id into a UUID
-				//UUID ghostID = UUID.fromString(messageTokens[1]);
+				// UUID ghostID = UUID.fromString(messageTokens[1]);
 
 				if (Boolean.parseBoolean(messageTokens[1])) {
 					(MyGame.getEngine().getSceneGraph()).setActiveSkyBoxTexture(game.getDaySky());
@@ -154,9 +179,8 @@ public class ProtocolClient extends GameConnectionClient {
 				trueX = randX - prevX;
 				trueZ = randZ - prevZ;
 				// At most 50 enemy on screen
-				if (game.monsterNormals.size() < 50) {
+				if (game.monsterNormals.size() < 100) {
 					if (!(trueX == 0f && trueZ == 0f)) {
-						game.dropXP(randX, 1f, randZ);
 						game.spawnMonsterNormal(randX, 0.6f, randZ);
 					}
 				} else {
@@ -165,6 +189,20 @@ public class ProtocolClient extends GameConnectionClient {
 					game.monsterNormals.get(0).setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
 					game.monsterNormals.remove(deleteGO);
 				}
+			}
+
+			// ----------- Ghost NPC Section -------------
+			if (messageTokens[0].compareTo("createNPC") == 0) { // create a new ghost NPC
+				// Parse out the position
+				Vector3f ghostPosition = new Vector3f(
+						Float.parseFloat(messageTokens[1]),
+						Float.parseFloat(messageTokens[2]),
+						Float.parseFloat(messageTokens[3]));
+				try {
+					createGhostNPC(ghostPosition);
+				} catch (IOException e) {
+					System.out.println(e);
+				} // error creating ghost avatar
 			}
 		}
 	}
