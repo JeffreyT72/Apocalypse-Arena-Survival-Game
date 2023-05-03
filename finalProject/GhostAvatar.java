@@ -70,7 +70,6 @@ public class GhostAvatar extends GameObject {
 		playerStats.replace("fireballLv", (Integer) ghostStats.get("fireballLv"));
 		playerStats.replace("avatarOrbiterLv", (Integer) ghostStats.get("avatarOrbiterLv"));
 		playerStats.replace("circleLv", (Integer) ghostStats.get("circleLv"));
-
 	}
 
 	public HashMap getInfo() {

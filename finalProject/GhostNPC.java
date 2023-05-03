@@ -30,4 +30,13 @@ public class GhostNPC extends GameObject {
     public void setPosition(Vector3f p) {
         setLocalLocation(p);
     }
+
+    public void attack() {
+        //this.lookAt(ghostAvatar);
+        this.setLocalScale((new Matrix4f()).scaling(1.0f));
+    }
+
+    public void petrol() {
+        this.setLocalScale((new Matrix4f()).scaling(0.5f));
+    }
 }
