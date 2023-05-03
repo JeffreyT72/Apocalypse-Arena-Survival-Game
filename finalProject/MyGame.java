@@ -942,6 +942,7 @@ public class MyGame extends VariableFrameRateGame {
 			// to server, with a unique identifier for this client
 			System.out.println("sending join message to protocol host");
 			protClient.sendJoinMessage();
+			protClient.sendCreateNPCMessage();
 		}
 	}
 
@@ -990,6 +991,7 @@ public class MyGame extends VariableFrameRateGame {
 			callSendChangeSkyBoxesMessage();
 			callSendSpawnMonsterMessage();
 		}
+		//callSendNeedNPCInfo();
 		// updateSkyboxes();
 		keepPlayerOnTerrain();
 		checkAvatarSelect();
@@ -1503,19 +1505,22 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void checkTouchMonster() {
-		Vector3f avloc, monloc, fire0loc, fire1loc, fire2loc;
+		Vector3f avloc, fire0loc, fire1loc, fire2loc, or1loc, or2loc, or3loc;
 		float avrocDis;
 		float avsize;
-		float monsize;
-		int elapsTimeSec = Math.round((float) displayTime);
 		float fireball0MonDis, fireball1MonDis, fireball2MonDis;
+		float avatarOrbiter1MonDis, avatarOrbiter2MonDis, avatarOrbiter3MonDis;
 
 		avloc = avatar.getWorldLocation();
 		avsize = (avatar.getWorldScale()).m00();
-		//monsize = (monsterNormal.getWorldScale()).m00();
+
 		fire0loc = fireball0.getWorldLocation();
 		fire1loc = fireball1.getWorldLocation();
 		fire2loc = fireball2.getWorldLocation();
+
+		or1loc = avatarOrbiter1.getWorldLocation();
+		or2loc = avatarOrbiter2.getWorldLocation();
+		or3loc = avatarOrbiter3.getWorldLocation();
 
 		for (GameObject n : monsterNormals) {
 			avrocDis = avloc.distance(n.getWorldLocation());
@@ -1531,6 +1536,10 @@ public class MyGame extends VariableFrameRateGame {
 			fireball0MonDis = fire0loc.distance(n.getWorldLocation());
 			fireball1MonDis = fire1loc.distance(n.getWorldLocation());
 			fireball2MonDis = fire2loc.distance(n.getWorldLocation());
+
+			avatarOrbiter1MonDis = or1loc.distance(n.getWorldLocation());
+			avatarOrbiter2MonDis = or2loc.distance(n.getWorldLocation());
+			avatarOrbiter3MonDis = or3loc.distance(n.getWorldLocation());
 
 			if (fireball0MonDis <= .5) {
 				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
@@ -1549,6 +1558,30 @@ public class MyGame extends VariableFrameRateGame {
 			}
 
 			if (fireball2MonDis <= .5) {
+				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
+				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
+				iterator.remove();
+				return;
+			}
+
+			if (avatarOrbiter1MonDis <= .5) {
+				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
+				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
+				iterator.remove();
+				return;
+			}
+
+			if (avatarOrbiter2MonDis <= .5) {
+				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
+				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
+				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
+				iterator.remove();
+				return;
+			}
+
+			if (avatarOrbiter3MonDis <= .5) {
 				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
 				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
 				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
@@ -1858,14 +1891,20 @@ public class MyGame extends VariableFrameRateGame {
 		super.keyPressed(e);
 	}
 
-	private void launchRangerGrenadeAttacks(){
+	public void callRangerAttack(Vector3f position, Vector3f npcForwardVector) {
+		rangerCurrentlyAttacking = !rangerCurrentlyAttacking;
+		rangerGrenades.get(currentGrenadeNumber).setLocalLocation(position);
+		launchVector = npcForwardVector;
+	}
+	Vector3f launchVector;
+	private void launchRangerGrenadeAttacks() {
 		Matrix4f translation;
 		double [] tempTransform;
 		float[] zeroVelocity = {0,0,0};
-		Vector3f launchVector;
+		
 		float forceMagnitude = 1000f;
 
-		if(rangerTimeBetweenAttack >= 3000f && rangerCurrentlyAttacking){
+		if(rangerTimeBetweenAttack >= 500f && rangerCurrentlyAttacking){
 			rangerReadyToLaunchNextAttack = true;
 			rangerTimeBetweenAttack = 0;
 		}
@@ -1874,7 +1913,6 @@ public class MyGame extends VariableFrameRateGame {
 		}
 
 		if(rangerCurrentlyAttacking && rangerReadyToLaunchNextAttack){
-			rangerGrenades.get(currentGrenadeNumber).setLocalLocation(ranger.getWorldLocation());
 
 			translation = new Matrix4f(rangerGrenades.get(currentGrenadeNumber).getLocalTranslation());
 			tempTransform = toDoubleArray(translation.get(vals));
@@ -1883,7 +1921,7 @@ public class MyGame extends VariableFrameRateGame {
 			rangerGrenadesPhy.get(currentGrenadeNumber).setLinearVelocity(zeroVelocity);
 			rangerGrenadesPhy.get(currentGrenadeNumber).setAngularVelocity(zeroVelocity);
 
-			launchVector = ranger.getWorldForwardVector();
+			//launchVector = ranger.getWorldForwardVector();
 			launchVector.mul(forceMagnitude);
 			rangerGrenadesPhy.get(currentGrenadeNumber).applyForce(launchVector.x(), launchVector.y(), launchVector.z(), 0, 0, 0);
 
@@ -1896,7 +1934,6 @@ public class MyGame extends VariableFrameRateGame {
 
 			rangerReadyToLaunchNextAttack = false;
 		}
-
 	}
 
 	// If the avatar is currently moving, it plays the movement animations
@@ -1952,6 +1989,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void callSendSpawnMonsterMessage() {
 		protClient.sendSpawnMonsterMessage();
+	}
+
+	public void callSendNeedNPCInfo() {
+		protClient.sendNeedNPCInfoMessage();
 	}
 
 	public void dropXP(float x, float y, float z) {

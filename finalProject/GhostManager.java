@@ -17,6 +17,7 @@ public class GhostManager {
 	private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
 	private GameObject gmage, garcher;
 	private GhostAvatar newAvatar;
+	private GhostNPC ghostNPC;
 	private Matrix4f initialScale, initialTranslation;
 
 	public GhostManager(VariableFrameRateGame vfrg) {
@@ -198,4 +199,42 @@ public class GhostManager {
 			game.getgcircle().setLocalScale(new Matrix4f().scale(20f));
 		}
 	}
+
+	// ----------- Ghost NPC Section -------------
+	public void createGhostNPC(Vector3f position) throws IOException {
+		try {
+			if (ghostNPC == null) {
+				ghostNPC = new GhostNPC(0, game.getNPCshape(),
+						game.getNPCtexture(), position);
+				ghostNPC.setPosition(position);
+				initialScale = (new Matrix4f()).scaling(0.5f);
+				ghostNPC.setLocalScale(initialScale);
+			} else {
+				ghostNPC.setPosition(position);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void updateGhostNPC(Vector3f position, Boolean attackFlag) {
+		boolean gs;
+		if (ghostNPC == null) {
+			try {
+				createGhostNPC(position);
+			} catch (IOException e) {
+				System.out.println("error creating npc");
+			}
+		}
+		ghostNPC.setPosition(position);
+		if (attackFlag) {
+			ghostNPC.attack();
+			ghostNPC.lookAt(game.getAvatar());
+			game.callRangerAttack(position, ghostNPC.getWorldForwardVector());
+		} else {
+			ghostNPC.lookAt(game.getAvatar());
+			ghostNPC.petrol();
+		}
+	}
+
 }
