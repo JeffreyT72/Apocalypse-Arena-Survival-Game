@@ -51,7 +51,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	//Sound
 	private IAudioManager audioMgr;
-	private Sound fireballSound, ambientSound, monsterSound, dogSound;
+	private Sound fireballSound, ambientSound, monsterSound, dogSound, footstepSound, icecreamPickupSound, switchSound;
 
 	// Input variables
 	private InputManager im;
@@ -790,7 +790,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public void initAudio(){
-		AudioResource resource1, resource2, resource3;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6;
 		// audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
 		audioMgr = new JOALAudioManager();
 		if (!audioMgr.initialize())
@@ -819,6 +819,30 @@ public class MyGame extends VariableFrameRateGame {
 		dogSound.setMinDistance(0.5f);
 		dogSound.setEmitDirection(dog.getWorldForwardVector(), 360f);
 		dogSound.setRollOff(2.0f);
+
+		resource4 = audioMgr.createAudioResource("assets/sounds/footstep.wav", AudioResourceType.AUDIO_SAMPLE);
+		footstepSound = new Sound(resource4, SoundType.SOUND_EFFECT, 70, true);
+		footstepSound.initialize(audioMgr);	
+		//dogSound.setMaxDistance(1.0f);
+		//footstepSound.setMinDistance(0.5f);
+		footstepSound.setRollOff(5.0f);
+		footstepSound.play();
+		footstepSound.pause();
+
+		resource5 = audioMgr.createAudioResource("assets/sounds/switch.wav", AudioResourceType.AUDIO_SAMPLE);
+		switchSound = new Sound(resource5, SoundType.SOUND_EFFECT, 100, false);
+		switchSound.initialize(audioMgr);	
+		switchSound.setMaxDistance(2.0f);
+		switchSound.setMinDistance(0.5f);
+		switchSound.setRollOff(1.0f);
+		
+		resource6 = audioMgr.createAudioResource("assets/sounds/icecreamPickup.wav", AudioResourceType.AUDIO_SAMPLE);
+		icecreamPickupSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
+		icecreamPickupSound.initialize(audioMgr);	
+		//dogSound.setMaxDistance(1.0f);
+		//footstepSound.setMinDistance(0.5f);
+		icecreamPickupSound.setRollOff(5.0f);
+
 
 		// Vector3f dogLocation = dog.getWorldLocation();
 		// dogLocation.add(0, 5f, 0); // adjust y-coordinate by 0.5 units
@@ -849,9 +873,17 @@ public class MyGame extends VariableFrameRateGame {
 
 		fireballSound.setLocation(fireball0.getWorldLocation());
 		ambientSound.setLocation(avatar.getWorldLocation());
+		
 		Vector3f dogLocation = dog.getWorldLocation();
-		dogLocation.add(0, 1f, 0); // adjust y-coordinate by 0.5 units
+		dogLocation.add(0, 1f, 0); 
 		dogSound.setLocation(dogLocation);
+		
+		Vector3f avatarLoc = avatar.getWorldLocation();
+		avatarLoc.add(0, -2f, 0); 
+		footstepSound.setLocation(avatarLoc);
+
+		switchSound.setLocation(lamp.getWorldLocation());
+		icecreamPickupSound.setLocation(avatar.getWorldLocation());
 
 		setEarParameters();
 
@@ -1486,6 +1518,7 @@ public class MyGame extends VariableFrameRateGame {
 			soup.getRenderStates().disableRendering();
 			soup.setLocalTranslation((new Matrix4f()).translation(randNum(), 1f, randNum()));
 			isConsumed = true;
+			icecreamPickupSound.play();
 		}
 
 		if (isBooster) {
@@ -1915,10 +1948,12 @@ public class MyGame extends VariableFrameRateGame {
 			currentlyPlayingWalkAnimation = true;
 			mageAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);
 			archerAS.playAnimation("MOVE", 2f, AnimatedShape.EndType.LOOP, 0);
+			footstepSound.resume();
 		} else if (!currentlyMoving && currentlyPlayingWalkAnimation) {
 			mageAS.stopAnimation();
 			archerAS.stopAnimation();
 			currentlyPlayingWalkAnimation = false;
+			footstepSound.pause();
 		}
 
 	}
@@ -1929,8 +1964,8 @@ public class MyGame extends VariableFrameRateGame {
 
 	// return a number between -7 to 7 but not -2 to 2 (to close to origin)
 	private int randNum() {
-		int max = 50;
-		int min = -50;
+		int max = 20;
+		int min = -20;
 		int num = (rand.nextInt(max - min) + min);
 		if (num <= 10 && num >= -10)
 			randNum();
@@ -2141,6 +2176,8 @@ public class MyGame extends VariableFrameRateGame {
 			(engine.getSceneGraph()).addLight(light2);
 			lightsEnabled = true;
 		}
+
+		switchSound.play();
 	}
 
 }
