@@ -82,6 +82,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean isClientConnected = false;
 	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
 	private Vector3f rangerAIPosition;
+	private Vector3f launchVector;
 	// Used for playing animation while moving
 	private boolean currentlyMoving = false;
 	private boolean currentlyPlayingWalkAnimation = false;
@@ -1931,7 +1932,7 @@ public class MyGame extends VariableFrameRateGame {
 		rangerGrenades.get(currentGrenadeNumber).setLocalLocation(position);
 		launchVector = npcForwardVector;
 	}
-	Vector3f launchVector;
+	
 	private void launchRangerGrenadeAttacks() {
 		Matrix4f translation;
 		double [] tempTransform;
