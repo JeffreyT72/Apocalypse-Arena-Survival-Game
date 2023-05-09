@@ -81,6 +81,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
+	private Vector3f rangerAIPosition;
 	// Used for playing animation while moving
 	private boolean currentlyMoving = false;
 	private boolean currentlyPlayingWalkAnimation = false;
@@ -1925,7 +1926,8 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public void callRangerAttack(Vector3f position, Vector3f npcForwardVector) {
-		rangerCurrentlyAttacking = !rangerCurrentlyAttacking;
+		rangerCurrentlyAttacking = true;
+		rangerAIPosition = position;
 		rangerGrenades.get(currentGrenadeNumber).setLocalLocation(position);
 		launchVector = npcForwardVector;
 	}
@@ -1934,10 +1936,16 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f translation;
 		double [] tempTransform;
 		float[] zeroVelocity = {0,0,0};
-		
-		float forceMagnitude = 1000f;
 
-		if(rangerTimeBetweenAttack >= 500f && rangerCurrentlyAttacking){
+		if(rangerAIPosition != null){
+			if(avatar.getWorldLocation().distance(rangerAIPosition) > 20f){
+				rangerCurrentlyAttacking = false;
+			}
+		}
+		
+		float forceMagnitude = 1500f;
+
+		if(rangerTimeBetweenAttack >= 1000f && rangerCurrentlyAttacking){
 			rangerReadyToLaunchNextAttack = true;
 			rangerTimeBetweenAttack = 0;
 		}
