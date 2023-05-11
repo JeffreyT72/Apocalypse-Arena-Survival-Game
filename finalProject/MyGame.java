@@ -207,10 +207,10 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean isSelect;
 	private boolean isBooster, isConsumed;
 	private float orbiterSpeed;
-	// private boolean winFlag;
 	private int scoreCounter;
 	private HashMap<String, Integer> playerStats;
 	private HashMap<String, Integer> monsterStats;
+	private Vector3f targetLocationG = null;
 
 	private ScriptController scriptController;
 	private InputController inputController;
@@ -1004,7 +1004,8 @@ public class MyGame extends VariableFrameRateGame {
 		// temp
 		if (isSelect == false) {
 			for (GameObject n : monsterNormals) {
-				n.lookAt(avatar);
+				if (targetLocationG != null)
+					n.lookAt(targetLocationG);
 				n.fwdAction(0.01f);
 			}
 		}
@@ -1840,7 +1841,7 @@ public class MyGame extends VariableFrameRateGame {
 				float randX = randNum();
 				float randZ = randNum();
 				//dropXP(randX, 1.2f, randZ);
-				spawnMonsterNormal(randX, 0.6f, randZ);
+				spawnMonsterNormal(randX, 0.6f, randZ, avatar.getWorldLocation());
 				break;
 			}
 			case KeyEvent.VK_V: {
@@ -2036,7 +2037,7 @@ public class MyGame extends VariableFrameRateGame {
 		xpOrbs.add(xpOrb);
 	}
 
-	public void spawnMonsterNormal(float x, float y, float z) {
+	public void spawnMonsterNormal(float x, float y, float z, Vector3f targetLocation) {
 		monsterNormal = new GameObject(GameObject.root(), monsterNormalAS, monsterNormalT);
 		Matrix4f initialTranslation = (new Matrix4f()).translation(x, y, z);
 		monsterNormal.setLocalTranslation(initialTranslation);
@@ -2044,6 +2045,8 @@ public class MyGame extends VariableFrameRateGame {
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.2f);
 		monsterNormal.setLocalScale(initialScale);
+		monsterNormal.lookAt(targetLocation);
+		targetLocationG = targetLocation;
 		monsterNormals.add(monsterNormal);
 	}
 

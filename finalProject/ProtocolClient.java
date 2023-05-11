@@ -153,17 +153,10 @@ public class ProtocolClient extends GameConnectionClient {
 				randZ = Float.parseFloat(messageTokens[2]);
 				trueX = randX - prevX;
 				trueZ = randZ - prevZ;
-				// At most 50 enemy on screen
-				if (game.monsterNormals.size() < 100) {
-					if (!(trueX == 0f && trueZ == 0f)) {
-						game.spawnMonsterNormal(randX, 0.6f, randZ);
-					}
-				} else {
-					GameObject deleteGO = game.monsterNormals.get(0);
-					(MyGame.getEngine().getSceneGraph()).removeGameObject(deleteGO);
-					game.monsterNormals.get(0).setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
-					game.monsterNormals.remove(deleteGO);
-				}
+
+				UUID targetGhostID = UUID.fromString(messageTokens[3]);
+
+				ghostManager.updateTarget(targetGhostID, trueX, trueZ, randX, randZ);
 			}
 
 			// ----------- Ghost NPC Section -------------
