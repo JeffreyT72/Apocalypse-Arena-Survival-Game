@@ -806,7 +806,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public void initAudio(){
-		AudioResource resource1, resource2, resource3, resource4, resource5, resource6;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6, resource7;
 		int baseVolume = scriptController.getbaseSoundVolume();
 
 		// audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
@@ -861,6 +861,13 @@ public class MyGame extends VariableFrameRateGame {
 		//footstepSound.setMinDistance(0.5f);
 		icecreamPickupSound.setRollOff(5.0f);
 
+		resource7 = audioMgr.createAudioResource("assets/sounds/monster.wav", AudioResourceType.AUDIO_SAMPLE);
+		monsterSound = new Sound(resource7, SoundType.SOUND_EFFECT, baseVolume * 10, false);
+		monsterSound.initialize(audioMgr);	
+		//monsterSound.setMaxDistance(.0f);
+		//monsterSound.setMinDistance(0.5f);
+		monsterSound.setRollOff(0.3f);
+
 
 		// Vector3f dogLocation = dog.getWorldLocation();
 		// dogLocation.add(0, 5f, 0); // adjust y-coordinate by 0.5 units
@@ -902,6 +909,10 @@ public class MyGame extends VariableFrameRateGame {
 
 		switchSound.setLocation(lamp.getWorldLocation());
 		icecreamPickupSound.setLocation(avatar.getWorldLocation());
+
+		if (rangerAIPosition != null){
+			monsterSound.setLocation(rangerAIPosition);
+		}
 
 		setEarParameters();
 
@@ -1978,6 +1989,9 @@ public class MyGame extends VariableFrameRateGame {
 		rangerAIPosition = position;
 		rangerGrenades.get(currentGrenadeNumber).setLocalLocation(position);
 		launchVector = npcForwardVector;
+		if(!monsterSound.getIsPlaying()){
+			monsterSound.play();
+		}
 	}
 	
 	private void launchRangerGrenadeAttacks() {
