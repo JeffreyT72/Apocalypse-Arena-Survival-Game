@@ -129,6 +129,9 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean fireballCurrentlyMoving = false;
 	private boolean leveledUp = false;
 	private boolean skillMenu = false;
+	private boolean passiveHealing = false;
+	private boolean orbiter1n2Enabled = false;
+	private boolean orbiter3Enabled = false;
 	private Vector3f initialFireballPosition;
 	private float amtt = 0f;
 	private float amtt2 = 180f;
@@ -195,6 +198,11 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean rangerCurrentlyAttacking = false;
 	private float rangerTimeBetweenAttack = 0;
 	private int currentGrenadeNumber = 0;
+	private boolean hasSentPlayerStatsMessageLevel1 = false;
+	private boolean hasSentPlayerStatsMessageLevel2 = false;
+	private boolean hasSentPlayerStatsMessageLevel3 = false;
+	private boolean hasSentPlayerStatsMessageLevel4 = false;
+	private boolean enableArenaBoundary = false;
 
 	private boolean rangerReadyToLaunchNextAttack = true;
 
@@ -221,6 +229,8 @@ public class MyGame extends VariableFrameRateGame {
 	private TextureImage wall, terrT;
 	private boolean inTeleportCooldown = false;
 	private double timeToEndCooldown = 0.0;
+	private boolean passiveHealingCooldown = false;
+	private double timeToEndPassiveHealingCooldown = 0.0;
 
 	public MyGame(String serverAddress, int serverPort, String protocol) {
 		super();
@@ -322,18 +332,21 @@ public class MyGame extends VariableFrameRateGame {
 	public void buildObjects() {
 		Matrix4f initialTranslation, initialScale;
 
+		// initialize game variables + scripting setup. Needs to be done here since some object locations require the script file
+		scriptController = new ScriptController();
+
 		// build terrain object
 		terr = new GameObject(GameObject.root(), terrS, terrT);
-		initialTranslation = (new Matrix4f()).translation(0f, -0.1f, 0f);
+		initialTranslation = (new Matrix4f()).translation(0f, scriptController.getterrainY(), 0f);
 		terr.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(50f);
+		initialScale = (new Matrix4f()).scaling(scriptController.getterrainScale());
 		terr.setLocalScale(initialScale);
 		terr.setHeightMap(wall);
 
 		plane = new GameObject(GameObject.root(), planeS, planeT);
-		initialTranslation = (new Matrix4f()).translation(0f, 0f, 0f);
+		initialTranslation = (new Matrix4f()).translation(0f, scriptController.getplaneY(), 0f);
 		plane.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(80f);
+		initialScale = (new Matrix4f()).scaling(scriptController.getplaneScale());
 		plane.setLocalScale(initialScale);
 
 		// build manual object - rocket
@@ -354,7 +367,7 @@ public class MyGame extends VariableFrameRateGame {
 			GameObject grenade = new GameObject(GameObject.root(), grenadeS);
 			rangerGrenades.set(i, grenade);
 
-			initialTranslation = (new Matrix4f()).translation(-100, 1, -100);
+			initialTranslation = (new Matrix4f()).translation(scriptController.getgrenadeX(), scriptController.getgrenadeY(), scriptController.getgrenadeZ());
 			rangerGrenades.get(i).setLocalTranslation(initialTranslation);
 			initialScale = (new Matrix4f()).scaling(0.5f);
 			rangerGrenades.get(i).setLocalScale(initialScale);
@@ -371,7 +384,7 @@ public class MyGame extends VariableFrameRateGame {
 		arenaWall = new GameObject(GameObject.root(), arenaWallS, arenaWallT);
 		initialTranslation = (new Matrix4f()).translation(0, 0, 0);
 		arenaWall.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(35f);
+		initialScale = (new Matrix4f()).scaling(scriptController.getArenaInvisibleWallDistance());
 		arenaWall.setLocalScale(initialScale);
 		arenaWall.getRenderStates().setRenderHiddenFaces(true);
 
@@ -414,7 +427,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Town
 		town = new GameObject(GameObject.root(), townS, townT);
-		initialTranslation = (new Matrix4f()).translation(90, 0, 90);
+		initialTranslation = (new Matrix4f()).translation(scriptController.gettownX(), 0, scriptController.gettownZ());
 		town.setLocalTranslation(initialTranslation);
 		town.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(-90.0f)));
@@ -567,7 +580,7 @@ public class MyGame extends VariableFrameRateGame {
 		// Sets the current playable character to mage
 		// avatar = mage;
 		avatar = new GameObject(GameObject.root(), xpOrbS, xpOrbT);
-		initialTranslation = (new Matrix4f()).translation(90f, 0.60f, 86f);
+		initialTranslation = (new Matrix4f()).translation(scriptController.getavatarX(), scriptController.getavatarY(), scriptController.getavatarZ());
 		avatar.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		avatar.setLocalScale(initialScale);
@@ -628,7 +641,7 @@ public class MyGame extends VariableFrameRateGame {
 		fireball2.getRenderStates().disableRendering();
 
 		avatarOrbiter1 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
-		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
+		initialTranslation = (new Matrix4f()).translation(0, scriptController.getorbiterYHeight(), 0);
 		avatarOrbiter1.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 10f, 2.5f);
 		avatarOrbiter1.setLocalScale(initialScale);
@@ -638,7 +651,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter1.getRenderStates().disableRendering();
 
 		avatarOrbiter2 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
-		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
+		initialTranslation = (new Matrix4f()).translation(0, scriptController.getorbiterYHeight(), 0);
 		avatarOrbiter2.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 10f, 2.5f);
 		avatarOrbiter2.setLocalScale(initialScale);
@@ -648,7 +661,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarOrbiter2.getRenderStates().disableRendering();
 
 		avatarOrbiter3 = new GameObject(GameObject.root(), avatarOrbiterS, fireballT);
-		initialTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
+		initialTranslation = (new Matrix4f()).translation(0, scriptController.getorbiterYHeight(), 0);
 		avatarOrbiter3.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(2.5f, 10f, 2.5f);
 		avatarOrbiter3.setLocalScale(initialScale);
@@ -670,7 +683,7 @@ public class MyGame extends VariableFrameRateGame {
 		angel = new GameObject(GameObject.root(), angelS);
 		angel.getRenderStates().setHasSolidColor(false);
 		angel.getRenderStates().setColor(new Vector3f(1f, 1f, 1f));
-		initialTranslation = (new Matrix4f()).translation(-.3f, 1f, -.3f);
+		initialTranslation = (new Matrix4f()).translation(scriptController.getangelX(), scriptController.getangelY(), scriptController.getangelZ());
 		// initialTranslation = (new Matrix4f()).translation(0f, 0f, -1f);
 		angel.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scale(0.1f);
@@ -694,11 +707,12 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void initializeLights() {
-		Light.setGlobalAmbient(0.2f, 0.2f, 0.2f);
+		float l = scriptController.getambientLight();
+		Light.setGlobalAmbient(l,l,l);
 		light1 = new Light();
 		light1.setType(Light.LightType.SPOTLIGHT);
 		light1.setDirection(new Vector3f(0, -1, 0));
-		light1.setLocation(new Vector3f(0f, 5f, 0f));
+		light1.setLocation(new Vector3f(0f, scriptController.getspotlightHeightAboveAvatar(), 0f));
 		(engine.getSceneGraph()).addLight(light1);
 		setUpToggleableLights();
 	}
@@ -767,8 +781,7 @@ public class MyGame extends VariableFrameRateGame {
 		initTime();
 
 		initNodeControl();
-		// initialize game variables + scripting setup
-		scriptController = new ScriptController();
+		
 		initGameVar();
 		// initialize objects
 		initObj();
@@ -793,7 +806,9 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public void initAudio(){
-		AudioResource resource1, resource2, resource3, resource4, resource5, resource6;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6, resource7;
+		int baseVolume = scriptController.getbaseSoundVolume();
+
 		// audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
 		audioMgr = new JOALAudioManager();
 		if (!audioMgr.initialize())
@@ -802,7 +817,7 @@ public class MyGame extends VariableFrameRateGame {
 			return;
 		}
 		resource1 = audioMgr.createAudioResource("assets/sounds/pew.wav", AudioResourceType.AUDIO_SAMPLE);
-		fireballSound = new Sound(resource1, SoundType.SOUND_EFFECT, 100, false);
+		fireballSound = new Sound(resource1, SoundType.SOUND_EFFECT, baseVolume, false);
 		fireballSound.initialize(audioMgr);	
 		// fireballSound.setMaxDistance(10.0f);
 		// fireballSound.setMinDistance(0.5f);
@@ -810,13 +825,13 @@ public class MyGame extends VariableFrameRateGame {
 		fireballSound.setLocation(avatar.getWorldLocation());
 
 		resource2 = audioMgr.createAudioResource("assets/sounds/ambient.wav", AudioResourceType.AUDIO_STREAM);
-		ambientSound = new Sound(resource2, SoundType.SOUND_MUSIC, 50, true);
+		ambientSound = new Sound(resource2, SoundType.SOUND_MUSIC, baseVolume, true);
 		ambientSound.initialize(audioMgr);	
 		ambientSound.setLocation(avatar.getWorldLocation());
 		ambientSound.play();
 
 		resource3 = audioMgr.createAudioResource("assets/sounds/bark.wav", AudioResourceType.AUDIO_SAMPLE);
-		dogSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, true);
+		dogSound = new Sound(resource3, SoundType.SOUND_EFFECT, baseVolume, true);
 		dogSound.initialize(audioMgr);	
 		//dogSound.setMaxDistance(1.0f);
 		dogSound.setMinDistance(0.5f);
@@ -824,7 +839,7 @@ public class MyGame extends VariableFrameRateGame {
 		dogSound.setRollOff(2.0f);
 
 		resource4 = audioMgr.createAudioResource("assets/sounds/footstep.wav", AudioResourceType.AUDIO_SAMPLE);
-		footstepSound = new Sound(resource4, SoundType.SOUND_EFFECT, 70, true);
+		footstepSound = new Sound(resource4, SoundType.SOUND_EFFECT, baseVolume-10, true);
 		footstepSound.initialize(audioMgr);	
 		//dogSound.setMaxDistance(1.0f);
 		//footstepSound.setMinDistance(0.5f);
@@ -833,18 +848,25 @@ public class MyGame extends VariableFrameRateGame {
 		footstepSound.pause();
 
 		resource5 = audioMgr.createAudioResource("assets/sounds/switch.wav", AudioResourceType.AUDIO_SAMPLE);
-		switchSound = new Sound(resource5, SoundType.SOUND_EFFECT, 100, false);
+		switchSound = new Sound(resource5, SoundType.SOUND_EFFECT, baseVolume, false);
 		switchSound.initialize(audioMgr);	
 		switchSound.setMaxDistance(2.0f);
 		switchSound.setMinDistance(0.5f);
 		switchSound.setRollOff(1.0f);
 		
 		resource6 = audioMgr.createAudioResource("assets/sounds/icecreamPickup.wav", AudioResourceType.AUDIO_SAMPLE);
-		icecreamPickupSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
+		icecreamPickupSound = new Sound(resource6, SoundType.SOUND_EFFECT, baseVolume, false);
 		icecreamPickupSound.initialize(audioMgr);	
 		//dogSound.setMaxDistance(1.0f);
 		//footstepSound.setMinDistance(0.5f);
 		icecreamPickupSound.setRollOff(5.0f);
+
+		resource7 = audioMgr.createAudioResource("assets/sounds/monster.wav", AudioResourceType.AUDIO_SAMPLE);
+		monsterSound = new Sound(resource7, SoundType.SOUND_EFFECT, baseVolume * 10, false);
+		monsterSound.initialize(audioMgr);	
+		//monsterSound.setMaxDistance(.0f);
+		//monsterSound.setMinDistance(0.5f);
+		monsterSound.setRollOff(0.3f);
 
 
 		// Vector3f dogLocation = dog.getWorldLocation();
@@ -888,6 +910,10 @@ public class MyGame extends VariableFrameRateGame {
 		switchSound.setLocation(lamp.getWorldLocation());
 		icecreamPickupSound.setLocation(avatar.getWorldLocation());
 
+		if (rangerAIPosition != null){
+			monsterSound.setLocation(rangerAIPosition);
+		}
+
 		setEarParameters();
 
 	}
@@ -895,7 +921,7 @@ public class MyGame extends VariableFrameRateGame {
 	private void initPhysics() {
 		// --- initialize physics system ---
 		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
-		float[] gravity = { 0f, -5f, 0f };
+		float[] gravity = { 0f, scriptController.getgravity(), 0f };
 		Matrix4f translation;
 		physicsEngine = PhysicsEngineFactory.createPhysicsEngine(engine);
 		physicsEngine.initSystem();
@@ -915,7 +941,7 @@ public class MyGame extends VariableFrameRateGame {
 			translation = new Matrix4f(rangerGrenades.get(i).getLocalTranslation());
 			tempTransform = toDoubleArray(translation.get(vals));
 			PhysicsObject sphereObject = physicsEngine.addSphereObject(physicsEngine.nextUID(), mass, tempTransform, 0.5f);
-			sphereObject.setBounciness(0.8f);
+			sphereObject.setBounciness(scriptController.getgrenadeBounciness());
 			rangerGrenadesPhy.set(i, sphereObject);
 			rangerGrenades.get(i).setPhysicsObject(sphereObject);
 		}
@@ -1006,7 +1032,7 @@ public class MyGame extends VariableFrameRateGame {
 			for (GameObject n : monsterNormals) {
 				if (targetLocationG != null)
 					n.lookAt(targetLocationG);
-				n.fwdAction(0.01f);
+				n.fwdAction(0.001f * (float)elapsTime);
 			}
 		}
 		// ranger.lookAt(avatar);
@@ -1041,16 +1067,17 @@ public class MyGame extends VariableFrameRateGame {
 		handleTeleportCooldown();
 		updateAnimation();
 		moveLightsWithAvatar();
-		playDogSoundWhenNextToDog();
 		launchRangerGrenadeAttacks();
-
+		autoIncreasePlayerSkill();
+		keepPlayerWithinArena();
 	}
 
-	private void playDogSoundWhenNextToDog(){
-		// float distanceToDog = avatar.getWorldLocation().distance(dog.getWorldLocation());
-		// if (distanceToDog < 5){
-		// 	dogSound.play();
-		// }
+	private void keepPlayerWithinArena(){
+		if (enableArenaBoundary){
+			if (avatar.getWorldLocation().distance(new Vector3f(0,0,0)) > scriptController.getArenaInvisibleWallDistance()){
+				avatar.setLocalLocation(new Vector3f(0, scriptController.getavatarY(), 0));
+			}
+		}
 	}
 
 	private void updateAnimation() {
@@ -1133,8 +1160,8 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void initNodeControl() {
-		float min = 0.003f;
-		float max = 0.008f;
+		float min = scriptController.getrcMin();
+		float max = scriptController.getrcMax();
 		rc = new RotationController(engine, new Vector3f(0, 1, 0), rand.nextFloat() * (max - min) + min);
 		rc.addTarget(soup);
 		rc.addTarget(avatarOrbiter1);
@@ -1272,7 +1299,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		attack();
+	}
 
+	public void attack(){
 		if (!fireballCurrentlyMoving) {
 			/** May need to add some offset to spawn fireball0 in front of avatar */
 			fireball0.setLocalLocation(avatar.getWorldLocation());
@@ -1356,7 +1386,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	private void keepPlayerOnTerrain() {
 		Vector3f loc = avatar.getWorldLocation();
-		float terrHeight = terr.getHeight(loc.x(), loc.z()) + .6f;
+		float terrHeight = terr.getHeight(loc.x(), loc.z()) + scriptController.getavatarY();
 		avatar.setLocalLocation(new Vector3f(loc.x(), terrHeight, loc.z()));
 		// if (terrHeight <= 10){
 
@@ -1367,8 +1397,8 @@ public class MyGame extends VariableFrameRateGame {
 		int currExp = playerStats.get("experience");
 		int currLvl = playerStats.get("level");
 		int currSkillPoint = playerStats.get("skillPoint");
-		if (currExp >= 100) {
-			currExp -= 100;
+		if (currExp >= scriptController.getmaxLevelXP()) {
+			currExp -= scriptController.getmaxLevelXP();
 			currLvl++;
 			currSkillPoint++;
 			playerStats.replace("experience", currExp);
@@ -1381,23 +1411,31 @@ public class MyGame extends VariableFrameRateGame {
 	private void skillUpdate() {
 		int currAvatarOrbiterLv = playerStats.get("avatarOrbiterLv");
 		int currCircleLv = playerStats.get("circleLv");
+		Matrix4f deployedTranslation = (new Matrix4f()).translation(0, 0.3f, 0);
+		float scale;
 		// AvatarOrbiter
 		if (currAvatarOrbiterLv == 1) {
-			avatarOrbiter1.setLocalScale(new Matrix4f().scale(2.5f, 0.3f, 2.5f));
-			avatarOrbiter2.setLocalScale(new Matrix4f().scale(2.5f, 0.3f, 2.5f));
+			scale = scriptController.getorbiterLvl1Scale();
+			avatarOrbiter1.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
+			avatarOrbiter2.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
 			avatarOrbiter1.getRenderStates().enableRendering();
 			avatarOrbiter2.getRenderStates().enableRendering();
+			orbiter1n2Enabled = true;
 		} else if (currAvatarOrbiterLv == 2) {
-			avatarOrbiter1.setLocalScale(new Matrix4f().scale(3.5f, 0.3f, 3.5f));
-			avatarOrbiter2.setLocalScale(new Matrix4f().scale(3.5f, 0.3f, 3.5f));
+			scale = scriptController.getorbiterLvl2Scale();
+			avatarOrbiter1.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
+			avatarOrbiter2.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
 		} else if (currAvatarOrbiterLv == 3) {
-			avatarOrbiter3.setLocalScale(new Matrix4f().scale(3.5f, 0.3f, 3.5f));
+			scale = scriptController.getorbiterLvl2Scale();
+			avatarOrbiter3.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
 			avatarOrbiter3.getRenderStates().enableRendering();
+			orbiter3Enabled = true;
 		} else if (currAvatarOrbiterLv == 4) {
 			orbiterSpeed = 0.06f;
-			avatarOrbiter1.setLocalScale(new Matrix4f().scale(4f, 0.3f, 4f));
-			avatarOrbiter2.setLocalScale(new Matrix4f().scale(4f, 0.3f, 4f));
-			avatarOrbiter3.setLocalScale(new Matrix4f().scale(4f, 0.3f, 4f));
+			scale = scriptController.getorbiterLvl4Scale();
+			avatarOrbiter1.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
+			avatarOrbiter2.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
+			avatarOrbiter3.setLocalScale(new Matrix4f().scale(scale, 0.3f, scale));
 		}
 		// Circle
 		if (currCircleLv == 1) {
@@ -1488,7 +1526,8 @@ public class MyGame extends VariableFrameRateGame {
 			protClient.sendPlayerStatsMessage(playerStats);
 
 			isSelect = false;
-			angel.getRenderStates().enableRendering();
+			//angel.getRenderStates().enableRendering();
+			enableArenaBoundary = true;
 		}
 
 		if (avaNPCDis - avsize - aNPCsize <= .5) {
@@ -1501,7 +1540,8 @@ public class MyGame extends VariableFrameRateGame {
 			protClient.sendPlayerStatsMessage(playerStats);
 
 			isSelect = false;
-			angel.getRenderStates().enableRendering();
+			//angel.getRenderStates().enableRendering();
+			enableArenaBoundary = true;
 		}
 	}
 
@@ -1525,6 +1565,8 @@ public class MyGame extends VariableFrameRateGame {
 			soup.setLocalTranslation((new Matrix4f()).translation(randNum(), 1f, randNum()));
 			isConsumed = true;
 			icecreamPickupSound.play();
+			int oldHealth = playerStats.get("health");
+			playerStats.replace("health", oldHealth + scriptController.getIcreamHealthAmount());
 		}
 
 		if (isBooster) {
@@ -1602,7 +1644,7 @@ public class MyGame extends VariableFrameRateGame {
 				return;
 			}
 
-			if (avatarOrbiter1MonDis <= .5) {
+			if (avatarOrbiter1MonDis <= .5 && orbiter1n2Enabled) {
 				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
 				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
 				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
@@ -1610,7 +1652,7 @@ public class MyGame extends VariableFrameRateGame {
 				return;
 			}
 
-			if (avatarOrbiter2MonDis <= .5) {
+			if (avatarOrbiter2MonDis <= .5 && orbiter1n2Enabled) {
 				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
 				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
 				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
@@ -1618,7 +1660,7 @@ public class MyGame extends VariableFrameRateGame {
 				return;
 			}
 
-			if (avatarOrbiter3MonDis <= .5) {
+			if (avatarOrbiter3MonDis <= .5 && orbiter3Enabled) {
 				dropXP(n.getWorldLocation().x, 1f, n.getWorldLocation().z);
 				n.setLocalTranslation((new Matrix4f()).translation(50, -20, 50));
 				(MyGame.getEngine().getSceneGraph()).removeGameObject(n);
@@ -1640,7 +1682,8 @@ public class MyGame extends VariableFrameRateGame {
 		String elapsTimeStr = Integer.toString(elapsTimeSec);
 		String counterStr = Integer.toString(scoreCounter);
 		String dispStr1 = "Time: " + elapsTimeStr;
-		String dispStr2 = "Score: " + counterStr;
+		// String dispStr2 = "Score: " + counterStr;
+		String dispStr2 = "";
 		String dispStr3 = "HP: " + playerStats.get("health");
 		String dispStr4 = "Level: " + playerStats.get("level");
 		String dispStr5 = "XP: " + playerStats.get("experience");
@@ -1655,14 +1698,14 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f hud6Color = new Vector3f(0, 1, 0);
 
 		if (leveledUp) {
-			dispStr6 = "Level Up! New Skill Point obtained";
+			dispStr6 = "Level Up!";
 			Timer timer = new Timer();
 			timer.schedule(new TimerTask() {
 				@Override
 				public void run() {
 					leveledUp = false;
 				}
-			}, 5000); // Delay in milliseconds
+			}, 3000); // Delay in milliseconds
 		} else {
 			dispStr6 = "";
 		}
@@ -1671,11 +1714,10 @@ public class MyGame extends VariableFrameRateGame {
 			fiveSec = elapsTimeSec + 5;
 		}
 
-		if (elapsTimeSec <= fiveSec) {
-			dispStr7 = "Skill point: " + playerStats.get("skillPoint");
-			hud6Color = new Vector3f(0, 1, 0);
+		if (playerStats.get("health") <= 0) {
+			dispStr7 = "You Lose";
+			hud6Color = new Vector3f(1, 0, 0);
 			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2), (rs.getHeight() / 2));
-			skillMenu = false;
 		} else {
 			dispStr7 = "";
 			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2), (rs.getHeight() / 2));
@@ -1850,44 +1892,22 @@ public class MyGame extends VariableFrameRateGame {
 						AnimatedShape.EndType.LOOP, 0);
 				break;
 			}
-			case KeyEvent.VK_F: {
-				skillMenu = true;
-				break;
-			}
-			case KeyEvent.VK_1: {
-				int sp = playerStats.get("skillPoint");
-				int currHP = playerStats.get("health");
-				int currATK = playerStats.get("atk");
-				int currSPD = playerStats.get("spd");
-				if (sp >= 1) {
-					sp--;
-					playerStats.replace("skillPoint", sp);
-					playerStats.replace("spd", ++currSPD);
-				}
-				break;
-			}
-			case KeyEvent.VK_2: {
-				int sp = playerStats.get("skillPoint");
-				int currAvatarOrbiterLv = playerStats.get("avatarOrbiterLv");
-				if (sp >= 1) {
-					sp--;
-					playerStats.replace("skillPoint", sp);
-					playerStats.replace("avatarOrbiterLv", ++currAvatarOrbiterLv);
-				}
-				callSendPlayerStatsMessage();
-				break;
-			}
-			case KeyEvent.VK_3: {
-				int sp = playerStats.get("skillPoint");
-				int currCircleLv = playerStats.get("circleLv");
-				if (sp >= 1) {
-					sp--;
-					playerStats.replace("skillPoint", sp);
-					playerStats.replace("circleLv", ++currCircleLv);
-				}
-				callSendPlayerStatsMessage();
-				break;
-			}
+			// case KeyEvent.VK_F: {
+			// 	skillMenu = true;
+			// 	break;
+			// }
+			// case KeyEvent.VK_1: {
+			// 	int sp = playerStats.get("skillPoint");
+			// 	int currHP = playerStats.get("health");
+			// 	int currATK = playerStats.get("atk");
+			// 	int currSPD = playerStats.get("spd");
+			// 	if (sp >= 1) {
+			// 		sp--;
+			// 		playerStats.replace("skillPoint", sp);
+			// 		playerStats.replace("spd", ++currSPD);
+			// 	}
+			// 	break;
+			// }
 			case KeyEvent.VK_8: {
 				// Sets the current playable character to mage
 				mage.getRenderStates().enableRendering();
@@ -1896,7 +1916,7 @@ public class MyGame extends VariableFrameRateGame {
 				playerStats.replace("class", 1);
 				protClient.sendPlayerStatsMessage(playerStats);
 
-				angel.getRenderStates().enableRendering();
+				//angel.getRenderStates().enableRendering();
 				break;
 			}
 			case KeyEvent.VK_9: {
@@ -1907,18 +1927,72 @@ public class MyGame extends VariableFrameRateGame {
 				playerStats.replace("class", 2);
 				protClient.sendPlayerStatsMessage(playerStats);
 
-				angel.getRenderStates().enableRendering();
+				//angel.getRenderStates().enableRendering();
 				break;
 			}
 		}
 		super.keyPressed(e);
 	}
 
+	public void autoIncreasePlayerSkill() {
+		int playerLevel = playerStats.get("level");
+
+		if (playerLevel == scriptController.getUpgrade1() && !hasSentPlayerStatsMessageLevel1) {
+			playerStats.replace("avatarOrbiterLv", 1);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel1 = true;
+		} else if (playerLevel == scriptController.getUpgrade2()) {
+			angel.getRenderStates().enableRendering();
+			passiveHealing = true;
+		} else if (playerLevel == scriptController.getUpgrade3() && !hasSentPlayerStatsMessageLevel2) {
+			playerStats.replace("avatarOrbiterLv", 2);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel2 = true;
+		} else if (playerLevel == scriptController.getUpgrade4() && !hasSentPlayerStatsMessageLevel3) {
+			playerStats.replace("avatarOrbiterLv", 3);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel3 = true;
+		} else if (playerLevel == scriptController.getUpgrade5() && !hasSentPlayerStatsMessageLevel4) {
+			playerStats.replace("avatarOrbiterLv", 4);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel4 = true;
+		}
+
+		passiveHealing();
+	}
+
+	private void passiveHealing(){
+		if(passiveHealing && !passiveHealingCooldown){
+			passiveHealingCooldown = true;
+			timeToEndPassiveHealingCooldown = displayTime + scriptController.getTimeBetweenPassiveHealing();
+			playerStats.replace("health", playerStats.get("health") + scriptController.getPassiveHealingAmount());
+			
+		} else if (displayTime >= timeToEndPassiveHealingCooldown && passiveHealing && passiveHealingCooldown){
+			passiveHealingCooldown = false;
+		}
+	}
+
+	private void learnOrbiterSkill(){
+		//Max level of 4
+		int currAvatarOrbiterLv = playerStats.get("avatarOrbiterLv");
+		playerStats.replace("avatarOrbiterLv", ++currAvatarOrbiterLv);
+		callSendPlayerStatsMessage();
+	}
+	// private void learnMagicCircleSkill(){
+	// 	//Max level of 3
+	// 	int currCircleLv = playerStats.get("circleLv");
+	// 	playerStats.replace("circleLv", ++currCircleLv);
+	// 	callSendPlayerStatsMessage();
+	// }
+
 	public void callRangerAttack(Vector3f position, Vector3f npcForwardVector) {
 		rangerCurrentlyAttacking = true;
 		rangerAIPosition = position;
 		rangerGrenades.get(currentGrenadeNumber).setLocalLocation(position);
 		launchVector = npcForwardVector;
+		if(!monsterSound.getIsPlaying()){
+			monsterSound.play();
+		}
 	}
 	
 	private void launchRangerGrenadeAttacks() {
@@ -1932,7 +2006,7 @@ public class MyGame extends VariableFrameRateGame {
 			}
 		}
 		
-		float forceMagnitude = 1500f;
+		float forceMagnitude = scriptController.getrangerAttackForce();
 
 		if(rangerTimeBetweenAttack >= 1000f && rangerCurrentlyAttacking){
 			rangerReadyToLaunchNextAttack = true;
@@ -2120,6 +2194,10 @@ public class MyGame extends VariableFrameRateGame {
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this);
 		TurnAction turnAction = new TurnAction(this);
 
+		RotateGamepadAction rotateGamepadAction = new RotateGamepadAction(this);
+		AttackAction attackAction = new AttackAction(this);
+		GamepadCamPan gamepadCamPan = new GamepadCamPan(this);
+
 		// SpeedUpAction speedUpAction = new SpeedUpAction(this);
 
 		// Second Camera Control
@@ -2139,6 +2217,21 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllGamepads(
 				net.java.games.input.Component.Identifier.Axis.X, turnAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Axis.RX, rotateGamepadAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Axis.POV, gamepadCamPan,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Button._0, teleportAction,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Button._2, attackAction,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllGamepads(
+				net.java.games.input.Component.Identifier.Button._1, toggleLightAction,
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
 		// Keyboard
 		im.associateActionWithAllKeyboards(
@@ -2163,18 +2256,18 @@ public class MyGame extends VariableFrameRateGame {
 		// net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
 		// InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.UP, secCamPanUpAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.DOWN, secCamPanDownAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.LEFT, secCamPanLeftAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.RIGHT, secCamPanRightAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.UP, secCamPanUpAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.DOWN, secCamPanDownAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.LEFT, secCamPanLeftAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.RIGHT, secCamPanRightAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.PERIOD, secCamPanZoomInAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -2203,7 +2296,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void moveLightsWithAvatar() {
-		light1.setLocation(new Vector3f(avatar.getWorldLocation().x(), avatar.getWorldLocation().y() + 10,
+		light1.setLocation(new Vector3f(avatar.getWorldLocation().x(), avatar.getWorldLocation().y() + scriptController.getspotlightHeightAboveAvatar(),
 				avatar.getWorldLocation().z()));
 	}
 

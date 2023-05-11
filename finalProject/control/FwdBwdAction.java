@@ -15,21 +15,27 @@ public class FwdBwdAction extends AbstractInputAction {
     @Override
     public void performAction(float time, Event e)
     {
-        float keyValue = e.getValue();
-        if (keyValue > -.2 && keyValue < .2) return;  // deadzone
-
-        if (keyValue <= 0) {
+       float keyValue = e.getValue();
+        if (keyValue < -.2){
             if (MyGame.getBooster()) {
-                game.getAvatar().fwdAction(0.06f);
+                game.getAvatar().fwdAction(game.getScriptController().getSprintSpeed() * time);
             } else {
-                game.getAvatar().fwdAction(.003f * time);
+                game.getAvatar().fwdAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
             }
-        } else {
+
+            game.callSendMoveMessage();
+        }
+        else if (keyValue > .2){
             if (MyGame.getBooster()) {
                 game.getAvatar().bwdAction(game.getScriptController().getSprintSpeed() * time);
             } else {
-                game.getAvatar().bwdAction(game.getScriptController().getBaseSpeed() * time);
+                game.getAvatar().bwdAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
             }
+
+            game.callSendMoveMessage();
         }
+
+
+        
     }
 }
