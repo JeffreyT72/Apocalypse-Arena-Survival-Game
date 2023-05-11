@@ -366,6 +366,7 @@ public class MyGame extends VariableFrameRateGame {
 		ranger.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		ranger.setLocalScale(initialScale);
+		ranger.getRenderStates().disableRendering();
 
 		arenaWall = new GameObject(GameObject.root(), arenaWallS, arenaWallT);
 		initialTranslation = (new Matrix4f()).translation(0, 0, 0);
@@ -1007,7 +1008,7 @@ public class MyGame extends VariableFrameRateGame {
 				n.fwdAction(0.01f);
 			}
 		}
-		ranger.lookAt(avatar);
+		// ranger.lookAt(avatar);
 
 		// update camera
 		orbitController.updateCameraPosition();
@@ -1886,16 +1887,6 @@ public class MyGame extends VariableFrameRateGame {
 				callSendPlayerStatsMessage();
 				break;
 			}
-			case KeyEvent.VK_6: {
-				getAvatar().setLocalLocation(
-						new Vector3f(getAvatar().getLocalLocation().x(), 30f, getAvatar().getLocalLocation().z()));
-				break;
-			}
-			case KeyEvent.VK_7: {
-				getAvatar().setLocalLocation(
-						new Vector3f(getAvatar().getLocalLocation().x(), 0.6f, getAvatar().getLocalLocation().z()));
-				break;
-			}
 			case KeyEvent.VK_8: {
 				// Sets the current playable character to mage
 				mage.getRenderStates().enableRendering();
@@ -1916,10 +1907,6 @@ public class MyGame extends VariableFrameRateGame {
 				protClient.sendPlayerStatsMessage(playerStats);
 
 				angel.getRenderStates().enableRendering();
-				break;
-			}
-			case KeyEvent.VK_O: {
-				rangerCurrentlyAttacking = !rangerCurrentlyAttacking;
 				break;
 			}
 		}
