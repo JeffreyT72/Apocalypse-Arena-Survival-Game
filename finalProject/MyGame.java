@@ -81,6 +81,8 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 	private Vector3f orientationEuler = new Vector3f(0f, 0f, 0f);
+	private Vector3f rangerAIPosition;
+	private Vector3f launchVector;
 	// Used for playing animation while moving
 	private boolean currentlyMoving = false;
 	private boolean currentlyPlayingWalkAnimation = false;
@@ -364,6 +366,7 @@ public class MyGame extends VariableFrameRateGame {
 		ranger.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		ranger.setLocalScale(initialScale);
+		ranger.getRenderStates().disableRendering();
 
 		arenaWall = new GameObject(GameObject.root(), arenaWallS, arenaWallT);
 		initialTranslation = (new Matrix4f()).translation(0, 0, 0);
@@ -1005,7 +1008,7 @@ public class MyGame extends VariableFrameRateGame {
 				n.fwdAction(0.01f);
 			}
 		}
-		ranger.lookAt(avatar);
+		// ranger.lookAt(avatar);
 
 		// update camera
 		orbitController.updateCameraPosition();
@@ -1884,16 +1887,6 @@ public class MyGame extends VariableFrameRateGame {
 				callSendPlayerStatsMessage();
 				break;
 			}
-			case KeyEvent.VK_6: {
-				getAvatar().setLocalLocation(
-						new Vector3f(getAvatar().getLocalLocation().x(), 30f, getAvatar().getLocalLocation().z()));
-				break;
-			}
-			case KeyEvent.VK_7: {
-				getAvatar().setLocalLocation(
-						new Vector3f(getAvatar().getLocalLocation().x(), 0.6f, getAvatar().getLocalLocation().z()));
-				break;
-			}
 			case KeyEvent.VK_8: {
 				// Sets the current playable character to mage
 				mage.getRenderStates().enableRendering();
@@ -1916,28 +1909,31 @@ public class MyGame extends VariableFrameRateGame {
 				angel.getRenderStates().enableRendering();
 				break;
 			}
-			case KeyEvent.VK_O: {
-				rangerCurrentlyAttacking = !rangerCurrentlyAttacking;
-				break;
-			}
 		}
 		super.keyPressed(e);
 	}
 
 	public void callRangerAttack(Vector3f position, Vector3f npcForwardVector) {
-		rangerCurrentlyAttacking = !rangerCurrentlyAttacking;
+		rangerCurrentlyAttacking = true;
+		rangerAIPosition = position;
 		rangerGrenades.get(currentGrenadeNumber).setLocalLocation(position);
 		launchVector = npcForwardVector;
 	}
-	Vector3f launchVector;
+	
 	private void launchRangerGrenadeAttacks() {
 		Matrix4f translation;
 		double [] tempTransform;
 		float[] zeroVelocity = {0,0,0};
-		
-		float forceMagnitude = 1000f;
 
-		if(rangerTimeBetweenAttack >= 500f && rangerCurrentlyAttacking){
+		if(rangerAIPosition != null){
+			if(avatar.getWorldLocation().distance(rangerAIPosition) > 20f){
+				rangerCurrentlyAttacking = false;
+			}
+		}
+		
+		float forceMagnitude = 1500f;
+
+		if(rangerTimeBetweenAttack >= 1000f && rangerCurrentlyAttacking){
 			rangerReadyToLaunchNextAttack = true;
 			rangerTimeBetweenAttack = 0;
 		}
