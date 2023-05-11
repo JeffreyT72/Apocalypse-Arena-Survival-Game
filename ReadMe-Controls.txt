@@ -1,14 +1,9 @@
-Press 'O' to continuously launch grenade attacks every 3 sec. Press 'O' again to toggle the attack ON/OFF. 
-The code for launching it is inside of the keyPressed which just changes a boolean. 
-This code can be moved into the AI controller in the future. 
-The code that handles the collision between the grenade and player, and decreases the health is inside an if statement within checkForCollision()
-
-1: Increase avatar movement speed
-2: Learn avatar orbiter skill
-3: Learn magic circle skill
+1: Increase avatar movement speed         //Removed
+2: Learn avatar orbiter skill        //Removed (Auto Skill)
+3: Learn magic circle skill        //Removed
 Q: Zoom out
 E: Zoom in
-F: Show Skill points
+F: Show Skill points      //Removed
 H: Play attack animation
 B: Play attack+run animation
 L: Toggle the lights on and off for the lamp
