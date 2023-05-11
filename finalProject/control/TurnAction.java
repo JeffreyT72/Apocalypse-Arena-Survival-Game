@@ -14,20 +14,22 @@ public class TurnAction extends AbstractInputAction {
     public void performAction(float time, Event e)
     {
         float keyValue = e.getValue();
-        if (keyValue > -.2 && keyValue < .2) return;  // deadzone
-
-        if (keyValue <= 0) {
+        if (keyValue < -.2){
             if (MyGame.getBooster()) {
-                game.getAvatar().turnLeftAction(.013f);
+                game.getAvatar().leftAction(game.getScriptController().getSprintSpeed() * time);
             } else {
-                game.getAvatar().turnLeftAction(.006f);
-            }
-        } else {
-            if (MyGame.getBooster()) {
-                game.getAvatar().turnRightAction(.013f);
-            } else {
-                game.getAvatar().turnRightAction(.006f);
+                game.getAvatar().leftAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
             }
         }
+        else if (keyValue > .2){
+            if (MyGame.getBooster()) {
+                game.getAvatar().rightAction(game.getScriptController().getSprintSpeed() * time);
+            } else {
+                game.getAvatar().rightAction(((int) game.getPlayerStats().get("spd")) * time * 0.003f);
+            }
+
+            
+        }
+        game.callSendMoveMessage();
     }
 }
