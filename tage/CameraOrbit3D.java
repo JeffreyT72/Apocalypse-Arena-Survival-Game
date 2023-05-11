@@ -59,10 +59,17 @@ public class CameraOrbit3D {
         im.associateActionWithAllKeyboards(
             net.java.games.input.Component.Identifier.Key.E, zoomInAction,
             InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-
+        
         im.associateActionWithAllGamepads(
-            net.java.games.input.Component.Identifier.Axis.RX, azmAction,
+            net.java.games.input.Component.Identifier.Button._4, zoomOutAction,
             InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        im.associateActionWithAllGamepads(
+            net.java.games.input.Component.Identifier.Button._5, zoomInAction,
+            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+
+        // im.associateActionWithAllGamepads(
+        //     net.java.games.input.Component.Identifier.Axis.RX, azmAction,
+        //     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         im.associateActionWithAllGamepads(
             net.java.games.input.Component.Identifier.Axis.RY, elevAction,
             InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -130,11 +137,11 @@ public class CameraOrbit3D {
     private class OrbitElevationAction extends AbstractInputAction { 
         public void performAction(float time, Event event) { 
             float rotAmount; 
-            if (event.getValue() < -0.2) { 
-                rotAmount=-0.2f;  
+            if (event.getValue() > 0.2) { 
+                rotAmount=-0.8f;  
             } else { 
-                if (event.getValue() > 0.2) { 
-                    rotAmount=0.2f;  
+                if (event.getValue() < -0.2) { 
+                    rotAmount=0.8f;  
                 } else { 
                     rotAmount=0.0f;  
                 } 
