@@ -136,7 +136,6 @@ public class ProtocolClient extends GameConnectionClient {
 			if (messageTokens[0].compareTo("changeSkyBoxes") == 0) {
 				// Parse out the id into a UUID
 				// UUID ghostID = UUID.fromString(messageTokens[1]);
-
 				if (Boolean.parseBoolean(messageTokens[1])) {
 					(MyGame.getEngine().getSceneGraph()).setActiveSkyBoxTexture(game.getDaySky());
 					MyGame.getEngine().getSceneGraph().setSkyBoxEnabled(true);
@@ -144,6 +143,9 @@ public class ProtocolClient extends GameConnectionClient {
 					(MyGame.getEngine().getSceneGraph()).setActiveSkyBoxTexture(game.getDarkSky());
 					MyGame.getEngine().getSceneGraph().setSkyBoxEnabled(true);
 				}
+
+				Integer difficulty =  Integer.parseInt(messageTokens[2]);
+				game.updateDifficulty(difficulty);
 			}
 
 			if (messageTokens[0].compareTo("spawnMonster") == 0) {

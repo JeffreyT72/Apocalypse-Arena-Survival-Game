@@ -115,6 +115,18 @@ var monsterSpeed = 2;
 var monsterAtk = 2;
 var monsterHealth = 10;
 
+var actualMonsterBaseSpeed = 0.001;
+var actualMonsterBaseSpeed2 = 0.002;
+var actualMonsterBaseSpeed3 = 0.003;
+var actualMonsterBaseSpeed4 = 0.004;
+var actualMonsterBaseSpeed5 = 0.005;
+var actualMonsterBaseSpeed6 = 0.006;
+var actualMonsterBaseSpeed7 = 0.007;
+var actualMonsterBaseSpeed8 = 0.008;
+var actualMonsterBaseSpeed9 = 0.009;
+var actualMonsterBaseSpeed10 = 0.010;
+
+
 //This value needs to be kept as low as possible. If the avatar takes repeated hits, it will move its physics object out of position
 var rangerAttackForce = 1500.0;
 

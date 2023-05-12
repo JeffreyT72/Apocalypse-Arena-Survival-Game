@@ -226,6 +226,7 @@ public class MyGame extends VariableFrameRateGame {
 	private HashMap<String, Integer> monsterStats;
 	private Vector3f targetLocationG = null;
 	private boolean playerWon = false;
+	private int difficultyMygame = 0;
 
 	private ScriptController scriptController;
 	private InputController inputController;
@@ -1046,7 +1047,38 @@ public class MyGame extends VariableFrameRateGame {
 			for (GameObject n : monsterNormals) {
 				if (targetLocationG != null)
 					n.lookAt(targetLocationG);
-				n.fwdAction(0.001f * (float)elapsTime);
+
+				if (difficultyMygame <= 1) {
+					n.fwdAction(scriptController.actualMonsterBaseSpeed() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 2){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed2() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 3){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed3() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 4){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed4() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 5){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed5() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 6){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed6() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 7){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed7() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 8){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed8() * (float)elapsTime);
+				}
+				else if (difficultyMygame == 9){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed9() * (float)elapsTime);
+				}
+				else if (difficultyMygame >= 10){
+					n.fwdAction(scriptController.actualMonsterBaseSpeed10() * (float)elapsTime);
+				}
+				
 			}
 		}
 		// ranger.lookAt(avatar);
@@ -2346,4 +2378,8 @@ public class MyGame extends VariableFrameRateGame {
 		switchSound.play();
 	}
 
+	public void updateDifficulty(int difficulty) {
+		this.difficultyMygame = difficulty;
+		System.out.println(difficultyMygame);
+	}
 }
