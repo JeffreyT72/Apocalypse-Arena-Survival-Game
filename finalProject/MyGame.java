@@ -158,8 +158,10 @@ public class MyGame extends VariableFrameRateGame {
 	private ObjShape avatarOrbiterS;
 	private ObjShape circleS;
 	private ObjShape angelS;
+	private ObjShape ghostGhostS;
 
 	private TextureImage rocketT;
+	private TextureImage ghostGhostT;
 	private TextureImage planeT;
 	private TextureImage soupT;
 	private TextureImage gateT;
@@ -297,6 +299,8 @@ public class MyGame extends VariableFrameRateGame {
 		ghostS_Mage = new AnimatedShape("mage.rkm", "mage.rks");
 		ghostS_Archer = new AnimatedShape("archer.rkm", "archer.rks");
 
+		ghostGhostS = new ImportedModel("ghost.obj");
+
 		// Skills
 		fireballS = new ImportedModel("fireball.obj");
 		avatarOrbiterS = new Torus();
@@ -326,6 +330,7 @@ public class MyGame extends VariableFrameRateGame {
 		terrT = new TextureImage("wood.jpg");
 		dogT = new TextureImage("dog.png");
 		arenaWallT = new TextureImage("wood.jpg");
+		ghostGhostT = new TextureImage("ghost.png");
 
 		// Skills
 		fireballT = new TextureImage("mage_skill1.png");
@@ -588,7 +593,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Sets the current playable character to mage
 		// avatar = mage;
-		avatar = new GameObject(GameObject.root(), xpOrbS, xpOrbT);
+		avatar = new GameObject(GameObject.root(), ghostGhostS, ghostGhostT);
 		initialTranslation = (new Matrix4f()).translation(scriptController.getavatarX(), scriptController.getavatarY(), scriptController.getavatarZ());
 		avatar.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.2f);
