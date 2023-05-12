@@ -106,9 +106,12 @@ var upgrade2 = 7;
 var upgrade3 = 9;
 var upgrade4 = 11; 
 var upgrade5 = 15;
+var upgrade6 = 20;
+var upgrade7 = 25;
+var upgrade8 = 30;
 
 // Monster stats
-var monsterSpeed = 1;
+var monsterSpeed = 2;
 var monsterAtk = 2;
 var monsterHealth = 10;
 

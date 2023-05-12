@@ -11,6 +11,7 @@ public class ToggleXYZ extends AbstractInputAction {
     public ToggleXYZ(MyGame g)
     {
         game = g;
+        disableRender();
     }
 
     @Override
