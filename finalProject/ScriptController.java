@@ -71,6 +71,17 @@ public class ScriptController {
 	private float orbiterLvl2Scale;
 	private float orbiterLvl4Scale;
 	private float rangerAttackForce;
+	private float actualMonsterBaseSpeed;
+	private float actualMonsterBaseSpeed2;
+	private float actualMonsterBaseSpeed3;
+	private float actualMonsterBaseSpeed4;
+	private float actualMonsterBaseSpeed5;
+	private float actualMonsterBaseSpeed6;
+	private float actualMonsterBaseSpeed7;
+	private float actualMonsterBaseSpeed8;
+	private float actualMonsterBaseSpeed9;
+	private float actualMonsterBaseSpeed10;
+
 
 
 	public ScriptController() {
@@ -113,6 +124,17 @@ public class ScriptController {
 		orbiterLvl2Scale = ((Double) (jsEngine.get("orbiterLvl2Scale"))).floatValue();
 		orbiterLvl4Scale = ((Double) (jsEngine.get("orbiterLvl4Scale"))).floatValue();
 		rangerAttackForce = ((Double) (jsEngine.get("rangerAttackForce"))).floatValue();
+		
+		actualMonsterBaseSpeed = ((Double) (jsEngine.get("actualMonsterBaseSpeed"))).floatValue();
+		actualMonsterBaseSpeed2 = ((Double) (jsEngine.get("actualMonsterBaseSpeed2"))).floatValue();
+		actualMonsterBaseSpeed3 = ((Double) (jsEngine.get("actualMonsterBaseSpeed3"))).floatValue();
+		actualMonsterBaseSpeed4 = ((Double) (jsEngine.get("actualMonsterBaseSpeed4"))).floatValue();
+		actualMonsterBaseSpeed5 = ((Double) (jsEngine.get("actualMonsterBaseSpeed5"))).floatValue();
+		actualMonsterBaseSpeed6 = ((Double) (jsEngine.get("actualMonsterBaseSpeed6"))).floatValue();
+		actualMonsterBaseSpeed7 = ((Double) (jsEngine.get("actualMonsterBaseSpeed7"))).floatValue();
+		actualMonsterBaseSpeed8 = ((Double) (jsEngine.get("actualMonsterBaseSpeed8"))).floatValue();
+		actualMonsterBaseSpeed9 = ((Double) (jsEngine.get("actualMonsterBaseSpeed9"))).floatValue();
+		actualMonsterBaseSpeed10 = ((Double) (jsEngine.get("actualMonsterBaseSpeed10"))).floatValue();
 
 		startingHealth = ((int) (jsEngine.get("startingHealth")));
 		startingLevel = ((int) (jsEngine.get("startingLevel")));
@@ -365,5 +387,36 @@ public class ScriptController {
 	}
 	public float getrangerAttackForce(){
 		return this.rangerAttackForce;
+	}
+
+	public float actualMonsterBaseSpeed(){
+		return this.actualMonsterBaseSpeed;
+	}
+	public float actualMonsterBaseSpeed2(){
+		return this.actualMonsterBaseSpeed2;
+	}
+	public float actualMonsterBaseSpeed3(){
+		return this.actualMonsterBaseSpeed3;
+	}
+	public float actualMonsterBaseSpeed4(){
+		return this.actualMonsterBaseSpeed4;
+	}
+	public float actualMonsterBaseSpeed5(){
+		return this.actualMonsterBaseSpeed5;
+	}
+	public float actualMonsterBaseSpeed6(){
+		return this.actualMonsterBaseSpeed6;
+	}
+	public float actualMonsterBaseSpeed7(){
+		return this.actualMonsterBaseSpeed7;
+	}
+	public float actualMonsterBaseSpeed8(){
+		return this.actualMonsterBaseSpeed8;
+	}
+	public float actualMonsterBaseSpeed9(){
+		return this.actualMonsterBaseSpeed9;
+	}
+	public float actualMonsterBaseSpeed10(){
+		return this.actualMonsterBaseSpeed10;
 	}
 }

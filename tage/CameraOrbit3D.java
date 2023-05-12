@@ -41,18 +41,18 @@ public class CameraOrbit3D {
         ZoomOutAction zoomOutAction = new ZoomOutAction();
         ZoomInAction zoomInAction = new ZoomInAction();
 
-        im.associateActionWithAllKeyboards(
-			net.java.games.input.Component.Identifier.Key.J, leftACtion,
-			InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-        im.associateActionWithAllKeyboards(
-            net.java.games.input.Component.Identifier.Key.L, rightACtion,
-            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-        im.associateActionWithAllKeyboards(
-            net.java.games.input.Component.Identifier.Key.I, upAction,
-            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-        im.associateActionWithAllKeyboards(
-            net.java.games.input.Component.Identifier.Key.K, downAction,
-            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        // im.associateActionWithAllKeyboards(
+		// 	net.java.games.input.Component.Identifier.Key.J, leftACtion,
+		// 	InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        // im.associateActionWithAllKeyboards(
+        //     net.java.games.input.Component.Identifier.Key.L, rightACtion,
+        //     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        // im.associateActionWithAllKeyboards(
+        //     net.java.games.input.Component.Identifier.Key.I, upAction,
+        //     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        // im.associateActionWithAllKeyboards(
+        //     net.java.games.input.Component.Identifier.Key.K, downAction,
+        //     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         im.associateActionWithAllKeyboards(
             net.java.games.input.Component.Identifier.Key.Q, zoomOutAction,
             InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
