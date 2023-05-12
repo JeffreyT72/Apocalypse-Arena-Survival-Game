@@ -38,6 +38,9 @@ public class ScriptController {
 	private int upgrade3;
 	private int upgrade4;
 	private int upgrade5;
+	private int upgrade6;
+	private int upgrade7;
+	private int upgrade8;
 	private int baseSoundVolume;
 	private int maxLevelXP;
 	private float arenaInvisibleWallDistance;
@@ -139,6 +142,9 @@ public class ScriptController {
 		upgrade3 = ((int) (jsEngine.get("upgrade3")));
 		upgrade4 = ((int) (jsEngine.get("upgrade4")));
 		upgrade5 = ((int) (jsEngine.get("upgrade5")));
+		upgrade6 = ((int) (jsEngine.get("upgrade6")));
+		upgrade7 = ((int) (jsEngine.get("upgrade7")));
+		upgrade8 = ((int) (jsEngine.get("upgrade8")));
 	}
 
 	private void runScript(File scriptFile) {
@@ -256,6 +262,15 @@ public class ScriptController {
 
 	public int getUpgrade5(){
 		return this.upgrade5;
+	}
+	public int getUpgrade6(){
+		return this.upgrade6;
+	}
+	public int getUpgrade7(){
+		return this.upgrade7;
+	}
+	public int getUpgrade8(){
+		return this.upgrade8;
 	}
 
 	public float getArenaInvisibleWallDistance(){

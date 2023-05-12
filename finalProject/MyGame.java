@@ -66,6 +66,7 @@ public class MyGame extends VariableFrameRateGame {
 	final private String MAINVP = "MAIN";
 	final private String TOPLEFTVP = "TOPLEFT";
 	final private String AVATARVP = "PLAYERVP";
+	private String dispStr7;
 
 	// Time variables
 	private double lastFrameTime, currFrameTime, elapsTime, displayTime;
@@ -202,6 +203,9 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean hasSentPlayerStatsMessageLevel2 = false;
 	private boolean hasSentPlayerStatsMessageLevel3 = false;
 	private boolean hasSentPlayerStatsMessageLevel4 = false;
+	private boolean hasSentPlayerStatsMessageLevel5 = false;
+	private boolean hasSentPlayerStatsMessageLevel6 = false;
+	private boolean hasSentPlayerStatsMessageLevel7 = false;
 	private boolean enableArenaBoundary = false;
 
 	private boolean rangerReadyToLaunchNextAttack = true;
@@ -219,6 +223,7 @@ public class MyGame extends VariableFrameRateGame {
 	private HashMap<String, Integer> playerStats;
 	private HashMap<String, Integer> monsterStats;
 	private Vector3f targetLocationG = null;
+	private boolean playerWon = false;
 
 	private ScriptController scriptController;
 	private InputController inputController;
@@ -395,6 +400,10 @@ public class MyGame extends VariableFrameRateGame {
 		(x.getRenderStates()).setColor(new Vector3f(1f, 0f, 0f));
 		(y.getRenderStates()).setColor(new Vector3f(0f, 1f, 0f));
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
+		x.getRenderStates().disableRendering();
+		y.getRenderStates().disableRendering();
+		z.getRenderStates().disableRendering();
+		this.showXYZ = false;
 
 		// build soup
 		soup = new GameObject(GameObject.root(), soupS, soupT);
@@ -1200,7 +1209,7 @@ public class MyGame extends VariableFrameRateGame {
 		monsterStats.put("monsterSpeed", scriptController.getMonsterSpeed());
 		// Older Variables. May or may not be needed
 		scoreCounter = 0;
-		showXYZ = true;
+		showXYZ = false;
 		booster = false;
 		isConsumed = false;
 		isBooster = false;
@@ -1688,7 +1697,6 @@ public class MyGame extends VariableFrameRateGame {
 		String dispStr4 = "Level: " + playerStats.get("level");
 		String dispStr5 = "XP: " + playerStats.get("experience");
 		String dispStr6;
-		String dispStr7;
 
 		Vector3f hud1Color = new Vector3f(1, 0, 1);
 		Vector3f hud2Color = new Vector3f(0, 0, 1);
@@ -1717,8 +1725,12 @@ public class MyGame extends VariableFrameRateGame {
 		if (playerStats.get("health") <= 0) {
 			dispStr7 = "You Lose";
 			hud6Color = new Vector3f(1, 0, 0);
+			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2) + 5, (rs.getHeight() / 2));
+		} else if (playerWon){
+			dispStr7 = "You Win";
 			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2), (rs.getHeight() / 2));
-		} else {
+		}
+		else {
 			dispStr7 = "";
 			(engine.getHUDmanager()).setHUD7(dispStr7, hud6Color, (rs.getWidth() / 2), (rs.getHeight() / 2));
 		}
@@ -1956,6 +1968,22 @@ public class MyGame extends VariableFrameRateGame {
 			playerStats.replace("avatarOrbiterLv", 4);
 			callSendPlayerStatsMessage();
 			hasSentPlayerStatsMessageLevel4 = true;
+		}
+		else if (playerLevel == scriptController.getUpgrade6() && !hasSentPlayerStatsMessageLevel5) {
+			playerStats.replace("circleLv", 1);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel5 = true;
+		}
+		else if (playerLevel == scriptController.getUpgrade7() && !hasSentPlayerStatsMessageLevel6) {
+			playerStats.replace("circleLv", 2);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel6 = true;
+		}
+		else if (playerLevel == scriptController.getUpgrade8() && !hasSentPlayerStatsMessageLevel7) {
+			playerStats.replace("circleLv", 3);
+			callSendPlayerStatsMessage();
+			hasSentPlayerStatsMessageLevel7 = true;
+			playerWon = true;
 		}
 
 		passiveHealing();
