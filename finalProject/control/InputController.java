@@ -46,12 +46,12 @@ public class InputController {
 		ToggleXYZ toggleXYZ = new ToggleXYZ(game);
 
 		// Gamepad
-		im.associateActionWithAllGamepads(
-				net.java.games.input.Component.Identifier.Axis.Y, fwdbwdAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(
-				net.java.games.input.Component.Identifier.Axis.X, turnAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllGamepads(
+		// 		net.java.games.input.Component.Identifier.Axis.Y, fwdbwdAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllGamepads(
+		// 		net.java.games.input.Component.Identifier.Axis.X, turnAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
 		// Keyboard
 		im.associateActionWithAllKeyboards(
@@ -73,18 +73,18 @@ public class InputController {
 		// net.java.games.input.Component.Identifier.Key.LSHIFT, speedUpAction,
 		// InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.UP, secCamPanUpAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.DOWN, secCamPanDownAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.LEFT, secCamPanLeftAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(
-				net.java.games.input.Component.Identifier.Key.RIGHT, secCamPanRightAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.UP, secCamPanUpAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.DOWN, secCamPanDownAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.LEFT, secCamPanLeftAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		// im.associateActionWithAllKeyboards(
+		// 		net.java.games.input.Component.Identifier.Key.RIGHT, secCamPanRightAction,
+		// 		InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(
 				net.java.games.input.Component.Identifier.Key.PERIOD, secCamPanZoomInAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
