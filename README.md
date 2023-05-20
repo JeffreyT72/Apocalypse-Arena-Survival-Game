@@ -4,4 +4,4 @@ Setup: https://csus.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=d539eca9-dae
 
 Project with final changes: https://drive.google.com/file/d/1jCutEd5-WZwYMg_1s4DDN4orZHk1UVVS/view?usp=share_link
 
-<a href="pdfs/Assignment 3 Guide - Tan&Prabhu.pdf" class="image fit"> Link to PDF guide with more info</a>
+<a href="Assignment 3 Guide - Tan&Prabhu.pdf" class="image fit"> Link to PDF guide with more info</a>
